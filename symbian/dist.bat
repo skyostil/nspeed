@@ -1,6 +1,6 @@
 @echo off
 cd group
-abld build armi
+call abld build armi
 cd ..
 cd install
 makesis game.pkg

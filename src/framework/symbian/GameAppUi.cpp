@@ -23,6 +23,7 @@
 #include <reent.h>
 #include <hal.h>
 #include <stdio.h>
+#include <sys/stat.h>
 
 // ================= MEMBER FUNCTIONS =======================
 //
@@ -247,10 +248,11 @@ TDesC& CGameAppUi::GetFilenameDes(const char *name)
 
 const char *CGameAppUi::findResource(const char *name)
 {
-	FILE *f = NULL;
+//	FILE *f = NULL;
 	int i = 0;
 	const char drive[] = {'c', 'd', 'e', 'z'};
 	char *s;
+	struct stat fileStat;
 
 	for(i=0; i<sizeof(drive); i++)
 	{
@@ -264,11 +266,10 @@ const char *CGameAppUi::findResource(const char *name)
 			s++;
 		}
 
-		f = fopen(iResourcePath,"r");
-
-		if (f)
+//		f = fopen(iResourcePath,"r");
+		if (stat(iResourcePath, &fileStat) == 0)
 		{
-			fclose(f);
+//			fclose(f);
 			return iResourcePath;
 		}
 	}

@@ -45,6 +45,7 @@ SOURCE  BitmapFont.cpp
 SOURCE  Environment.cpp
 SOURCE  Mesh.cpp
 SOURCE  MeshSet.cpp
+SOURCE  Menu.cpp
 
 RESOURCE ..\symbian\data\Game.rss
 RESOURCE ..\symbian\data\Game_caption.rss

@@ -26,477 +26,477 @@
 #include <stdio.h>
 
 Car::Car(World *_world, const char *name):
-	Object(_world),
-	angle(PI/2),
-	speed(0),
-	texture(0),
-	angleSpeed(0),
-	velocity(0,0,0),
-	origin(0,0,0),
-	thrust(false),
-	brake(false),
-	steering(0),
-	steeringWheelPos(0),
-	thrustPos(0),
-	engineCycle(0),
-	gateIndex(0),
-	lapCount(0),
-	aiEnabled(false),
-	carNumber(-1),
-	world(_world)
+        Object(_world),
+        angle(PI/2),
+        speed(0),
+        texture(0),
+        angleSpeed(0),
+        velocity(0,0,0),
+        origin(0,0,0),
+        thrust(false),
+        brake(false),
+        steering(0),
+        steeringWheelPos(0),
+        thrustPos(0),
+        engineCycle(0),
+        gateIndex(0),
+        lapCount(0),
+        aiEnabled(false),
+        carNumber(-1),
+        world(_world)
 {
-	char fileName[256];
+        char fileName[256];
 
-	sfxChannel = 4;
+        sfxChannel = 4;
 
-	sprintf(fileName, "cars/%s/engine.wav", name);
-	engineSound = world->getEnvironment()->getFramework()->loadSample(world->getEnvironment()->getFramework()->findResource(fileName));
+        sprintf(fileName, "cars/%s/engine.wav", name);
+        engineSound = world->getEnvironment()->getFramework()->loadSample(world->getEnvironment()->getFramework()->findResource(fileName));
 
-	sprintf(fileName, "cars/%s/texture.png", name);
-	texture = world->getEnvironment()->loadImage(fileName);
+        sprintf(fileName, "cars/%s/texture.png", name);
+        texture = world->getEnvironment()->loadImage(fileName);
 
-	sprintf(fileName, "cars/%s/mesh.mesh", name);
-	mesh = new Mesh(this, world->getEnvironment()->getFramework()->findResource(fileName), texture);
+        sprintf(fileName, "cars/%s/mesh.mesh", name);
+        mesh = new Mesh(this, world->getEnvironment()->getFramework()->findResource(fileName), texture);
 
-	world->getEnvironment()->meshPool.add(mesh);
+        world->getEnvironment()->meshPool.add(mesh);
 
-	// build an acceleration profile
-	accProfile[0].acc = 96;
-	accProfile[0].angleAcc = 96;
-	accProfile[0].threshold = 1200*2;
-	accProfile[1].acc = 64;
-	accProfile[1].angleAcc = 72;
-	accProfile[1].threshold = 3000*2;
-	accProfile[2].acc = 16;
-	accProfile[2].angleAcc = 64;
-	accProfile[2].threshold = 4000*2;
-	accProfile[3].acc = 12;
-	accProfile[3].angleAcc = 64;
-	accProfile[3].threshold = 0x7fffffff;
+        // build an acceleration profile
+        accProfile[0].acc = 96;
+        accProfile[0].angleAcc = 96;
+        accProfile[0].threshold = 1200*2;
+        accProfile[1].acc = 64;
+        accProfile[1].angleAcc = 72;
+        accProfile[1].threshold = 3000*2;
+        accProfile[2].acc = 16;
+        accProfile[2].angleAcc = 64;
+        accProfile[2].threshold = 4000*2;
+        accProfile[3].acc = 12;
+        accProfile[3].angleAcc = 64;
+        accProfile[3].threshold = 0x7fffffff;
 }
 
 Car::~Car()
 {
-	world->getEnvironment()->meshPool.remove(mesh);
-	delete texture;
-	delete engineSound;
+        world->getEnvironment()->meshPool.remove(mesh);
+        delete texture;
+        delete engineSound;
 }
 
 #define DAMPEN(x,amount) if (x) x += (x>(amount))?(-(amount)):(amount)
 
 void Car::update(Track *track)
 {
-	Vector worldOrigin = origin * (FP_ONE>>CAR_COORDINATE_SCALE);
+        Vector worldOrigin = origin * (FP_ONE>>CAR_COORDINATE_SCALE);
 
-	// reset the acceleration
-	acceleration.set(0,0,0);
+        // reset the acceleration
+        acceleration.set(0,0,0);
 
-	// update the speedometer
-	speed = velocity.lengthSquared();
+        // update the speedometer
+        speed = velocity.lengthSquared();
 
-//	printf("Vel: %6d, %6d\n", velocity.x, velocity.z);
+//      printf("Vel: %6d, %6d\n", velocity.x, velocity.z);
 
-	updateCollisions();
-	
-	// collision detection & response
-	if (track->getCell(worldOrigin) == 0)
-	{
-		Vector normal = track->getNormal(worldOrigin);
-//		Vector vel = velocity;
-		int backtrackLimit = 16;
+        updateCollisions();
+        
+        // collision detection & response
+        if (track->getCell(worldOrigin) == 0)
+        {
+                Vector normal = track->getNormal(worldOrigin);
+//              Vector vel = velocity;
+                int backtrackLimit = 16;
 
-//		vel.normalize();
+//              vel.normalize();
 
-//		printf("%d\n", speed);
+//              printf("%d\n", speed);
 
-		// if we were going too slow, use the normal as the new velocity
-		if (speed < 256)
-		{
-			velocity = normal * -512;
-//			printf("Crash %6d, %6d\n", normal.x, normal.z);
-		}
-		
-		// backtrack to avoid collision
-		while(track->getCell(origin * (FP_ONE>>CAR_COORDINATE_SCALE))==0 && --backtrackLimit)
-			origin -= velocity;
-/*		
-		// rotate the normal 90 degress
-		normal.y = normal.x;
-		normal.x = -normal.z;
-		normal.z = normal.y;
-		normal.y = 0;
-*/		
-//		scalar p = velocity.dot(normal);
-//		scalar p = vel.dot(normal);
+                // if we were going too slow, use the normal as the new velocity
+                if (speed < 256)
+                {
+                        velocity = normal * -512;
+//                      printf("Crash %6d, %6d\n", normal.x, normal.z);
+                }
+                
+                // backtrack to avoid collision
+                while(track->getCell(origin * (FP_ONE>>CAR_COORDINATE_SCALE))==0 && --backtrackLimit)
+                        origin -= velocity;
+/*              
+                // rotate the normal 90 degress
+                normal.y = normal.x;
+                normal.x = -normal.z;
+                normal.z = normal.y;
+                normal.y = 0;
+*/              
+//              scalar p = velocity.dot(normal);
+//              scalar p = vel.dot(normal);
 /*
-		// make sure we bounce off the wall
-		if (p > -(FP_ONE) && p < 0)
-			p = -(FP_ONE);
-		else if (p < (FP_ONE) && p > 0)
-			p = (FP_ONE);
+                // make sure we bounce off the wall
+                if (p > -(FP_ONE) && p < 0)
+                        p = -(FP_ONE);
+                else if (p < (FP_ONE) && p > 0)
+                        p = (FP_ONE);
 */
-//		if (p < 0) p = -p;
-		
-//		velocity = normal * p - velocity * (FPInt(1)>>2);
-//		acceleration = normal * p - velocity * (FPInt(1)>>5);
-//		acceleration = normal * p - velocity * (FP_ONE + 3*FP_ONE/4);
-//		acceleration = normal * p - velocity * (FP_ONE<<1);
-//		acceleration = -velocity + (vel - normal * FPMul(FPInt(2), p)) * speed;
-//		acceleration = -velocity + (vel - normal * FPMul(FPInt(2), p)) * speed + normal * 1000;
+//              if (p < 0) p = -p;
+                
+//              velocity = normal * p - velocity * (FPInt(1)>>2);
+//              acceleration = normal * p - velocity * (FPInt(1)>>5);
+//              acceleration = normal * p - velocity * (FP_ONE + 3*FP_ONE/4);
+//              acceleration = normal * p - velocity * (FP_ONE<<1);
+//              acceleration = -velocity + (vel - normal * FPMul(FPInt(2), p)) * speed;
+//              acceleration = -velocity + (vel - normal * FPMul(FPInt(2), p)) * speed + normal * 1000;
 
-		if (normal.dot(velocity) < 0)
-			acceleration = normal * FPMul(normal.dot(velocity), FPInt(-2));
-		else
-			acceleration = normal * 512;
+                if (normal.dot(velocity) < 0)
+                        acceleration = normal * FPMul(normal.dot(velocity), FPInt(-2));
+                else
+                        acceleration = normal * 512;
 
-		if (acceleration.lengthSquared() < 128)
-			acceleration += normal * 256;
-//		printf("%d\n", acceleration.lengthSquared());
-//		printf("%d\n", normal.dot(velocity));
-		
-//		speed = 0;
-//		speed = FPMul(speed, FPInt(-1));
-//		origin += normal * 10000;
-	} else
-	{
-		if (thrust)
-		{
-	//		speed += getAcceleration();
-			scalar acc = getAcceleration(speed);
-			acceleration.x += (FPCos(angle) * acc) >> FP;
-			acceleration.z += (FPSin(angle) * acc) >> FP;
+                if (acceleration.lengthSquared() < 128)
+                        acceleration += normal * 256;
+//              printf("%d\n", acceleration.lengthSquared());
+//              printf("%d\n", normal.dot(velocity));
+                
+//              speed = 0;
+//              speed = FPMul(speed, FPInt(-1));
+//              origin += normal * 10000;
+        } else
+        {
+                if (thrust)
+                {
+        //              speed += getAcceleration();
+                        scalar acc = getAcceleration(speed);
+                        acceleration.x += (FPCos(angle) * acc) >> FP;
+                        acceleration.z += (FPSin(angle) * acc) >> FP;
 
-	//		printf("Acc: %d\n", acc);
-		}
+        //              printf("Acc: %d\n", acc);
+                }
 
-		{
-	//		scalar acc = speed >> 5;
-//			if (speed > 1024)
-			if (speed > 16)
-			{
-				Vector vel = velocity;
-	//			Vector dir(FPCos(angle), 0, FPSin(angle));
-				Vector dir(FPSin(angle), 0, -FPCos(angle));
-	//			Vector dir(FPMul(FPCos(angle), speed), 0, FPMul(FPSin(angle), speed));
-	//			Vector dir(FPCos(angle + (PI>>1)), 0, FPSin(angle + (PI>>1)));
-	//			Vector acc(FPCos(angle), 0, FPSin(angle));
+                {
+        //              scalar acc = speed >> 5;
+//                      if (speed > 1024)
+                        if (speed > 16)
+                        {
+                                Vector vel = velocity;
+        //                      Vector dir(FPCos(angle), 0, FPSin(angle));
+                                Vector dir(FPSin(angle), 0, -FPCos(angle));
+        //                      Vector dir(FPMul(FPCos(angle), speed), 0, FPMul(FPSin(angle), speed));
+        //                      Vector dir(FPCos(angle + (PI>>1)), 0, FPSin(angle + (PI>>1)));
+        //                      Vector acc(FPCos(angle), 0, FPSin(angle));
 
-//				vel.normalize();
+//                              vel.normalize();
 
-				scalar acc = vel.dot(dir);
+                                scalar acc = vel.dot(dir);
 
-	//			if (acc < 0)
-	//				acc = -acc;
+        //                      if (acc < 0)
+        //                              acc = -acc;
 
-				acc = FPDiv(acc, FPInt(speed)>>7);
-//				printf("Angle acc: %6d\n", acc);
+                                acc = FPDiv(acc, FPInt(speed)>>7);
+//                              printf("Angle acc: %6d\n", acc);
 
 
-				{
-//					acc>>=7;
-				//	acc>>=8;
-	//				Vector dir(FPCos((angle + (PI>>1)) % 2*PI), 0, FPSin((angle + (PI>>1))) % 2*PI);
-	//				Vector dir(FPSin(angle), 0, -FPCos(angle));
+                                {
+//                                      acc>>=7;
+                                //      acc>>=8;
+        //                              Vector dir(FPCos((angle + (PI>>1)) % 2*PI), 0, FPSin((angle + (PI>>1))) % 2*PI);
+        //                              Vector dir(FPSin(angle), 0, -FPCos(angle));
 
-					acceleration -= dir * acc;
+                                        acceleration -= dir * acc;
 
-//					scalar slip = FPMul(steeringWheelPos<<8, speed * thrustPos);
-					scalar slip = FPMul(steeringWheelPos<<6, FPSqrt(speed));
-					scalar maxSlip = 4096;
-//					printf("slip: %6d\n", slip);
+//                                      scalar slip = FPMul(steeringWheelPos<<8, speed * thrustPos);
+                                        scalar slip = FPMul(steeringWheelPos<<6, FPSqrt(speed));
+                                        scalar maxSlip = 4096;
+//                                      printf("slip: %6d\n", slip);
 
-					if (slip > maxSlip)
-						slip = maxSlip;
-					else if (slip < -maxSlip)
-						slip = -maxSlip;
+                                        if (slip > maxSlip)
+                                                slip = maxSlip;
+                                        else if (slip < -maxSlip)
+                                                slip = -maxSlip;
 
-					// slip
-//					acceleration += dir * slip;
-	/*
-					if (vel.cross(dir).y > 0)
-						acceleration += dir * acc;
-					else
-						acceleration += dir * -acc;
-	*/
-	//				printf("Turn: %6d\n", acc);
-				}
-	//				printf("No Turn: %6d\n", acc);
+                                        // slip
+//                                      acceleration += dir * slip;
+        /*
+                                        if (vel.cross(dir).y > 0)
+                                                acceleration += dir * acc;
+                                        else
+                                                acceleration += dir * -acc;
+        */
+        //                              printf("Turn: %6d\n", acc);
+                                }
+        //                              printf("No Turn: %6d\n", acc);
 
-	/*
-				scalar acc = ((FP_ONE - vel.dot(dir))) >> 9;
+        /*
+                                scalar acc = ((FP_ONE - vel.dot(dir))) >> 9;
 
-				if (vel.cross(dir).y > 0)
-					acc = -acc;
+                                if (vel.cross(dir).y > 0)
+                                        acc = -acc;
 
-				acceleration.x += FPMul(FPCos(angle + (PI>>1)), acc);
-				acceleration.z += FPMul(FPSin(angle + (PI>>1)), acc);
-				printf("Turn: %6d, %d\n", acc, vel.cross(dir).y);
-	*/
-			}
-		}
-	}
-	
-	switch(steering)
-	{
-	case -1:
-		if (steeringWheelPos > -32) steeringWheelPos--;
-	break;
-	case 0:
-		if (steeringWheelPos > 0) steeringWheelPos--;
-		else if (steeringWheelPos < 0) steeringWheelPos++;
-	break;
-	case 1:
-		if (steeringWheelPos < 32) steeringWheelPos++;
-	break;
-	}
+                                acceleration.x += FPMul(FPCos(angle + (PI>>1)), acc);
+                                acceleration.z += FPMul(FPSin(angle + (PI>>1)), acc);
+                                printf("Turn: %6d, %d\n", acc, vel.cross(dir).y);
+        */
+                        }
+                }
+        }
+        
+        switch(steering)
+        {
+        case -1:
+                if (steeringWheelPos > -32) steeringWheelPos--;
+        break;
+        case 0:
+                if (steeringWheelPos > 0) steeringWheelPos--;
+                else if (steeringWheelPos < 0) steeringWheelPos++;
+        break;
+        case 1:
+                if (steeringWheelPos < 32) steeringWheelPos++;
+        break;
+        }
 
-	if (thrust && thrustPos < 8)
-		thrustPos++;
-	else if (!thrust && thrustPos > 0)
-		thrustPos--;
-		
-//	printf("%d\n", steeringWheelPos);
-		
-//	angleSpeed += (steeringWheelPos) * getAngleAcceleration();
+        if (thrust && thrustPos < 8)
+                thrustPos++;
+        else if (!thrust && thrustPos > 0)
+                thrustPos--;
+                
+//      printf("%d\n", steeringWheelPos);
+                
+//      angleSpeed += (steeringWheelPos) * getAngleAcceleration();
 
-	if (FPAbs(velocity.x) > 32 || FPAbs(velocity.z) > 32)
-		angle += (steeringWheelPos>>2) * getAngleAcceleration(speed);
+        if (FPAbs(velocity.x) > 32 || FPAbs(velocity.z) > 32)
+                angle += (steeringWheelPos>>2) * getAngleAcceleration(speed);
 
-//	printf("Acc: %6d, %6d\n", acceleration.x, acceleration.z);
-		
-	// integration
-//	acceleration *= (FPInt(1)>>5);
-	velocity += acceleration;
-	origin += velocity;
-	angle += angleSpeed;
-		
-	// bring angle back in range
-	while(angle > 2*PI)
-		angle -= 2*PI;
+//      printf("Acc: %6d, %6d\n", acceleration.x, acceleration.z);
+                
+        // integration
+//      acceleration *= (FPInt(1)>>5);
+        velocity += acceleration;
+        origin += velocity;
+        angle += angleSpeed;
+                
+        // bring angle back in range
+        while(angle > 2*PI)
+                angle -= 2*PI;
 
-	while(angle < 0)
-		angle += 2*PI;
-		
-//	DAMPEN(speed, brake?32:4);
+        while(angle < 0)
+                angle += 2*PI;
+                
+//      DAMPEN(speed, brake?32:4);
 
-	DAMPEN(velocity.x, brake?64:8);
-	DAMPEN(velocity.z, brake?64:8);
-	DAMPEN(angleSpeed, 1);
+        DAMPEN(velocity.x, brake?64:8);
+        DAMPEN(velocity.z, brake?64:8);
+        DAMPEN(angleSpeed, 1);
 
-	// update the model position
-	Vector verticalAxis(0,FP_ONE,0);
-	Vector rollAxis(FPCos(angle),0,FPSin(angle));
-	Matrix translation = Matrix::makeTranslation(origin * (FP_ONE>>CAR_COORDINATE_SCALE) + Vector(0, thrustPos<<(FP-10), 0));
+        // update the model position
+        Vector verticalAxis(0,FP_ONE,0);
+        Vector rollAxis(FPCos(angle),0,FPSin(angle));
+        Matrix translation = Matrix::makeTranslation(origin * (FP_ONE>>CAR_COORDINATE_SCALE) + Vector(0, thrustPos<<(FP-10), 0));
 
-	mesh->transformation = Matrix::makeRotation(verticalAxis, angle + (steeringWheelPos<<(FP-8)));
-	mesh->transformation *= Matrix::makeRotation(rollAxis, -(steeringWheelPos<<(FP-8)));
-	mesh->transformation *= translation;
+        mesh->transformation = Matrix::makeRotation(verticalAxis, angle + (steeringWheelPos<<(FP-8)));
+        mesh->transformation *= Matrix::makeRotation(rollAxis, -(steeringWheelPos<<(FP-8)));
+        mesh->transformation *= translation;
 
-	updateGate();
+        updateGate();
 
-	if (carNumber == 0)
-		updateSound();
+        if (carNumber == 0)
+                updateSound();
 
-	if (aiEnabled)
-		updateAi();
+        if (aiEnabled)
+                updateAi();
 }
 
 scalar Car::getAcceleration(scalar speed) const
 {
-	int i = 0;
-	
-	while(speed > accProfile[i].threshold && (i < sizeof(accProfile)/sizeof(accProfile[0])))
-		i++;
-		
-//	printf("%6d -> acceleration segment %d: %d\n", speed, i, accProfile[i].acc);
-		
-	return accProfile[i].acc;
+        int i = 0;
+        
+        while(speed > accProfile[i].threshold && (i < sizeof(accProfile)/sizeof(accProfile[0])))
+                i++;
+                
+//      printf("%6d -> acceleration segment %d: %d\n", speed, i, accProfile[i].acc);
+                
+        return accProfile[i].acc;
 }
 
 void Car::updateSound()
 {
-	int freq;
+        int freq;
 
-	if (thrust)
-		freq = (FPSqrt(speed) << 2) + 16000;
-	else
-		freq = (FPSqrt(speed) << 2) + 8000;
+        if (thrust)
+                freq = (FPSqrt(speed) << 2) + 16000;
+        else
+                freq = (FPSqrt(speed) << 2) + 8000;
 
-	if (world->getEnvironment()->mixer)
-		world->getEnvironment()->mixer->getChannel(sfxChannel)->setFrequency(freq);
+        if (world->getEnvironment()->mixer)
+                world->getEnvironment()->mixer->getChannel(sfxChannel)->setFrequency(freq);
 }
 
 void Car::updateGate()
 {
-	int nextGateIndex = (gateIndex+1) % world->getEnvironment()->track->getGateCount();
-	LineSegment *nextGate = world->getEnvironment()->track->getGate(nextGateIndex);
-	
-	if (nextGate && nextGate->isInside(getOrigin()))
-	{
-		if (nextGateIndex < gateIndex)
-			lapCount++;
-		gateIndex = nextGateIndex;
-	}
+        int nextGateIndex = (gateIndex+1) % world->getEnvironment()->track->getGateCount();
+        LineSegment *nextGate = world->getEnvironment()->track->getGate(nextGateIndex);
+        
+        if (nextGate && nextGate->isInside(getOrigin()))
+        {
+                if (nextGateIndex < gateIndex)
+                        lapCount++;
+                gateIndex = nextGateIndex;
+        }
 }
 
 scalar Car::getAngleAcceleration(scalar speed) const
 {
-	int i = 0;
-	
-	while(speed > accProfile[i].threshold && (i < sizeof(accProfile)/sizeof(accProfile[0])))
-		i++;
-		
-//	printf("%6d -> acceleration segment %d: %d\n", speed, i, accProfile[i].acc);
-	return accProfile[i].angleAcc;
+        int i = 0;
+        
+        while(speed > accProfile[i].threshold && (i < sizeof(accProfile)/sizeof(accProfile[0])))
+                i++;
+                
+//      printf("%6d -> acceleration segment %d: %d\n", speed, i, accProfile[i].acc);
+        return accProfile[i].angleAcc;
 }
 
 void Car::updateCollisions()
 {
-	int i;
+        int i;
 
-	for(i=0; i<world->getEnvironment()->carPool.getCount(); i++)
-	{
-		Car *other = world->getEnvironment()->carPool.getItem(i);
+        for(i=0; i<world->getEnvironment()->carPool.getCount(); i++)
+        {
+                Car *other = world->getEnvironment()->carPool.getItem(i);
 
-		// check each car pair only once
-		if (other > this)
-		{
-			checkCollision(other);
-		}
-	}
+                // check each car pair only once
+                if (other > this)
+                {
+                        checkCollision(other);
+                }
+        }
 }
 
 void Car::checkCollision(Car *other)
 {
-	scalar radius = FP_ONE * 2;
-	Vector dist = other->origin - origin;
+        scalar radius = FP_ONE * 2;
+        Vector dist = other->origin - origin;
 
-	// this peculiar double-test is needed because of numerical overflow
-	if (FPAbs(dist.x) <= radius && FPAbs(dist.z) <= radius)
-	{
-		if (dist.lengthSquared() < radius)
-		{
-			Vector normal = (other->origin - origin).normalize();
-			Vector relativeVelocity = velocity - other->velocity;
+        // this peculiar double-test is needed because of numerical overflow
+        if (FPAbs(dist.x) <= radius && FPAbs(dist.z) <= radius)
+        {
+                if (dist.lengthSquared() < radius)
+                {
+                        Vector normal = (other->origin - origin).normalize();
+                        Vector relativeVelocity = velocity - other->velocity;
 
-			// backtrack to avoid collision
-			origin -= velocity * FPInt(2);
+                        // backtrack to avoid collision
+                        origin -= velocity * FPInt(2);
 
-			scalar p = relativeVelocity.dot(normal) >> 1;
+                        scalar p = relativeVelocity.dot(normal) >> 1;
 
-			velocity -= normal * p + relativeVelocity;
-			other->velocity += normal * p + relativeVelocity;
-		}
-	}
+                        velocity -= normal * p + relativeVelocity;
+                        other->velocity += normal * p + relativeVelocity;
+                }
+        }
 }
 
 void Car::setThrust(bool _thrust)
 {
-	thrust = _thrust;
+        thrust = _thrust;
 }
 
 void Car::setBrake(bool _brake)
 {
-	brake = _brake;
+        brake = _brake;
 }
 
 void Car::setSteering(int _steering)
 {
-	steering = _steering;
+        steering = _steering;
 }
 
 void Car::setOrigin(const Vector &o)
 {
-	origin = o * (FP_ONE<<CAR_COORDINATE_SCALE);
+        origin = o * (FP_ONE<<CAR_COORDINATE_SCALE);
 }
 
 void Car::prepareForRace(int position)
 {
-	velocity.set(0,0,0);
-	steeringWheelPos = 0;
-	thrustPos = 0;
-	lapCount = 0;
-	gateIndex = 0;
-	angleSpeed = 0;
-	carNumber = position;
-	
-	setOrigin(world->getEnvironment()->track->getStartingPosition(position));
-	angle = world->getEnvironment()->track->getStartingAngle();
-	
-	if (world->getEnvironment()->mixer && engineSound && position == 0)
-	{
-		world->getEnvironment()->mixer->playSample(engineSound, 1, true, sfxChannel);
-		world->getEnvironment()->mixer->getChannel(sfxChannel)->setVolume(4);
-	}
-	
-	update(world->getEnvironment()->track);
+        velocity.set(0,0,0);
+        steeringWheelPos = 0;
+        thrustPos = 0;
+        lapCount = 0;
+        gateIndex = 0;
+        angleSpeed = 0;
+        carNumber = position;
+        
+        setOrigin(world->getEnvironment()->track->getStartingPosition(position));
+        angle = world->getEnvironment()->track->getStartingAngle();
+        
+        if (world->getEnvironment()->mixer && engineSound && position == 0)
+        {
+                world->getEnvironment()->mixer->playSample(engineSound, 1, true, sfxChannel);
+                world->getEnvironment()->mixer->getChannel(sfxChannel)->setVolume(63);
+        }
+        
+        update(world->getEnvironment()->track);
 }
 
 void Car::updateAi()
 {
-	Track *track = world->getEnvironment()->track;
-	Vector o = getOrigin();
-	Vector probe;
-	Vector target;
+        Track *track = world->getEnvironment()->track;
+        Vector o = getOrigin();
+        Vector probe;
+        Vector target;
 
-	if (speed < 128)
-	{
-		// probe ahead
-		probe = o + (Vector(FPCos(angle), 0, FPSin(angle)) * FPInt(1));
-	} else
-	{
-		// probe according to current velocity
-		probe = o + (velocity * FPInt(8));
-	}
+        if (speed < 128)
+        {
+                // probe ahead
+                probe = o + (Vector(FPCos(angle), 0, FPSin(angle)) * FPInt(1));
+        } else
+        {
+                // probe according to current velocity
+                probe = o + (velocity * FPInt(8));
+        }
 
-	// find out the nearest point on the AI path
-	if (track->getNearestPointOnAiPath(probe, target))
-	{
-//		track->setCell(probe);
-//		if (carNumber == 0)
-//			track->setCell(target);
+        // find out the nearest point on the AI path
+        if (track->getNearestPointOnAiPath(probe, target))
+        {
+//              track->setCell(probe);
+//              if (carNumber == 0)
+//                      track->setCell(target);
 
-		unsigned char tile = track->getCell(probe);
+                unsigned char tile = track->getCell(probe);
 
-		// avoid emptyness and edges
-		if (track->shouldAiAvoidTile(tile))
-		{
-			// something's ahead -> slow down and turn toward the path
-			setThrust(false);
+                // avoid emptyness and edges
+                if (track->shouldAiAvoidTile(tile))
+                {
+                        // something's ahead -> slow down and turn toward the path
+                        setThrust(false);
 
-			if (track->shouldAiAvoidTile(track->getCell(o + (velocity * FPInt(3)))))
-				setBrake(true);
+                        if (track->shouldAiAvoidTile(track->getCell(o + (velocity * FPInt(3)))))
+                                setBrake(true);
 
-			if (((probe - o).cross(target - o)).y < 0)
-				setSteering(1);
-			else
-				setSteering(-1);
+                        if (((probe - o).cross(target - o)).y < 0)
+                                setSteering(1);
+                        else
+                                setSteering(-1);
 
-		} else
-		{
-			// no obstacles -> pedal to the metal
-			setBrake(false);
-			setThrust(true);
-			setSteering(0);
-		}
+                } else
+                {
+                        // no obstacles -> pedal to the metal
+                        setBrake(false);
+                        setThrust(true);
+                        setSteering(0);
+                }
 
-		// don't get stuck
-		if (speed < 64)
-		{
-			setThrust(true);
-			setBrake(false);
-		}
-	}
+                // don't get stuck
+                if (speed < 64)
+                {
+                        setThrust(true);
+                        setBrake(false);
+                }
+        }
 }
 
 void Car::setAiState(bool enabled)
 {
-	aiEnabled = enabled;
-	if (!aiEnabled)
-	{
-		setBrake(false);
-		setThrust(false);
-		setSteering(0);
-	}
+        aiEnabled = enabled;
+        if (!aiEnabled)
+        {
+                setBrake(false);
+                setThrust(false);
+                setSteering(0);
+        }
 }
 

@@ -298,6 +298,8 @@ Menu::Action Menu::handleEvent(Game::Event* event)
 				selected--;
 				if (selected < 0)
 					selected = items.getCount() - 1;
+				if (selected < 0)
+					selected = 0;
 				deferredAction = GoUp;
 				return deferredAction;
 			break;

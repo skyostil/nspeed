@@ -25,29 +25,30 @@
 #include "Set.h"
 #include "Object.h"
 #include "MeshSet.h"
+#include "Config.h"
 
 #ifdef EPOC
 #include <e32keys.h>
-#define KEY_LEFT	EStdKeyLeftArrow
-#define KEY_RIGHT	EStdKeyRightArrow
-#define KEY_UP		EStdKeyUpArrow
-#define KEY_SELECT	XXX
-#define KEY_THRUST	'3'
-#define KEY_BRAKE	EStdKeyDownArrow
-#define KEY_DOWN	EStdKeyDownArrow
-#define KEY_EXIT	EStdKeyDevice0
-#define KEY_ROTATE	EStdKeyDevice1
+#define KEY_LEFT        EStdKeyLeftArrow
+#define KEY_RIGHT       EStdKeyRightArrow
+#define KEY_UP          EStdKeyUpArrow
+#define KEY_SELECT      EStdKeyDevice3
+#define KEY_THRUST      '3'
+#define KEY_BRAKE       EStdKeyDownArrow
+#define KEY_DOWN        EStdKeyDownArrow
+#define KEY_EXIT        EStdKeyDevice0
+#define KEY_ROTATE      EStdKeyDevice1
 #else
 #include <SDL/SDL.h>
-#define KEY_LEFT	SDLK_LEFT
-#define KEY_RIGHT	SDLK_RIGHT
-#define KEY_UP		SDLK_UP
-#define KEY_THRUST	'a'
-#define KEY_BRAKE	'z'
-#define KEY_DOWN	SDLK_DOWN
-#define KEY_EXIT	SDLK_ESCAPE
-#define KEY_ROTATE	'r'
-#define KEY_SELECT	SDLK_RETURN
+#define KEY_LEFT        SDLK_LEFT
+#define KEY_RIGHT       SDLK_RIGHT
+#define KEY_UP          SDLK_UP
+#define KEY_THRUST      'a'
+#define KEY_BRAKE       'z'
+#define KEY_DOWN        SDLK_DOWN
+#define KEY_EXIT        SDLK_ESCAPE
+#define KEY_ROTATE      'r'
+#define KEY_SELECT      SDLK_RETURN
 #endif
 
 class Track;
@@ -63,41 +64,41 @@ class Menu;
 class Environment: public Object
 {
 public:
-//	Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen, View *_view);
-	Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen);
-	~Environment();
+//      Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen, View *_view);
+        Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen);
+        ~Environment();
 
-	//! Loads an image. Don't forget to delete it!
-	Game::Surface	*loadImage(const char *name);
-	
-	Game::Surface	*getScreen() { return screen; }
-	Game::Framework	*getFramework() { return framework; }
-	Rasterizer		*getRasterizer() { return rasterizer; }
-	View			*getView() { return view; }
-	World			*getWorld() { return world; }
-	Menu			*getMenu() { return menu; }
-	
-	void			initializeSound(Game::SampleChunk *sample);
-	
-	Track				*track;
-	BitmapFont			*font, *bigFont;
+        //! Loads an image. Don't forget to delete it!
+        Game::Surface   *loadImage(const char *name);
+        
+        Game::Surface   *getScreen() { return screen; }
+        Game::Framework *getFramework() { return framework; }
+        Rasterizer              *getRasterizer() { return rasterizer; }
+        View                    *getView() { return view; }
+        World                   *getWorld() { return world; }
+        Menu                    *getMenu() { return menu; }
+        
+        void                    initializeSound(Game::SampleChunk *sample);
+        
+        Track                           *track;
+        BitmapFont                      *font, *bigFont;
 
-	Mixer				*mixer;
-	ModPlayer			*modplayer;
+        Mixer                           *mixer;
+        ModPlayer                       *modplayer;
 
-	MeshSet				meshPool;
-	Set<Game::Surface*>	texturePool;
-	Set<Car*>			carPool;
-	
+        MeshSet                         meshPool;
+        Set<Game::Surface*>     texturePool;
+        Set<Car*>                       carPool;
+        
 private:
-	Game::Surface		*fontImage;
-	Menu				*menu;
+        Game::Surface           *fontImage;
+        Menu                            *menu;
 
-	Game::Surface		*screen;
-	Game::Framework		*framework;
-	Rasterizer			*rasterizer;
-	View				*view;
-	World				*world;
+        Game::Surface           *screen;
+        Game::Framework         *framework;
+        Rasterizer                      *rasterizer;
+        View                            *view;
+        World                           *world;
 };
 
 #endif
