@@ -82,7 +82,7 @@ public:
         WriteTagFile(const char *name);
         ~WriteTagFile();
         
-        void                    writeTag(int id, const char *data, unsigned int dataSize, int flags = 0);
+        bool    writeTag(int id, const unsigned char *data, unsigned int dataSize, int flags = 0);
         
 private:
         unsigned int    getHeader(int id, unsigned int dataSize, int flags);

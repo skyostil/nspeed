@@ -65,46 +65,51 @@ class Channel;
 class Environment: public Object
 {
 public:
-//      Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen, View *_view);
-        Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen);
-        ~Environment();
+    Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen);
+    ~Environment();
 
-        //! Loads an image. Don't forget to delete it!
-        Game::Surface   *loadImage(const char *name);
-        
-        Game::Surface   *getScreen() { return screen; }
-        Game::Framework *getFramework() { return framework; }
-        Rasterizer              *getRasterizer() { return rasterizer; }
-        View                    *getView() { return view; }
-        World                   *getWorld() { return world; }
-        Menu                    *getMenu() { return menu; }
-        
-        void                    initializeSound(Game::SampleChunk *sample);
-        void                    stopSoundEffects();
-        void                    muteSoundEffects(bool mute);
+    //! Loads an image. Don't forget to delete it!
+    Game::Surface          *loadImage(const char *name);
 
-        Channel                 *getEngineSoundChannel() const;
-        Channel                 *getSfxChannel() const;
-        
-        Track                           *track;
-        BitmapFont                      *font, *bigFont;
+    Game::Surface           *getScreen() { return screen; }
+    Game::Framework         *getFramework() { return framework; }
+    Rasterizer              *getRasterizer() { return rasterizer; }
+    View                    *getView() { return view; }
+    World                   *getWorld() { return world; }
+    Menu                    *getMenu() { return menu; }
 
-        Mixer                           *mixer;
-        ModPlayer                       *modplayer;
+    void                    initializeSound(Game::SampleChunk *sample);
+    void                    stopSoundEffects();
+    void                    muteSoundEffects(bool mute);
 
-        MeshSet                         meshPool;
-        Set<Game::Surface*>     texturePool;
-        Set<Car*>                       carPool;
-        
+    Channel                 *getEngineSoundChannel() const;
+    Channel                 *getSfxChannel() const;
+
+    Track                   *track;
+    BitmapFont              *font, *bigFont;
+
+    Mixer                   *mixer;
+    ModPlayer               *modplayer;
+
+    MeshSet                 meshPool;
+    Set<Game::Surface*>     texturePool;
+    Set<Car*>               carPool;
+    
+    int                     sfxVolume, musicVolume;
+    char                    playerName[8];
+
 private:
-        Game::Surface           *fontImage;
-        Menu                            *menu;
+    void                    loadSettings();
+    void                    saveSettings();
 
-        Game::Surface           *screen;
-        Game::Framework         *framework;
-        Rasterizer                      *rasterizer;
-        View                            *view;
-        World                           *world;
+    Game::Surface           *fontImage;
+    Menu                    *menu;
+
+    Game::Surface           *screen;
+    Game::Framework         *framework;
+    Rasterizer              *rasterizer;
+    View                    *view;
+    World                   *world;
 };
 
 #endif

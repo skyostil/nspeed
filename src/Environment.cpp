@@ -25,6 +25,8 @@
 #include "ModPlayer.h"
 #include "Car.h"
 #include "Menu.h"
+#include "TagFile.h"
+#include <string.h>
 
 //Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen, View *_view):
 Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen):
@@ -38,40 +40,46 @@ Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surf
         mixer(0),
         modplayer(0),
         menu(0),
+        sfxVolume(16), musicVolume(16),
         texturePool(0, true)
 {
-        Game::Surface *img;
-        
-        // init the screen
-        rasterizer = new Rasterizer(screen);
-        view = new View(rasterizer);
-        
-        // load the fonts
-        img = loadImage("fonts/default.png");
-        texturePool.add(img);
-        font = new BitmapFont(img);
+    Game::Surface *img;
 
-        img = loadImage("fonts/big.png");
-        texturePool.add(img);
-        bigFont = new BitmapFont(img);
-                
-        // create the world
-        world = new World(this, this);
-        world->getRenderableSet().add(&meshPool);
+    // init the screen
+    rasterizer = new Rasterizer(screen);
+    view = new View(rasterizer);
 
-        // create the track
-        track = new Track(this, this);
+    // load the fonts
+    img = loadImage("fonts/default.png");
+    texturePool.add(img);
+    font = new BitmapFont(img);
+
+    img = loadImage("fonts/big.png");
+    texturePool.add(img);
+    bigFont = new BitmapFont(img);
+
+    // create the world
+    world = new World(this, this);
+    world->getRenderableSet().add(&meshPool);
+
+    // create the track
+    track = new Track(this, this);
+
+    // create the menu
+    menu = new Menu(this, this);
+
+    // clear the player name
+    memset(playerName, ' ', sizeof(playerName));
         
-        // create the menu
-        menu = new Menu(this, this);
+    loadSettings();
 }
 
 void Environment::initializeSound(Game::SampleChunk *sample)
 {
-        mixer = new Mixer(sample->rate, 8);
-        modplayer = new ModPlayer(mixer);
+    mixer = new Mixer(sample->rate, 8);
+    modplayer = new ModPlayer(mixer);
 
-        muteSoundEffects(false);
+    muteSoundEffects(false);
 }
 
 void Environment::muteSoundEffects(bool mute)
@@ -85,33 +93,35 @@ void Environment::muteSoundEffects(bool mute)
         }
         else
         {
-            getEngineSoundChannel()->setVolume(16);
-            getSfxChannel()->setVolume(16);
+            getEngineSoundChannel()->setVolume(sfxVolume);
+            getSfxChannel()->setVolume(sfxVolume);
         }
     }
 }
 
 Environment::~Environment()
 {
-        delete view;
-        delete rasterizer;
-        delete world;
+    saveSettings();
+    
+    delete view;
+    delete rasterizer;
+    delete world;
 
-        delete modplayer;
-        delete mixer;
-        
-        delete font;
-        delete bigFont;
-        
-        delete track;
-        delete menu;
+    delete modplayer;
+    delete mixer;
+
+    delete font;
+    delete bigFont;
+
+    delete track;
+    delete menu;
 }
 
 Game::Surface *Environment::loadImage(const char *name)
 {
-        Game::Surface *img = framework->loadImage(framework->findResource(name), &screen->format);
-        
-        return img;
+    Game::Surface *img = framework->loadImage(framework->findResource(name), &screen->format);
+
+    return img;
 }
 
 Channel *Environment::getEngineSoundChannel() const
@@ -135,5 +145,34 @@ void Environment::stopSoundEffects()
         getEngineSoundChannel()->stop();
         getSfxChannel()->stop();
     }
+}
+
+void Environment::loadSettings()
+{
+    TagFile file(framework->findResource("settings.tag"));
+    
+    while(1) switch(file.readTag())
+        {
+        case 0: // player name
+            file.readData((unsigned char*)playerName, sizeof(playerName));
+            break;
+        case 1: // sfx volume
+            file.readData((unsigned char*)&sfxVolume, sizeof(sfxVolume));
+            break;
+        case 2: // music volume
+            file.readData((unsigned char*)&musicVolume, sizeof(musicVolume));
+            break;
+        default:
+            return;
+        }
+}
+
+void Environment::saveSettings()
+{
+    WriteTagFile file(framework->findResource("settings.tag", false));
+    
+    file.writeTag(0, (unsigned char*)playerName, sizeof(playerName));
+    file.writeTag(1, (unsigned char*)&sfxVolume, sizeof(sfxVolume));
+    file.writeTag(2, (unsigned char*)&musicVolume, sizeof(musicVolume));
 }
 

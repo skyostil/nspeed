@@ -167,7 +167,7 @@ dump_m_file(Lib3dsFile *f, const char *o)
 		}
     }
 	
-	output.writeTag(0, (const char*)vertex, sizeof(SerializedVertex)*m->points);
+	output.writeTag(0, (const unsigned char*)vertex, sizeof(SerializedVertex)*m->points);
 	delete[] vertex;
 	
 	SerializedTriangle *face = new SerializedTriangle[m->faces];
@@ -179,7 +179,7 @@ dump_m_file(Lib3dsFile *f, const char *o)
 		face[i].c = points+m->faceL[i].points[2];
     }
 	
-	output.writeTag(1, (const char*)face, sizeof(SerializedTriangle)*m->faces);
+	output.writeTag(1, (const unsigned char*)face, sizeof(SerializedTriangle)*m->faces);
 	delete[] face;
 	
     points+=m->points;

@@ -85,6 +85,7 @@ public:
         Vector          getStartingPosition(int carNumber) const;
         scalar          getStartingAngle() const;
         bool            getNearestPointOnAiPath(const Vector &pos, Vector &out) const;
+        bool            getNextPointOnAiPath(const Vector &pos, Vector &out) const;
         bool            shouldAiAvoidTile(unsigned char tile) const;
         bool            tileIsDamaging(unsigned char tile) const;
         bool            tileGivesEnergy(unsigned char tile) const;
@@ -104,7 +105,8 @@ public:
         Vector          getNormal(const Vector &pos) const;
         
         LineSegment     *getGate(unsigned int index);
-        int                     getGateCount() { return sizeof(gate)/sizeof(gate[0]); }
+        int             getGateCount() const { return sizeof(gate)/sizeof(gate[0]); }
+        int             getNearestGateIndex(const Vector &pos) const;
         
         Game::Surface   *getMap() { return map; }
 protected:
@@ -121,17 +123,17 @@ protected:
                 return ((Game::Pixel8*)(texture->pixels))[x + (y<<8)];
         }
 
-        Land                    *land, *ground;
+        Land            *land, *ground;
         Game::Surface   *texture, *groundTexture, *skyTexture;
         Game::Surface   *textureTileList[256];
         Game::Surface   *map;
-        Environment             *env;
-        LineSegment             gate[4];
-        LineSegment             *aiPath;
+        Environment     *env;
+        LineSegment     gate[4];
+        LineSegment     *aiPath;
         unsigned int    aiPathLength;
         
-        int                             bestLapTime, bestTotalTime;
-        char                    bestLapName[16], bestTotalName[16], playerName[16];
+        int             bestLapTime, bestTotalTime;
+        char            bestLapName[16], bestTotalName[16];
 };
 
 #endif

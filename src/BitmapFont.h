@@ -26,37 +26,38 @@
 class BitmapFont
 {
 public:
-	//! the surface's pixel format must match that of the screen's.
-	BitmapFont(Game::Surface *t = 0);
-	~BitmapFont();
-	
-	void	renderText(Game::Surface *screen, const char *text, int x, int y, Game::Pixel colorMask = -1);
-	int		getTextWidth(const char *text);
+    //! the surface's pixel format must match that of the screen's.
+    BitmapFont(Game::Surface *t = 0);
+    ~BitmapFont();
 
-	void	load(Game::Framework *framework, const char *name);
-	void	unload();
-	
-	unsigned int getHeight() { return texture?texture->height:0; }
-	
+    void	renderText(Game::Surface *screen, const char *text, int x, int y, Game::Pixel colorMask = (Game::Pixel)-1);
+    int		getTextWidth(const char *text);
+
+    void	load(Game::Framework *framework, const char *name);
+    void	unload();
+
+unsigned int getHeight() { return texture?texture->height:0; }
+
 private:
-	typedef struct
-	{
-		Game::Pixel	*pixels;
-		int		width, height;
-	} Glyph;
-	
-	//! this is a pretty generic blitter actually
-	template<typename Pixel>
-	void	renderGlyph(Game::Surface *screen, Glyph *g, int x, int y, Game::Pixel colorMask);
+    typedef struct
+    {
+        Game::Pixel	*pixels;
+        int		width, height;
+    }
+    Glyph;
 
-	void	build(Game::Surface *t);
-	void	clear();
+    //! this is a pretty generic blitter actually
+    template<typename Pixel>
+    void	renderGlyph(Game::Surface *screen, Glyph *g, int x, int y, Game::Pixel colorMask);
 
-	//! the first glyph is always space
-	Glyph		*glyph;
-	int		minGlyph, maxGlyph;
-	Game::Surface	*texture;
-	bool	autoDelete;
+    void	build(Game::Surface *t);
+    void	clear();
+
+    //! the first glyph is always space
+    Glyph		*glyph;
+    int		minGlyph, maxGlyph;
+    Game::Surface	*texture;
+    bool	autoDelete;
 };
 
 #endif

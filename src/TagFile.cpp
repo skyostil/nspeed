@@ -163,7 +163,7 @@ unsigned int WriteTagFile::getHeader(int id, unsigned int dataSize, int flags)
                 
 */
 
-bool WriteTagFile::writeTag(int id, const char *data, unsigned int dataSize, int flags)
+bool WriteTagFile::writeTag(int id, const unsigned char *data, unsigned int dataSize, int flags)
 {
         if (!file)
             return false;
@@ -172,7 +172,10 @@ bool WriteTagFile::writeTag(int id, const char *data, unsigned int dataSize, int
         unsigned char *compressed = new unsigned char[dataSize*2];
         unsigned int header;
 
-        compress((Bytef*)compressed, &compressedSize, (const Bytef*)data, dataSize);
+        if (dataSize > 16)
+            compress((Bytef*)compressed, &compressedSize, (const Bytef*)data, dataSize);
+        else
+            compressedSize = origSize + 1;
         
         if (compressedSize < origSize)
         {

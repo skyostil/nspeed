@@ -33,43 +33,43 @@
 
 extern "C"
 {
-extern int main(int argc, char **argv);
+    extern int main(int argc, char **argv);
 };
 
 class SDLFramework: public Game::Framework
 {
 public:
-	SDLFramework();
-	~SDLFramework();
+    SDLFramework();
+    ~SDLFramework();
 
-	int run(int argc, char **argv);
-	
-	// framework services
-	void exit();
-	unsigned int getTickCount();
-	unsigned int getTicksPerSecond();
-	
+    int run(int argc, char **argv);
+
+    // framework services
+    void exit();
+    unsigned int getTickCount();
+    unsigned int getTicksPerSecond();
+
 #ifdef USE_SDL_IMAGE
-	Game::Surface		*loadImage(const char *name, Game::PixelFormat *pf = NULL);
+    Game::Surface *loadImage(const char *name, Game::PixelFormat *pf = NULL);
 #endif
 
 #ifdef USE_WAVE_LOADER
-	Game::SampleChunk	*loadSample(const char *name, Game::SampleFormat *sf = NULL);
+    Game::SampleChunk *loadSample(const char *name, Game::SampleFormat *sf = NULL);
 #endif
 
-	const char *findResource(const char *name);
+    const char *findResource(const char *name, bool mustExist = false);
 
 protected:
-	void printUsage();
-	
-	static void audioCallback(void *userdata, Uint8 *stream, int len);
+    void printUsage();
 
-	SDL_Surface		*screen;
-	Game::Surface		*gameScreen;
-	Game::SampleChunk	*gameAudio;
-	Game::Engine		*engine;
-	char			resourcePath[512];
-	bool			done;
+    static void audioCallback(void *userdata, Uint8 *stream, int len);
+
+    SDL_Surface		    *screen;
+    Game::Surface		*gameScreen;
+    Game::SampleChunk	*gameAudio;
+    Game::Engine		*engine;
+    char			    resourcePath[512];
+    bool			    done;
 };
 
 #endif

@@ -44,25 +44,26 @@ public:
         void setSteering(int _steering);
         void setAiState(bool enabled);
         
-        int getSteering() { return steering; }
-        scalar getSpeed() { return FPSqrt(speed); }
-        int getGateIndex() { return gateIndex; }
+        int getSteering() const { return steering; }
+        scalar getSpeed() const { return FPSqrt(speed); }
+        int getGateIndex() const { return gateIndex; }
         void setGateIndex(int i) { gateIndex = i; }
-        int getLapCount() { return lapCount; }
+        int getLapCount() const { return lapCount; }
 
          // the times are in milliseconds
         int getLapTime() const;
         int getBestLapTime() const;
         int getRaceTime() const;
+        int getRank() const;
 
         bool hasFinished() const;
         bool isTakingDamage() const;
         
         //! in the range [0, 100]
-        int getEnergy() { return energy>>FP; }
+        int getEnergy() const { return energy>>FP; }
         
-        scalar getAngle() { return angle; }
-        Vector getOrigin() { return origin * (FP_ONE>>CAR_COORDINATE_SCALE); }
+        scalar getAngle() const { return angle; }
+        Vector getOrigin() const { return origin * (FP_ONE>>CAR_COORDINATE_SCALE); }
         void setOrigin(const Vector &o);
         
         void prepareForRace(int position);
@@ -104,7 +105,7 @@ private:
         scalar                  energy;
         bool                    aiEnabled, takingDamage;
 
-        int                     bestLapTime, lapStart, raceStart, raceTime;
+        int                     bestLapTime, lapStart, raceStart, raceTime, finishingRank;
 };
 
 #endif

@@ -81,7 +81,7 @@ public:
         //! \param pixel must be in the correct format.
         void                    setPixel(int x, int y, Pixel color);
 		
-		void					renderTransparentSurface(const Surface *s, int x, int y, Pixel colorMask = -1);
+		void					renderTransparentSurface(const Surface *s, int x, int y, Pixel colorMask = (Pixel)-1);
 
         Pixel                   *pixels;
         int                     width, height, bytes, pitch;
