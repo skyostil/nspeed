@@ -763,6 +763,9 @@ void GameEngine::handleRaceEvent(Game::Event* event)
 {
     Car *car = env->carPool.getItem(0);
 
+    if (!env->carPool.getCount())
+        return;
+
     switch(event->type)
     {
     case Game::Event::ExitEvent:
