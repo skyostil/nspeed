@@ -37,7 +37,7 @@ public:
 		ChooseCarState,
 		ChooseTrackState,
 		RaceIntroState,
-		RaceCountdownState,
+		RaceCountDownState,
 		RaceMenuState,
 		RaceState,
 		QuitState
@@ -82,6 +82,9 @@ private:
 
 	// choose track menu
 	Track			*demoTrack;
+	
+	// race
+	int				raceCountDown;
 		
 	// race menu
 	MenuItem		menuItemRestart;

@@ -428,6 +428,8 @@ void Car::prepareForRace(int position)
 		world->getEnvironment()->mixer->playSample(engineSound, 1, true, sfxChannel);
 		world->getEnvironment()->mixer->getChannel(sfxChannel)->setVolume(4);
 	}
+	
+	update(world->getEnvironment()->track);
 }
 
 void Car::updateAi()

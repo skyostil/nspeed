@@ -94,6 +94,7 @@ void Menu::clear()
 	offsetY = 0;
 	topLevelMenu = false;
 	items.clear();
+	deferredAction = GoUp;
 }
 
 void Menu::addItem(MenuItem *item)

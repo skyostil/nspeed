@@ -76,6 +76,8 @@ public:
 	bool		getNearestPointOnAiPath(const Vector &pos, Vector &out) const;
 	bool		shouldAiAvoidTile(unsigned char tile) const;
 	
+	int			getLapCount() const { return 5; }
+	
 	//! Returns approximate the 2D normal (x,z) of the track at the given position
 	Vector		getNormal(const Vector &pos) const;
 	
