@@ -44,7 +44,7 @@ public:
 		switch(sample->format.bytesPerSample)
 		{
 		case 1:
-			a = sample->data[pos] * volume;
+			a = (sample->data[pos] * volume);
 		break;
 		case 2:
 			a = (((unsigned short*)sample->data)[pos] * volume) >> 8;
@@ -73,6 +73,10 @@ public:
 	}
 	
 	void	start(Game::SampleChunk *_sample, int _freq, int _loopStart = 0, int _loopLength = 0);
+	void	setFrequency(int _freq);
+	void	setSample(Game::SampleChunk *_sample);
+	void	setPosition(int _pos);
+	void	setVolume(int _volume);
 
 	Game::SampleChunk	*sample;
 	int			pos, counter, freq;
@@ -95,24 +99,25 @@ public:
 	~Mixer();
 
 	void	render(Game::SampleChunk *buffer);
-	void	installTicker(Ticker *t, int bpm);
+	void	installTicker(Ticker *t, int hz);
 	
 	//! \returns the channel the sample ended up on.
 	Channel	*playSample(Game::SampleChunk *sample, int freq, bool loop = false, int ch = -1);
+	Channel	*getChannel(int ch) { return &channel[ch]; }
 
-	Channel	*channel;
 	int	channelCount;
 	int	outputFreq;
 protected:
+	Channel	*channel;
 	Ticker	*ticker;
 	int	tickerCounter, tickerInterval;
 };
 
 // PAL
-//#define MOD_FREQ_BASE	(int)(7159090.5)
+#define MOD_FREQ_BASE	(int)(7159090.5)
 
 // NTSC
-#define MOD_FREQ_BASE	(int)(7093789.2)
+//#define MOD_FREQ_BASE	(int)(7093789.2)
 
 
 class ModPlayer: private Ticker
@@ -129,7 +134,7 @@ public:
 
 protected:
 	unsigned short	bigEndian16(unsigned short b);
-	int		amigaToHz(int amigaval);
+	int		amigaToHz(int period);
 
 	int	channels;
 	
@@ -148,23 +153,52 @@ protected:
 	{
 	public:
 		unsigned char	sampleNumber;
-		unsigned char	periodFrequency;
+		unsigned short	amigaPeriod;
+		char		note;
 		unsigned char	effectNumber;
 		unsigned char	effectParameter;
+	};
+	
+	class ModChannel
+	{
+	public:
+		ModChannel();
+		
+		ModSample	*sample;
+		char		volume;
+		unsigned short	amigaPeriod;
+		
+		char		portaSpeed;
+		char		portaTarget;
+		bool		glissando;
+		
+		char		vibratoWaveform;
+		char		vibratoWaveformRetrig;	// four bits
+
+		char		tremoloWaveform;
+		char		tremoloWaveformRetrig;	// four bits
+		
+		char		arpeggioCounter;
+				
+		char		loopRow;
+		char		loopCounter;
 	};
 
 	ModSample	*sample[31];
 	ModNote		*note;
+	ModChannel	*channel;
 	char		order[128]; // XXX - allocate this dynamically
-	char		songLength;
+	char		songLength, songSpeed;
 	char		patternCount;
 	char		currentOrder;
 	char		currentTick;
 	char		currentRow;
-
+	char		patternDelay;
+	
 private:
 	void	tick();
-	void	playNote(Channel *channel, ModNote *n);
+	void	playNote(int ch, ModNote *n);
+	void	updateAmigaPeriod(int ch);
 };
 
 #endif

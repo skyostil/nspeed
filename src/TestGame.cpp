@@ -428,7 +428,7 @@ public:
 
 	void configureAudio(Game::SampleChunk* sample)
 	{
-		mixer = new Mixer(sample->rate);
+		mixer = new Mixer(sample->rate, 4);
 		this->sample = framework->loadSample("../../data/test.wav");
 		sample2 = framework->loadSample("../../data/test2.wav");
 //		Channel *ch = mixer->playSample(this->sample, this->sample->rate, true);
