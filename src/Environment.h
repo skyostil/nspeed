@@ -33,8 +33,8 @@
 #define KEY_RIGHT       EStdKeyRightArrow
 #define KEY_UP          EStdKeyUpArrow
 #define KEY_SELECT      EStdKeyDevice3
-#define KEY_THRUST      '3'
-#define KEY_BRAKE       EStdKeyDownArrow
+#define KEY_THRUST      '5'
+#define KEY_BRAKE       '7'
 #define KEY_DOWN        EStdKeyDownArrow
 #define KEY_EXIT        EStdKeyDevice0
 #define KEY_ROTATE      EStdKeyDevice1
