@@ -41,7 +41,7 @@ public:
 	void		setCell(const Vector &pos);
 	
 	//! Returns approximate the 2D normal (x,z) of the track at the given position
-	Vector		&getNormal(const Vector &pos) const;
+	Vector		getNormal(const Vector &pos) const;
 
 protected:
 	void		project(const Vector &pos, unsigned char &x, unsigned char &y) const;

@@ -42,7 +42,7 @@ public:
 	~Object();
 	
 	void	render(World *world);
-	Vector	&getOrigin();
+	Vector	getOrigin();
 
 	//! Sets flags for the Rasterizer
 	void	setFlags(int _flags);

@@ -327,7 +327,7 @@ Game::Surface *SDLFramework::loadImage(const char *name, Game::PixelFormat *pf)
 #ifdef USE_WAVE_LOADER
 Game::SampleChunk *SDLFramework::loadSample(const char *name, Game::SampleFormat *sf)
 {
-#ifdef _MSVC
+#ifdef _MSC_VER
 #pragma pack(push, 1)
 #endif
 	typedef struct
@@ -346,7 +346,7 @@ Game::SampleChunk *SDLFramework::loadSample(const char *name, Game::SampleFormat
 		unsigned int subChunk2ID;
 		unsigned int subChunk2Size;
 	} PACKED WaveHeader;
-#ifdef _MSVC
+#ifdef _MSC_VER
 #pragma pack(pop)
 #endif
 

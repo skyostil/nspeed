@@ -42,14 +42,16 @@
 #define KEY_RIGHT	EStdKeyRightArrow
 #define KEY_UP		EStdKeyUpArrow
 #define KEY_THRUST	'3'
+#define KEY_BRAKE	EStdKeyDownArrow
 #define KEY_DOWN	EStdKeyDownArrow
 #define KEY_EXIT	EStdKeyDevice0
 #else
-#include <SDL.h>
+#include <SDL/SDL.h>
 #define KEY_LEFT	SDLK_LEFT
 #define KEY_RIGHT	SDLK_RIGHT
 #define KEY_UP		SDLK_UP
-#define KEY_THRUST	SDLK_A
+#define KEY_THRUST	'a'
+#define KEY_BRAKE	'z'
 #define KEY_DOWN	SDLK_DOWN
 #define KEY_EXIT	SDLK_ESCAPE
 #endif
@@ -104,12 +106,12 @@ void GameEngine::configureAudio(Game::SampleChunk* sample)
 
 void GameEngine::lookAtCarFromBehind(Car *car)
 {
-	scalar x = FPMul(FPCos(car->getAngle()), FPInt(1));
-	scalar z = FPMul(FPSin(car->getAngle()), FPInt(1));
-	scalar y = FPInt(3)>>3;
+	scalar x = FPMul(FPCos(car->getAngle()), FPInt(3)>>1);
+	scalar z = FPMul(FPSin(car->getAngle()), FPInt(3)>>1);
+	scalar y = FPInt(4)>>3;
 
-	view->camera.target = car->getOrigin();
-	view->camera.origin = car->getOrigin() + Vector(-x,y,-z);
+	view->camera.target = car->getOrigin() + Vector(x,0,z);
+	view->camera.origin = car->getOrigin() + Vector(-x>>1,y,-z>>1);
 	view->camera.update();
 }
 
@@ -211,7 +213,7 @@ void GameEngine::handleRaceEvent(Game::Event* event)
 				car->setThrust(true);
 				car->setBrake(false);
 			break;
-			case KEY_DOWN:
+			case KEY_BRAKE:
 				car->setThrust(false);
 				car->setBrake(true);
 			break;
@@ -231,7 +233,7 @@ void GameEngine::handleRaceEvent(Game::Event* event)
 			case KEY_THRUST:
 				car->setThrust(false);
 			break;
-			case KEY_DOWN:
+			case KEY_BRAKE:
 				car->setBrake(false);
 			break;
 			case KEY_LEFT:

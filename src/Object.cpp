@@ -176,7 +176,7 @@ void Object::endMesh()
 	faceCount = currentFace+1;
 }
 
-Vector &Object::getOrigin()
+Vector Object::getOrigin()
 {
 	return transformation.getColumn(3);
 }

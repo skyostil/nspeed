@@ -195,7 +195,7 @@ void Track::setCell(const Vector &pos)
 	((Game::Pixel8*)(texture->pixels))[x + (y<<8)] = 1;
 }
 
-Vector &Track::getNormal(const Vector &pos) const
+Vector Track::getNormal(const Vector &pos) const
 {
 	const int size = 4; // sample square size / 2
 	unsigned char cx, cy;

@@ -25,9 +25,9 @@
 #define USE_WAVE_LOADER
 
 #include "engine/Engine.h"
-#include <SDL.h>
+#include <SDL/SDL.h>
 #ifdef USE_SDL_IMAGE
-#include <SDL_image.h>
+#include <SDL/SDL_image.h>
 #endif
 
 

@@ -166,7 +166,7 @@ void Car::update(Track *track)
 
 				if (1)
 				{
-					acc>>=6;
+					acc>>=5;
 	//				Vector dir(FPCos((angle + (PI>>1)) % 2*PI), 0, FPSin((angle + (PI>>1))) % 2*PI);
 	//				Vector dir(FPSin(angle), 0, -FPCos(angle));
 

@@ -133,7 +133,7 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 bin_PROGRAMS = fixedpoint3d
-fixedpoint3d_SOURCES = TestGame.cpp FixedPointMath.cpp FixedPointMatrix.cpp FixedPointVector.cpp Rasterizer.cpp View.cpp World.cpp Land.cpp Mixer.cpp ModPlayer.cpp Track.cpp Track.h Car.cpp BitmapFont.cpp Object.cpp
+fixedpoint3d_SOURCES = FixedPointMath.cpp FixedPointMatrix.cpp FixedPointVector.cpp Rasterizer.cpp View.cpp World.cpp Land.cpp Mixer.cpp ModPlayer.cpp Track.cpp Track.h Car.cpp BitmapFont.cpp Object.cpp GameEngine.cpp Environment.cpp Environment.h GameEngine.h Object.h Set.h
 
 # set the include path found by configure
 INCLUDES = $(all_includes) -I../../unix
@@ -143,7 +143,7 @@ fixedpoint3d_LDFLAGS = $(all_libraries) $(LIBSDL_RPATH)
 fixedpoint3d_CXXFLAGS = $(LIBSDL_CFLAGS)
 fixedpoint3d_LDADD = $(top_builddir)/src/framework/sdl/libsdlframework.a $(top_builddir)/src/engine/libengine.a $(LIBSDL_LIBS) -lSDL_image
 SUBDIRS = engine framework 3ds2h
-noinst_HEADERS = World.h FixedPointMath.h FixedPointMatrix.h FixedPointVector.h Rasterizer.h Land.h Mixer.h ModPlayer.h Car.h BitmapFont.h Object.h
+noinst_HEADERS = World.h FixedPointMath.h FixedPointMatrix.h FixedPointVector.h Rasterizer.h Land.h Mixer.h ModPlayer.h Car.h BitmapFont.h Object.h Config.h
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -152,15 +152,16 @@ CONFIG_CLEAN_FILES =
 bin_PROGRAMS = fixedpoint3d$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
 
-am_fixedpoint3d_OBJECTS = fixedpoint3d-TestGame.$(OBJEXT) \
-	fixedpoint3d-FixedPointMath.$(OBJEXT) \
+am_fixedpoint3d_OBJECTS = fixedpoint3d-FixedPointMath.$(OBJEXT) \
 	fixedpoint3d-FixedPointMatrix.$(OBJEXT) \
 	fixedpoint3d-FixedPointVector.$(OBJEXT) \
 	fixedpoint3d-Rasterizer.$(OBJEXT) fixedpoint3d-View.$(OBJEXT) \
 	fixedpoint3d-World.$(OBJEXT) fixedpoint3d-Land.$(OBJEXT) \
 	fixedpoint3d-Mixer.$(OBJEXT) fixedpoint3d-ModPlayer.$(OBJEXT) \
 	fixedpoint3d-Track.$(OBJEXT) fixedpoint3d-Car.$(OBJEXT) \
-	fixedpoint3d-BitmapFont.$(OBJEXT) fixedpoint3d-Object.$(OBJEXT)
+	fixedpoint3d-BitmapFont.$(OBJEXT) fixedpoint3d-Object.$(OBJEXT) \
+	fixedpoint3d-GameEngine.$(OBJEXT) \
+	fixedpoint3d-Environment.$(OBJEXT)
 fixedpoint3d_OBJECTS = $(am_fixedpoint3d_OBJECTS)
 fixedpoint3d_DEPENDENCIES = \
 	$(top_builddir)/src/framework/sdl/libsdlframework.a \
@@ -171,15 +172,16 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/fixedpoint3d-BitmapFont.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-Car.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-Environment.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-FixedPointMath.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-FixedPointMatrix.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-FixedPointVector.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-GameEngine.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-Land.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-Mixer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-ModPlayer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-Object.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-Rasterizer.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-TestGame.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-Track.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-View.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-World.Po
@@ -261,15 +263,16 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-BitmapFont.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-Car.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-Environment.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-FixedPointMath.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-FixedPointMatrix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-FixedPointVector.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-GameEngine.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-Land.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-Mixer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-ModPlayer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-Object.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-Rasterizer.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-TestGame.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-Track.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-View.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-World.Po@am__quote@
@@ -306,39 +309,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/$*.Plo' tmpdepfile='$(DEPDIR)/$*.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<
-
-fixedpoint3d-TestGame.o: TestGame.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -MT fixedpoint3d-TestGame.o -MD -MP -MF "$(DEPDIR)/fixedpoint3d-TestGame.Tpo" \
-@am__fastdepCXX_TRUE@	  -c -o fixedpoint3d-TestGame.o `test -f 'TestGame.cpp' || echo '$(srcdir)/'`TestGame.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/fixedpoint3d-TestGame.Tpo" "$(DEPDIR)/fixedpoint3d-TestGame.Po"; \
-@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/fixedpoint3d-TestGame.Tpo"; exit 1; \
-@am__fastdepCXX_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='TestGame.cpp' object='fixedpoint3d-TestGame.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/fixedpoint3d-TestGame.Po' tmpdepfile='$(DEPDIR)/fixedpoint3d-TestGame.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -c -o fixedpoint3d-TestGame.o `test -f 'TestGame.cpp' || echo '$(srcdir)/'`TestGame.cpp
-
-fixedpoint3d-TestGame.obj: TestGame.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -MT fixedpoint3d-TestGame.obj -MD -MP -MF "$(DEPDIR)/fixedpoint3d-TestGame.Tpo" \
-@am__fastdepCXX_TRUE@	  -c -o fixedpoint3d-TestGame.obj `if test -f 'TestGame.cpp'; then $(CYGPATH_W) 'TestGame.cpp'; else $(CYGPATH_W) '$(srcdir)/TestGame.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/fixedpoint3d-TestGame.Tpo" "$(DEPDIR)/fixedpoint3d-TestGame.Po"; \
-@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/fixedpoint3d-TestGame.Tpo"; exit 1; \
-@am__fastdepCXX_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='TestGame.cpp' object='fixedpoint3d-TestGame.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/fixedpoint3d-TestGame.Po' tmpdepfile='$(DEPDIR)/fixedpoint3d-TestGame.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -c -o fixedpoint3d-TestGame.obj `if test -f 'TestGame.cpp'; then $(CYGPATH_W) 'TestGame.cpp'; else $(CYGPATH_W) '$(srcdir)/TestGame.cpp'; fi`
-
-fixedpoint3d-TestGame.lo: TestGame.cpp
-@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -MT fixedpoint3d-TestGame.lo -MD -MP -MF "$(DEPDIR)/fixedpoint3d-TestGame.Tpo" \
-@am__fastdepCXX_TRUE@	  -c -o fixedpoint3d-TestGame.lo `test -f 'TestGame.cpp' || echo '$(srcdir)/'`TestGame.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/fixedpoint3d-TestGame.Tpo" "$(DEPDIR)/fixedpoint3d-TestGame.Plo"; \
-@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/fixedpoint3d-TestGame.Tpo"; exit 1; \
-@am__fastdepCXX_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='TestGame.cpp' object='fixedpoint3d-TestGame.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/fixedpoint3d-TestGame.Plo' tmpdepfile='$(DEPDIR)/fixedpoint3d-TestGame.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -c -o fixedpoint3d-TestGame.lo `test -f 'TestGame.cpp' || echo '$(srcdir)/'`TestGame.cpp
 
 fixedpoint3d-FixedPointMath.o: FixedPointMath.cpp
 @am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -MT fixedpoint3d-FixedPointMath.o -MD -MP -MF "$(DEPDIR)/fixedpoint3d-FixedPointMath.Tpo" \
@@ -768,6 +738,72 @@ fixedpoint3d-Object.lo: Object.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/fixedpoint3d-Object.Plo' tmpdepfile='$(DEPDIR)/fixedpoint3d-Object.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -c -o fixedpoint3d-Object.lo `test -f 'Object.cpp' || echo '$(srcdir)/'`Object.cpp
+
+fixedpoint3d-GameEngine.o: GameEngine.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -MT fixedpoint3d-GameEngine.o -MD -MP -MF "$(DEPDIR)/fixedpoint3d-GameEngine.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o fixedpoint3d-GameEngine.o `test -f 'GameEngine.cpp' || echo '$(srcdir)/'`GameEngine.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/fixedpoint3d-GameEngine.Tpo" "$(DEPDIR)/fixedpoint3d-GameEngine.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/fixedpoint3d-GameEngine.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='GameEngine.cpp' object='fixedpoint3d-GameEngine.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/fixedpoint3d-GameEngine.Po' tmpdepfile='$(DEPDIR)/fixedpoint3d-GameEngine.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -c -o fixedpoint3d-GameEngine.o `test -f 'GameEngine.cpp' || echo '$(srcdir)/'`GameEngine.cpp
+
+fixedpoint3d-GameEngine.obj: GameEngine.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -MT fixedpoint3d-GameEngine.obj -MD -MP -MF "$(DEPDIR)/fixedpoint3d-GameEngine.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o fixedpoint3d-GameEngine.obj `if test -f 'GameEngine.cpp'; then $(CYGPATH_W) 'GameEngine.cpp'; else $(CYGPATH_W) '$(srcdir)/GameEngine.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/fixedpoint3d-GameEngine.Tpo" "$(DEPDIR)/fixedpoint3d-GameEngine.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/fixedpoint3d-GameEngine.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='GameEngine.cpp' object='fixedpoint3d-GameEngine.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/fixedpoint3d-GameEngine.Po' tmpdepfile='$(DEPDIR)/fixedpoint3d-GameEngine.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -c -o fixedpoint3d-GameEngine.obj `if test -f 'GameEngine.cpp'; then $(CYGPATH_W) 'GameEngine.cpp'; else $(CYGPATH_W) '$(srcdir)/GameEngine.cpp'; fi`
+
+fixedpoint3d-GameEngine.lo: GameEngine.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -MT fixedpoint3d-GameEngine.lo -MD -MP -MF "$(DEPDIR)/fixedpoint3d-GameEngine.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o fixedpoint3d-GameEngine.lo `test -f 'GameEngine.cpp' || echo '$(srcdir)/'`GameEngine.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/fixedpoint3d-GameEngine.Tpo" "$(DEPDIR)/fixedpoint3d-GameEngine.Plo"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/fixedpoint3d-GameEngine.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='GameEngine.cpp' object='fixedpoint3d-GameEngine.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/fixedpoint3d-GameEngine.Plo' tmpdepfile='$(DEPDIR)/fixedpoint3d-GameEngine.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -c -o fixedpoint3d-GameEngine.lo `test -f 'GameEngine.cpp' || echo '$(srcdir)/'`GameEngine.cpp
+
+fixedpoint3d-Environment.o: Environment.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -MT fixedpoint3d-Environment.o -MD -MP -MF "$(DEPDIR)/fixedpoint3d-Environment.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o fixedpoint3d-Environment.o `test -f 'Environment.cpp' || echo '$(srcdir)/'`Environment.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/fixedpoint3d-Environment.Tpo" "$(DEPDIR)/fixedpoint3d-Environment.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/fixedpoint3d-Environment.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Environment.cpp' object='fixedpoint3d-Environment.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/fixedpoint3d-Environment.Po' tmpdepfile='$(DEPDIR)/fixedpoint3d-Environment.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -c -o fixedpoint3d-Environment.o `test -f 'Environment.cpp' || echo '$(srcdir)/'`Environment.cpp
+
+fixedpoint3d-Environment.obj: Environment.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -MT fixedpoint3d-Environment.obj -MD -MP -MF "$(DEPDIR)/fixedpoint3d-Environment.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o fixedpoint3d-Environment.obj `if test -f 'Environment.cpp'; then $(CYGPATH_W) 'Environment.cpp'; else $(CYGPATH_W) '$(srcdir)/Environment.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/fixedpoint3d-Environment.Tpo" "$(DEPDIR)/fixedpoint3d-Environment.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/fixedpoint3d-Environment.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Environment.cpp' object='fixedpoint3d-Environment.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/fixedpoint3d-Environment.Po' tmpdepfile='$(DEPDIR)/fixedpoint3d-Environment.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -c -o fixedpoint3d-Environment.obj `if test -f 'Environment.cpp'; then $(CYGPATH_W) 'Environment.cpp'; else $(CYGPATH_W) '$(srcdir)/Environment.cpp'; fi`
+
+fixedpoint3d-Environment.lo: Environment.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -MT fixedpoint3d-Environment.lo -MD -MP -MF "$(DEPDIR)/fixedpoint3d-Environment.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o fixedpoint3d-Environment.lo `test -f 'Environment.cpp' || echo '$(srcdir)/'`Environment.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/fixedpoint3d-Environment.Tpo" "$(DEPDIR)/fixedpoint3d-Environment.Plo"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/fixedpoint3d-Environment.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Environment.cpp' object='fixedpoint3d-Environment.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/fixedpoint3d-Environment.Plo' tmpdepfile='$(DEPDIR)/fixedpoint3d-Environment.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -c -o fixedpoint3d-Environment.lo `test -f 'Environment.cpp' || echo '$(srcdir)/'`Environment.cpp
 
 mostlyclean-libtool:
 	-rm -f *.lo
