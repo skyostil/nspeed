@@ -41,19 +41,21 @@ Car::Car(World *_world, const char *name):
 	engineCycle(0),
 	gateIndex(0),
 	lapCount(0),
+	aiEnabled(false),
+	carNumber(-1),
 	world(_world)
 {
 	char fileName[256];
 
 	sfxChannel = 4;
 
-	sprintf(fileName, "cars/%s-engine.wav", name);
+	sprintf(fileName, "cars/%s/engine.wav", name);
 	engineSound = world->getEnvironment()->getFramework()->loadSample(world->getEnvironment()->getFramework()->findResource(fileName));
 
-	sprintf(fileName, "cars/%s.png", name);
+	sprintf(fileName, "cars/%s/texture.png", name);
 	texture = world->getEnvironment()->loadImage(fileName);
 
-	sprintf(fileName, "cars/%s.mesh", name);
+	sprintf(fileName, "cars/%s/mesh.mesh", name);
 	mesh = new Mesh(this, world->getEnvironment()->getFramework()->findResource(fileName), texture);
 
 	world->getEnvironment()->meshPool.add(mesh);
@@ -75,7 +77,7 @@ Car::Car(World *_world, const char *name):
 	if (world->getEnvironment()->mixer && engineSound)
 	{
 		world->getEnvironment()->mixer->playSample(engineSound, 1, true, sfxChannel);
-		world->getEnvironment()->mixer->getChannel(sfxChannel)->setVolume(32);
+		world->getEnvironment()->mixer->getChannel(sfxChannel)->setVolume(4);
 	}
 }
 
@@ -90,13 +92,17 @@ Car::~Car()
 
 void Car::update(Track *track)
 {
-	Vector acceleration(0,0,0);
 	Vector worldOrigin = origin * (FP_ONE>>CAR_COORDINATE_SCALE);
+
+	// reset the acceleration
+	acceleration.set(0,0,0);
 
 	// update the speedometer
 	speed = velocity.lengthSquared();
 
 //	printf("Vel: %6d, %6d\n", velocity.x, velocity.z);
+
+	updateCollisions();
 	
 	// collision detection & response
 	if (track->getCell(worldOrigin) == 0)
@@ -292,8 +298,13 @@ void Car::update(Track *track)
 	mesh->transformation *= Matrix::makeRotation(rollAxis, -(steeringWheelPos<<(FP-8)));
 	mesh->transformation *= translation;
 
-	updateSound();
 	updateGate();
+
+	if (carNumber == 0)
+		updateSound();
+
+	if (aiEnabled)
+		updateAi();
 }
 
 scalar Car::getAcceleration(scalar speed)
@@ -313,9 +324,9 @@ void Car::updateSound()
 	int freq;
 
 	if (thrust)
-		freq = (speed << 3) + 16000;
+		freq = (FPSqrt(speed) << 2) + 16000;
 	else
-		freq = (speed << 3) + 8000;
+		freq = (FPSqrt(speed) << 2) + 8000;
 
 	if (world->getEnvironment()->mixer)
 		world->getEnvironment()->mixer->getChannel(sfxChannel)->setFrequency(freq);
@@ -324,7 +335,7 @@ void Car::updateSound()
 void Car::updateGate()
 {
 	int nextGateIndex = (gateIndex+1) % world->getEnvironment()->track->getGateCount();
-	Gate *nextGate = world->getEnvironment()->track->getGate(nextGateIndex);
+	LineSegment *nextGate = world->getEnvironment()->track->getGate(nextGateIndex);
 	
 	if (nextGate && nextGate->isInside(getOrigin()))
 	{
@@ -343,6 +354,46 @@ scalar Car::getAngleAcceleration(scalar speed)
 		
 //	printf("%6d -> acceleration segment %d: %d\n", speed, i, accProfile[i].acc);
 	return accProfile[i].angleAcc;
+}
+
+void Car::updateCollisions()
+{
+	int i;
+
+	for(i=0; i<world->getEnvironment()->carPool.getCount(); i++)
+	{
+		Car *other = world->getEnvironment()->carPool.getItem(i);
+
+		// check each car pair only once
+		if (other > this)
+		{
+			checkCollision(other);
+		}
+	}
+}
+
+void Car::checkCollision(Car *other)
+{
+	scalar radius = FP_ONE * 2;
+	Vector dist = other->origin - origin;
+
+	// this peculiar double-test is needed because of numerical overflow
+	if (FPAbs(dist.x) <= radius && FPAbs(dist.z) <= radius)
+	{
+		if (dist.lengthSquared() < radius)
+		{
+			Vector normal = (other->origin - origin).normalize();
+			Vector relativeVelocity = velocity - other->velocity;
+
+			// backtrack to avoid collision
+			origin -= velocity * FPInt(2);
+
+			scalar p = relativeVelocity.dot(normal) >> 1;
+
+			velocity -= normal * p + relativeVelocity;
+			other->velocity += normal * p + relativeVelocity;
+		}
+	}
 }
 
 void Car::setThrust(bool _thrust)
@@ -373,8 +424,77 @@ void Car::prepareForRace(int position)
 	lapCount = 0;
 	gateIndex = 0;
 	angleSpeed = 0;
-	angle = 0;
+	carNumber = position;
 	
 	setOrigin(world->getEnvironment()->track->getStartingPosition(position));
+	angle = world->getEnvironment()->track->getStartingAngle();
+}
+
+void Car::updateAi()
+{
+	Track *track = world->getEnvironment()->track;
+	Vector o = getOrigin();
+	Vector probe;
+	Vector target;
+
+	if (speed < 128)
+	{
+		// probe ahead
+		probe = o + (Vector(FPCos(angle), 0, FPSin(angle)) * FPInt(1));
+	} else
+	{
+		// probe according to current velocity
+		probe = o + (velocity * FPInt(8));
+	}
+
+	// find out the nearest point on the AI path
+	if (track->getNearestPointOnAiPath(probe, target))
+	{
+//		track->setCell(probe);
+//		if (carNumber == 0)
+//			track->setCell(target);
+
+		unsigned char tile = track->getCell(probe);
+
+		// avoid emptyness and edges
+		if (track->shouldAiAvoidTile(tile))
+		{
+			// something's ahead -> slow down and turn toward the path
+			setThrust(false);
+
+			if (track->shouldAiAvoidTile(track->getCell(o + (velocity * FPInt(3)))))
+				setBrake(true);
+
+			if (((probe - o).cross(target - o)).y < 0)
+				setSteering(1);
+			else
+				setSteering(-1);
+
+		} else
+		{
+			// no obstacles -> pedal to the metal
+			setBrake(false);
+			setThrust(true);
+			setSteering(0);
+		}
+
+		// don't get stuck
+		if (speed < 64)
+		{
+			setThrust(true);
+			setBrake(false);
+		}
+	}
+}
+
+void Car::setAiState(bool enabled)
+{
+	aiEnabled = enabled;
+	if (!aiEnabled)
+	{
+		setBrake(false);
+		setThrust(false);
+		setSteering(0);
+	}
 }
 

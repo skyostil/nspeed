@@ -25,6 +25,7 @@
 #include "Config.h"
 #include "Car.h"
 #include "Object.h"
+#include "Menu.h"
 
 class GameEngine: public Game::Engine, public Object
 {
@@ -57,6 +58,9 @@ private:
 	scalar			time, lastTime, fpsCountStart;
 	unsigned int	frameCount;
 	bool			rotateCamera;
+	MenuItem		testMenuItem1;
+	MenuItem		testMenuItem2;
+	MenuItem		testMenuItem3;
 
 	char			debugMessage[256];
 };

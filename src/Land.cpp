@@ -151,7 +151,6 @@ void Land::render(World *world)
 		else
 		{
 			angle = -FPArcTan2(v.x, v.z) + PI/2;
-//			angle = -FPArcTan2(v.x, v.z);
 //			vOffset = FPInt(64);
 		}
 
@@ -215,7 +214,7 @@ void Land::render(World *world)
 			(view->rasterizer->screen->format.rmask & (view->rasterizer->screen->format.rmask>>1)) +
 			(view->rasterizer->screen->format.gmask & (view->rasterizer->screen->format.gmask>>1)) +
 			(view->rasterizer->screen->format.bmask & (view->rasterizer->screen->format.bmask>>1));
-		const int scale = 3;
+		const int scale = 1;
 		int c = 8 << scale;
 
 		p+=(horizon>>FP) * view->rasterizer->screen->width;

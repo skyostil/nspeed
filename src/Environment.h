@@ -26,6 +26,30 @@
 #include "Object.h"
 #include "MeshSet.h"
 
+#ifdef EPOC
+#include <e32keys.h>
+#define KEY_LEFT	EStdKeyLeftArrow
+#define KEY_RIGHT	EStdKeyRightArrow
+#define KEY_UP		EStdKeyUpArrow
+#define KEY_SELECT	XXX
+#define KEY_THRUST	'3'
+#define KEY_BRAKE	EStdKeyDownArrow
+#define KEY_DOWN	EStdKeyDownArrow
+#define KEY_EXIT	EStdKeyDevice0
+#define KEY_ROTATE	EStdKeyDevice1
+#else
+#include <SDL/SDL.h>
+#define KEY_LEFT	SDLK_LEFT
+#define KEY_RIGHT	SDLK_RIGHT
+#define KEY_UP		SDLK_UP
+#define KEY_THRUST	'a'
+#define KEY_BRAKE	'z'
+#define KEY_DOWN	SDLK_DOWN
+#define KEY_EXIT	SDLK_ESCAPE
+#define KEY_ROTATE	'r'
+#define KEY_SELECT	SDLK_RETURN
+#endif
+
 class Track;
 class BitmapFont;
 class Mixer;
@@ -33,6 +57,7 @@ class ModPlayer;
 class Car;
 class View;
 class Rasterizer;
+class Menu;
 
 //! This class contains all the global game related data
 class Environment: public Object
@@ -50,6 +75,7 @@ public:
 	Rasterizer		*getRasterizer() { return rasterizer; }
 	View			*getView() { return view; }
 	World			*getWorld() { return world; }
+	Menu			*getMenu() { return menu; }
 	
 	void			initializeSound(Game::SampleChunk *sample);
 	
@@ -65,6 +91,7 @@ public:
 	
 private:
 	Game::Surface		*fontImage;
+	Menu				*menu;
 
 	Game::Surface		*screen;
 	Game::Framework		*framework;

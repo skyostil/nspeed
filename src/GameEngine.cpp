@@ -36,28 +36,6 @@
 #include "BitmapFont.h"
 #include "Environment.h"
 
-#ifdef EPOC
-#include <e32keys.h>
-#define KEY_LEFT	EStdKeyLeftArrow
-#define KEY_RIGHT	EStdKeyRightArrow
-#define KEY_UP		EStdKeyUpArrow
-#define KEY_THRUST	'3'
-#define KEY_BRAKE	EStdKeyDownArrow
-#define KEY_DOWN	EStdKeyDownArrow
-#define KEY_EXIT	EStdKeyDevice0
-#define KEY_ROTATE	EStdKeyDevice1
-#else
-#include <SDL/SDL.h>
-#define KEY_LEFT	SDLK_LEFT
-#define KEY_RIGHT	SDLK_RIGHT
-#define KEY_UP		SDLK_UP
-#define KEY_THRUST	'a'
-#define KEY_BRAKE	'z'
-#define KEY_DOWN	SDLK_DOWN
-#define KEY_EXIT	SDLK_ESCAPE
-#define KEY_ROTATE	'r'
-#endif
-
 GameEngine::GameEngine(Game::Framework* _framework):
 	Object(0),
 	Game::Engine(_framework),
@@ -68,7 +46,10 @@ GameEngine::GameEngine(Game::Framework* _framework):
 	state(IdleState),
 	fpsCountStart(0),
 	frameCount(0),
-	rotateCamera(false)
+	rotateCamera(false),
+	testMenuItem1("test 1"),
+	testMenuItem2("test 2"),
+	testMenuItem3("foo bar baz")
 {
 	debugMessage[0] = 0;
 }
@@ -134,11 +115,11 @@ void GameEngine::renderVideo(Game::Surface* screen)
 		int speedY = env->getScreen()->height - env->bigFont->getHeight() - 2;
 		scalar speed = playerCar->getSpeed();
 		
-//		if (speed <= (32<<2))
-//			speed = 0;
+		if (speed <= (32<<2))
+			speed = 0;
 		
-//		sprintf(speedText, "%3d km/h", speed >> 2);
-		sprintf(speedText, "%3d km/h", speed);
+		sprintf(speedText, "%3d km/h", speed >> 5);
+//		sprintf(speedText, "%3d km/h", speed);
 		env->bigFont->renderText(env->getScreen(), speedText, speedX, speedY);
 	}
 	break;
@@ -180,14 +161,34 @@ void GameEngine::setState(State newState)
 	switch(newState)
 	{
 	case RaceState:
-		if (!env->track->load(framework->findResource("track4.trk")))
+		if (!env->track->load("test"))
 		{
 			setState(IdleState);
 			return;
 		}
 
 		env->carPool.add(new Car(env->getWorld(), "default"));
+		env->carPool.add(new Car(env->getWorld(), "default"));
 		env->carPool.getItem(0)->prepareForRace(0);
+		env->carPool.getItem(1)->prepareForRace(1);
+		env->carPool.getItem(1)->setAiState(true);
+		
+		env->getMenu()->clear();
+		env->getMenu()->addItem(&testMenuItem1);
+		env->getMenu()->addItem(&testMenuItem1);
+		env->getMenu()->addItem(&testMenuItem1);
+		env->getMenu()->addItem(&testMenuItem1);
+		env->getMenu()->addItem(&testMenuItem2);
+		env->getMenu()->addItem(&testMenuItem2);
+		env->getMenu()->addItem(&testMenuItem2);
+		env->getMenu()->addItem(&testMenuItem2);
+		env->getMenu()->addItem(&testMenuItem3);
+		env->getMenu()->addItem(&testMenuItem3);
+		env->getMenu()->addItem(&testMenuItem3);
+		env->getMenu()->addItem(&testMenuItem3);
+		env->getMenu()->addItem(&testMenuItem1);
+		env->getMenu()->addItem(&testMenuItem2);
+		env->getMenu()->addItem(&testMenuItem3);
 		
 		if (env->modplayer)
 		{
@@ -197,6 +198,7 @@ void GameEngine::setState(State newState)
 
 		env->getWorld()->getRenderableSet().add(env->track);
 		env->getWorld()->getRenderableSet().add(&env->meshPool);
+		env->getWorld()->getRenderableSet().add(env->getMenu());
 	break;
 	}
 	state = newState;
@@ -212,6 +214,7 @@ void GameEngine::handleEvent(Game::Event* event)
 	break;
 	case RaceState:
 		handleRaceEvent(event);
+		env->getMenu()->handleEvent(event);
 	break;
 	}
 }
@@ -247,6 +250,7 @@ void GameEngine::handleRaceEvent(Game::Event* event)
 			break;
 			case KEY_ROTATE:
 				rotateCamera = !rotateCamera;
+				car->setAiState(rotateCamera);
 			break;
 			}
 		}
@@ -289,7 +293,7 @@ void GameEngine::step()
 	if (framework->getTickCount() - fpsCountStart > framework->getTicksPerSecond() / 4)
 	{
 		Car *car = env->carPool.getItem(0);
-		sprintf(debugMessage, "%d fps, %d s, gate %d", frameCount*4, framework->getTickCount() / framework->getTicksPerSecond(), car?car->getGateIndex():-1);
+		sprintf(debugMessage, "%d fps, %d s, gate %d, lap %d", frameCount*4, framework->getTickCount() / framework->getTicksPerSecond(), car?car->getGateIndex():-1, car?car->getLapCount()+1:0);
 		fpsCountStart = framework->getTickCount();
 		frameCount = 0;
 	}

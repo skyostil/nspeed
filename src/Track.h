@@ -28,10 +28,10 @@
 
 class View;
 
-class Gate
+class LineSegment
 {
 public:
-	Gate();
+	LineSegment();
 
 	void set(const Vector &_left, const Vector &_right);
 
@@ -39,8 +39,15 @@ public:
 	bool isValid() const { return valid; }
 	const Vector &getCenter() const { return center; }
 	const Vector &getNormal() const { return normal; }
+	const Vector &getLeft() const { return left; }
+	const Vector &getLeftToRight() const { return leftToRight; }
+	const Vector &getRight() const { return right; }
+	scalar getAngle() const { return angle; }
+	bool getNearestPoint(const Vector &pos, Vector &out) const;
+
 private:
 	Vector left, right, leftToRight, center, normal;
+	scalar angle;
 	scalar lengthSquared;
 	bool valid;
 };
@@ -48,6 +55,12 @@ private:
 class Track: public Renderable, public Object
 {
 public:
+	enum TileRanges
+	{
+		EdgeStart = 2, // XXX fixme
+		EdgeEnd = 2,
+	};
+
 	Track(Object *parent, Environment *_env);
 	~Track();
 
@@ -59,11 +72,14 @@ public:
 	void		setCell(const Vector &pos);
 	
 	Vector		getStartingPosition(int carNumber) const;
+	scalar		getStartingAngle() const;
+	bool		getNearestPointOnAiPath(const Vector &pos, Vector &out) const;
+	bool		shouldAiAvoidTile(unsigned char tile) const;
 	
 	//! Returns approximate the 2D normal (x,z) of the track at the given position
 	Vector		getNormal(const Vector &pos) const;
 	
-	Gate		*getGate(unsigned int index);
+	LineSegment	*getGate(unsigned int index);
 	int			getGateCount() { return sizeof(gate)/sizeof(gate[0]); }
 	
 	Game::Surface	*getMap() { return map; }
@@ -86,7 +102,9 @@ protected:
 	Game::Surface   *textureTileList[256];
 	Game::Surface	*map;
 	Environment		*env;
-	Gate			gate[4];
+	LineSegment		gate[4];
+	LineSegment		*aiPath;
+	unsigned int	aiPathLength;
 };
 
 #endif

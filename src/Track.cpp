@@ -34,7 +34,9 @@ Track::Track(Object *parent, Environment *_env):
 	skyTexture(0),
 	land(0),
 	map(0),
-	ground(0)
+	ground(0),
+	aiPath(0),
+	aiPathLength(0)
 {
 	int i;
 
@@ -52,6 +54,7 @@ Track::~Track()
 #ifdef _MSC_VER
 #pragma pack(push, 1)
 #endif
+
 typedef struct
 {
 	unsigned short w, h;
@@ -60,17 +63,27 @@ typedef struct
 	signed short gate3LeftX, gate3LeftY, gate3RightX, gate3RightY;
 	signed short gate4LeftX, gate4LeftY, gate4RightX, gate4RightY;
 } PACKED MapHeader;
+
+typedef struct
+{
+	unsigned short x, y;
+} PACKED AiPathNode;
+
 #ifdef _MSC_VER
 #pragma pack(pop)
 #endif
 
 bool Track::load(const char *name)
 {
-	TagFile file(name);
 	unsigned short w=0, h=0;
 	Game::PixelFormat pf(8);
+	char fileName[256];
+	int i;
 	
 	unload();
+
+	sprintf(fileName, "tracks/%s/track.trk", name);
+	TagFile file(env->getFramework()->findResource(fileName));
 		
 	while(1) switch(file.readTag())
 	{
@@ -102,13 +115,61 @@ bool Track::load(const char *name)
 		}
 	}
 	break;
+	case 2: // ai path
+	{
+		aiPathLength = file.getDataSize() / sizeof(AiPathNode);
+		aiPath = new LineSegment[aiPathLength];
+		AiPathNode *aiPathNodes = new AiPathNode[aiPathLength];
+		Vector currNode, nextNode;
+
+		file.readData((unsigned char*)aiPathNodes, aiPathLength * sizeof(AiPathNode));
+
+		currNode = unproject(aiPathNodes[0].x, aiPathNodes[0].y);
+		for (i=1; i<aiPathLength+1; i++)
+		{
+			nextNode = unproject(aiPathNodes[i%aiPathLength].x, aiPathNodes[i%aiPathLength].y);
+			aiPath[i-1].set(currNode, nextNode);
+			currNode = nextNode;
+		}
+
+		delete[] aiPathNodes;
+	}
+	break;
 	default:
 	{
-		textureTileList[1] = env->loadImage("test2.png");
-		textureTileList[2] = env->loadImage("test.png");
-	
-		groundTexture = env->loadImage("ground.png");
-		skyTexture = env->loadImage("sky.png");
+		int x, y;
+
+		if (!texture)
+			return false;
+
+		for(y=0; y<texture->height; y++)
+			for(x=0; x<texture->width; x++)
+			{
+				unsigned char tile = ((unsigned char*)texture->pixels)[y * texture->width + x];
+				if (tile > 0 && !textureTileList[tile])
+				{
+					sprintf(fileName, "tracks/%s/tile%d.png", name, tile);
+					if ((textureTileList[tile] = env->loadImage(fileName)) == NULL)
+					{
+						sprintf(fileName, "tracks/tile%d.png", tile);
+						if ((textureTileList[tile] = env->loadImage(fileName)) == NULL)
+							((unsigned char*)texture->pixels)[y * texture->width + x] = 0;
+					}
+				}
+			}
+
+		sprintf(fileName, "tracks/%s/ground.png", name);
+		groundTexture = env->loadImage(fileName);
+
+		if (!groundTexture)
+			groundTexture = env->loadImage("tracks/ground.png");
+
+		sprintf(fileName, "tracks/%s/sky.png", name);
+		skyTexture = env->loadImage(fileName);
+
+		if (!skyTexture)
+			skyTexture = env->loadImage("tracks/sky.png");
+
 		ground = new Land(groundTexture, skyTexture, Rasterizer::FlagPerspectiveCorrection, 2 /* textureScale */, FPInt(6));
 		
 		initializeMap();
@@ -145,6 +206,10 @@ void Track::unload()
 
 	delete map;
 	map = 0;
+
+	delete[] aiPath;
+	aiPath = 0;
+	aiPathLength = 0;
 }
 
 void Track::render(World *world)
@@ -230,7 +295,7 @@ void Track::setCell(const Vector &pos)
 
 	project(pos, x, y);
 		
-	((Game::Pixel8*)(texture->pixels))[x + (y<<8)] = 1;
+	((Game::Pixel8*)(texture->pixels))[x + (y<<8)] = 2;
 }
 
 Vector Track::getNormal(const Vector &pos) const
@@ -271,12 +336,13 @@ Vector Track::unproject(unsigned char x, unsigned char y) const
 	return Vector(((x-128) << FP) >> 3, 0, ((y-128) << FP) >> 3);
 }
 
-Gate::Gate():
-	valid(false)
+LineSegment::LineSegment():
+	valid(false),
+	angle(0)
 {
 }
 
-bool Gate::isInside(const Vector &pos) const
+bool LineSegment::isInside(const Vector &pos) const
 {
 	if (!valid) return false;
 
@@ -293,7 +359,7 @@ bool Gate::isInside(const Vector &pos) const
 	return false;
 }
 
-void Gate::set(const Vector &_left, const Vector &_right)
+void LineSegment::set(const Vector &_left, const Vector &_right)
 {
 	left = _left;
 	right = _right;
@@ -306,10 +372,21 @@ void Gate::set(const Vector &_left, const Vector &_right)
 	if (lengthSquared == 0)
 		valid = false;
 	else
+	{
 		valid = true;
+
+		if (FPAbs(leftToRight.z) > FPAbs(leftToRight.x))
+		{
+			angle = FPArcTan2(leftToRight.z, leftToRight.x) + PI/2;
+		}
+		else
+		{
+			angle = -FPArcTan2(leftToRight.x, leftToRight.z) + PI;
+		}
+	}
 }
 
-Gate *Track::getGate(unsigned int index)
+LineSegment *Track::getGate(unsigned int index)
 {
 	if (index < sizeof(gate)/sizeof(gate[0]))
 		return gate[index].isValid() ? (&gate[index]) : NULL;
@@ -318,17 +395,79 @@ Gate *Track::getGate(unsigned int index)
 
 Vector Track::getStartingPosition(int carNumber) const
 {
-	unsigned char x, y;
+	Vector dir = gate[0].getLeftToRight() * (FP_ONE / 8);
 	
-	project(gate[0].getCenter(), x, y);
+	if (carNumber & 1)
+		dir = -dir;
+
+	return gate[0].getCenter() + dir + (gate[0].getNormal() * (FPInt(carNumber/2+1)>>2));
+}
+
+scalar Track::getStartingAngle() const
+{
+	return gate[0].getAngle() + PI/2;
+}
+
+bool LineSegment::getNearestPoint(const Vector &pos, Vector &out) const
+{
+	if (!valid) return false;
+
+	Vector planarPos(pos.x, 0, pos.z);
+	scalar t = FPDiv((planarPos - left).dot(leftToRight), lengthSquared);
 	
-	printf("%d, %d\n", x, y);
-	
-	return gate[0].getCenter();
-/*
-	const scalar startinglineOffset = FPInt(1);
-	const scalar startinglineOffset = FPInt(1);
-	const scalar startinglineOffset = FPInt(1);
-*/	
+	if (t >= 0 && t <= FP_ONE)
+	{
+		out = left + leftToRight * t;
+		return true;
+	}
+	return false;
+}
+
+bool Track::getNearestPointOnAiPath(const Vector &pos, Vector &out) const
+{
+	int i;
+	scalar nearest = FPInt(4096), dist;
+	Vector point;
+	bool foundAny = false;
+
+	for(i=0; i<aiPathLength; i++)
+	{
+		if (aiPath[i].getNearestPoint(pos, point))
+		{
+			dist = (point - pos).lengthSquared();
+
+			if (dist < nearest)
+			{
+				out = point;
+				nearest = dist;
+				foundAny = true;
+			}
+		}
+	}
+
+	// if no nearest point was found, find the nearest corner
+	if (!foundAny)
+	{
+		for(i=0; i<aiPathLength; i++)
+		{
+			dist = (pos - aiPath[i].getLeft()).lengthSquared();
+
+			if (dist < nearest)
+			{
+				out = aiPath[i].getLeft();
+				nearest = dist;
+				foundAny = true;
+			}
+		}
+	}
+
+	return foundAny;
+}
+
+bool Track::shouldAiAvoidTile(unsigned char tile) const
+{
+	if (tile == 0 || (tile >= Track::EdgeStart && tile >= Track::EdgeEnd))
+		return true;
+	return false;
 }
 

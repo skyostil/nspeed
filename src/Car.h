@@ -42,12 +42,13 @@ public:
 	void setThrust(bool _thrust);
 	void setBrake(bool _brake);
 	void setSteering(int _steering);
+	void setAiState(bool enabled);
 	
 	int getSteering() { return steering; }
-//	scalar getSpeed() { return FPSqrt(speed); }
-	scalar getSpeed() { return speed; }
+	scalar getSpeed() { return FPSqrt(speed); }
 	int getGateIndex() { return gateIndex; }
 	void setGateIndex(int i) { gateIndex = i; }
+	int getLapCount() { return lapCount; }
 	
 	scalar getAngle() { return angle; }
 	Vector getOrigin() { return origin * (FP_ONE>>CAR_COORDINATE_SCALE); }
@@ -57,9 +58,12 @@ public:
 private:
 	void	updateSound();
 	void	updateGate();
+	void	updateAi();
+	void	updateCollisions();
+	void	checkCollision(Car *other);
 
-	Vector	origin, velocity;
-	scalar	angle, angleSpeed, speed;
+	Vector	origin, velocity, acceleration;
+	scalar	angle, angleSpeed, speed; // note: the speed is squared!
 
 	scalar	getAcceleration(scalar speed);
 	scalar	getAngleAcceleration(scalar speed);
@@ -80,7 +84,8 @@ private:
 	Game::Surface	*texture;
 	World			*world;
 	Game::SampleChunk	*engineSound;
-	int				sfxChannel, gateIndex, lapCount;
+	int				sfxChannel, gateIndex, lapCount, carNumber;
+	bool			aiEnabled;
 };
 
 #endif

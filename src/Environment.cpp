@@ -24,6 +24,7 @@
 #include "Mixer.h"
 #include "ModPlayer.h"
 #include "Car.h"
+#include "Menu.h"
 
 //Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen, View *_view):
 Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen):
@@ -36,6 +37,7 @@ Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surf
 	font(0),
 	mixer(0),
 	modplayer(0),
+	menu(0),
 	texturePool(0, true)
 {
 	Game::Surface *img;
@@ -59,6 +61,9 @@ Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surf
 
 	// create the track
 	track = new Track(this, this);
+	
+	// create the menu
+	menu = new Menu(this, this);
 }
 
 void Environment::initializeSound(Game::SampleChunk *sample)
@@ -80,6 +85,7 @@ Environment::~Environment()
 	delete bigFont;
 	
 	delete track;
+	delete menu;
 }
 
 Game::Surface *Environment::loadImage(const char *name)

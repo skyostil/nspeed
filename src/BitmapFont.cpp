@@ -184,3 +184,19 @@ void BitmapFont::renderText(Game::Surface *screen, const char *text, int x, int 
 }
 #endif
 
+int BitmapFont::getTextWidth(const char *text)
+{
+	int w = 0;
+	
+	while(glyph && *text)
+	{
+		if (*text >= minGlyph && *text <= maxGlyph)
+		{
+			Glyph *g = &glyph[*text - minGlyph];
+			w += g->width;
+		}
+		text++;
+	}
+	return w;	
+}
+

@@ -31,6 +31,7 @@ public:
 	~BitmapFont();
 	
 	void	renderText(Game::Surface *screen, const char *text, int x, int y, Game::Pixel colorMask = -1);
+	int		getTextWidth(const char *text);
 
 	void	load(Game::Framework *framework, const char *name);
 	void	unload();
