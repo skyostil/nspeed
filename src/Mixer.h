@@ -39,6 +39,12 @@ public:
                 if (!sample)
                         return 0;
                 
+                if (pos >= sample->length)
+				{
+                    sample = 0;
+					return 0;
+				}
+
                 switch(sample->format.bytesPerSample)
                 {
                 case 1:
@@ -63,9 +69,6 @@ public:
                         {
                                 pos-=loopLength;
                         }
-                
-                if (pos >= sample->length)
-                        sample = 0;
                 
                 return a;
         }

@@ -23,7 +23,7 @@
 
 // gee, thanks for not supporting stl, symbian...
 
-template<typename T>
+template<class T>
 class Set
 {
 public:

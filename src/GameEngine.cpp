@@ -23,7 +23,11 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef WIN32
+#include <windows.h>
+#else
 #include <dirent.h>
+#endif
 #include <string.h>
 #include "Config.h"
 #include "FixedPointMath.h"
@@ -70,6 +74,7 @@ GameEngine::GameEngine(Game::Framework* _framework):
         menuItemRestart("Restart Race"),
         menuItemMainMenu("Main Menu"),
         menuItemCredits("Credits"),
+        menuItemHelp("Help"),
         menuItemAiCount(""),
         menuItemSfxVolume(""),
         menuItemMusicVolume("")
@@ -88,8 +93,6 @@ GameEngine::~GameEngine()
 
 void GameEngine::configureVideo(Game::Surface* screen)
 {
-    Game::Surface *img;
-
     env = new Environment(this, framework, screen);
 }
 
@@ -167,7 +170,7 @@ void GameEngine::renderVideo(Game::Surface* screen)
         break;
     case CreditsState:
         screen->clear(0);
-        y = 32;
+        y = 48;
 
         font->renderText(env->getScreen(), "Code, Graphics, Models", 8, y);
         y += font->getHeight() + 2;
@@ -185,6 +188,33 @@ void GameEngine::renderVideo(Game::Surface* screen)
         y += font->getHeight() + 2;
 
         renderTitle(screen, "Credits");
+        break;
+    break;
+    case HelpState:
+        screen->clear(0);
+        y = 48;
+
+        font->renderText(env->getScreen(), "Steering", 8, y);
+        y += font->getHeight() + 2;
+		font->renderText(env->getScreen(), "Left and right arrow", 16, y, textMask);
+        y += font->getHeight() + 2;
+
+        font->renderText(env->getScreen(), "Acceleration", 8, y);
+        y += font->getHeight() + 2;
+        font->renderText(env->getScreen(), "Numpad 5", 16, y, textMask);
+        y += font->getHeight() + 2;
+
+        font->renderText(env->getScreen(), "Brake", 8, y);
+        y += font->getHeight() + 2;
+        font->renderText(env->getScreen(), "Numpad 7", 16, y, textMask);
+        y += font->getHeight() + 2;
+
+        font->renderText(env->getScreen(), "Menu", 8, y);
+        y += font->getHeight() + 2;
+        font->renderText(env->getScreen(), "Left soft key", 16, y, textMask);
+        y += font->getHeight() + 2;
+
+        renderTitle(screen, "Help");
         break;
     break;
     case SettingsMenuState:
@@ -487,9 +517,11 @@ void GameEngine::setState(State newState)
         menu->clear();
         menu->addItem(&menuItemPractice);
         menu->addItem(&menuItemSettings);
+        menu->addItem(&menuItemHelp);
         menu->addItem(&menuItemCredits);
         menu->addItem(&menuItemQuit);
         menu->setTopLevelMenu(true);
+        menu->setTopClipping(screen->height - 128);
 
         renderableSet->clear();
         
@@ -498,7 +530,8 @@ void GameEngine::setState(State newState)
 
         if (oldState != ChooseCarState &&
             oldState != SettingsMenuState &&
-            oldState != CreditsState
+            oldState != CreditsState &&
+            oldState != HelpState
             )
         {
             env->scheduleMusicChange(framework->findResource("music/menu.mod.tag"));
@@ -618,6 +651,8 @@ void GameEngine::handleMenuAction(Menu::Action action)
                 setState(SettingsMenuState);
             else if (menu->getSelection() == &menuItemCredits)
                 setState(CreditsState);
+            else if (menu->getSelection() == &menuItemHelp)
+                setState(HelpState);
             else if (menu->getSelection() == &menuItemQuit)
                 setState(QuitState);
             break;
@@ -702,6 +737,7 @@ void GameEngine::handleEvent(Game::Event* event)
 
     switch(state)
     {
+    case HelpState:
     case CreditsState:
         if (event->type == Game::Event::KeyPressEvent && 
             (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST)
@@ -957,14 +993,41 @@ void GameEngine::atomicStep()
 
 void GameEngine::fillMenuWithDirectories(Menu *menu, const char *path)
 {
-    DIR *dir = opendir(path);
-
     menuItemList.deleteItems();
+
+#ifdef WIN32
+	char spec[MAX_PATH];
+	WIN32_FIND_DATA fd;
+
+	sprintf(spec, "%.240s/*.*", path);
+	HANDLE handle = FindFirstFile(spec, &fd);
+
+	while (handle != INVALID_HANDLE_VALUE)
+	{
+
+		if (fd.cFileName[0] != '.' && (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+		{
+			MenuItem *item = new MenuItem(fd.cFileName);
+			menuItemList.add(item);
+			menu->addItem(item);
+		}
+
+		if (!FindNextFile(handle, &fd))
+		{
+			FindClose(handle);
+			break;
+		}
+	}
+
+
+#else
+    DIR *dir = opendir(path);
 
     if (dir)
     {
         struct dirent *entry;
         struct stat entryStat;
+
 
         while(entry = readdir(dir))
         {
@@ -998,6 +1061,7 @@ void GameEngine::fillMenuWithDirectories(Menu *menu, const char *path)
         }
         closedir(dir);
     }
+#endif
 }
 
 void GameEngine::preventWarping()
@@ -1314,7 +1378,7 @@ void GameEngine::spawnCars()
     int i;
     Menu *menu = env->getMenu();
     Car *car;
-    int q = framework->getTickCount();
+    unsigned int q = framework->getTickCount();
 
     env->carPool.clear();
     env->meshPool.clear();

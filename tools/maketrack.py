@@ -21,7 +21,8 @@ aiPath = [(0,0)] * 32
 aiStart = 94
 aiEnd = 128
 aiLen = 0
-tileLimit = 63
+specialStart = 64
+specialEnd = 191
 
 def findSpecialTiles(data):
     global aiPath, aiLen, gates
@@ -44,7 +45,7 @@ def transform(data):
     for y in xrange(0, size[1]):
         for x in xrange(0, size[0]):
                 tile = lookup(data,x,y)
-                if ord(tile)>tileLimit:
+                if ord(tile)>=specialStart and ord(tile)<=specialEnd:
                     offsetData += offsetData[-1]
                 else:
                     offsetData += tile

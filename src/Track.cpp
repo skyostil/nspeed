@@ -583,7 +583,7 @@ bool Track::getNextPointOnAiPath(const Vector &pos, Vector &out, scalar distance
             break;
         }
     }
-    
+	return true;    
     
 #if 0
     for(i=0; i<aiPathLength; i++)

@@ -22,6 +22,7 @@
 #define ENVIRONMENT_H
 
 #include "engine/Engine.h"
+#include "Car.h"
 #include "Set.h"
 #include "Object.h"
 #include "MeshSet.h"
@@ -55,7 +56,6 @@ class Track;
 class BitmapFont;
 class Mixer;
 class ModPlayer;
-class Car;
 class View;
 class Rasterizer;
 class Menu;

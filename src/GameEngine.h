@@ -36,6 +36,7 @@ public:
         LoadingState,
         MainMenuState,
         CreditsState,
+        HelpState,
         SettingsMenuState,
         ChooseCarState,
         ChooseTrackState,
@@ -95,6 +96,7 @@ private:
     MenuItem        menuItemPractice;
     MenuItem        menuItemSettings;
     MenuItem        menuItemQuit;
+    MenuItem        menuItemHelp;
     MenuItem        menuItemCredits;
     Game::Surface   *logo;
 
