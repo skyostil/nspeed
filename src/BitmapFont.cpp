@@ -75,7 +75,7 @@ void BitmapFont::build(Game::Surface *t)
 	
 	// set the space character
 	glyph[0].pixels = 0;
-	glyph[0].width = maxWidth;
+	glyph[0].width = glyph['I'-32].width;
 	glyph[0].height = t->height;
 }
 

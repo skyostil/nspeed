@@ -89,7 +89,7 @@ bool Track::load(const char *name)
 
 	groundTexture = framework->loadImage(framework->findResource("ground.png"), &screen->format);
 	skyTexture = framework->loadImage(framework->findResource("sky.png"), &screen->format);
-	ground = new Land(groundTexture, skyTexture, Rasterizer::FlagPerspectiveCorrection, 0 /* textureScale */, FPInt(6));
+	ground = new Land(groundTexture, skyTexture, Rasterizer::FlagPerspectiveCorrection, 2 /* textureScale */, FPInt(6));
 
 	fclose(f);
 	return true;

@@ -88,7 +88,7 @@ void GameEngine::configureVideo(Game::Surface* screen)
 	view = new View(rasterizer);
 
 	// setup the environment
-	img = framework->loadImage(framework->findResource("font.png"), &screen->format);
+	img = framework->loadImage(framework->findResource("fonts/returnofganon-grad.png"), &screen->format);
 	env->texturePool.add(img);
 	env->font = new BitmapFont(img);
 	env->track = new Track(framework, rasterizer->screen);
@@ -261,7 +261,7 @@ void GameEngine::step()
 		return;
 	}
 	
-	sprintf(debugMessage, "%d, %d", time - lastTime, (time-lastTime)/timestep);
+	sprintf(debugMessage, "Heyaah %d, %d, %d", framework->getTickCount() / framework->getTicksPerSecond(), time - lastTime, (time-lastTime)/timestep);
 
 	if ((time - lastTime) > timestep)
 	{
