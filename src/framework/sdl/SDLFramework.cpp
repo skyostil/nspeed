@@ -20,16 +20,20 @@
 
 #include "SDLFramework.h"
 #include "engine/Engine.h"
+#include "Config.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-int main(int argc, const char **argv)
+//extern "C"
+//{
+int main(int argc, char **argv)
 {
 	SDLFramework fw;
 	
 	return fw.run(argc, argv);
 }
+//}
 
 SDLFramework::SDLFramework():
 	screen(NULL),
@@ -61,7 +65,7 @@ void SDLFramework::printUsage()
 	       );
 }
 
-int SDLFramework::run(int argc, const char **argv)
+int SDLFramework::run(int argc, char **argv)
 {
 	int i;
 	bool useSound = true, useVideo = true;
@@ -230,6 +234,7 @@ int SDLFramework::run(int argc, const char **argv)
 
 void SDLFramework::exit()
 {
+	SDL_PauseAudio(1);
 	done = true;
 }
 
@@ -322,12 +327,7 @@ Game::Surface *SDLFramework::loadImage(const char *name, Game::PixelFormat *pf)
 #ifdef USE_WAVE_LOADER
 Game::SampleChunk *SDLFramework::loadSample(const char *name, Game::SampleFormat *sf)
 {
-#ifdef __VC32__
-#pragma pack(1);
-#define PACKED
-#else
-#define PACKED __attribute__((packed)) 
-#endif
+#pragma pack(push, 1)
 	typedef struct
 	{
 		unsigned int chunkID;
@@ -344,9 +344,7 @@ Game::SampleChunk *SDLFramework::loadSample(const char *name, Game::SampleFormat
 		unsigned int subChunk2ID;
 		unsigned int subChunk2Size;
 	} PACKED WaveHeader;
-#ifdef __VC32__
-#pragma pack(0);
-#endif
+#pragma pack(pop)
 
 	FILE *f = fopen(name, "rb");
 	Game::SampleChunk *sample = NULL;

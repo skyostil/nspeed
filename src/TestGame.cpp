@@ -1,4 +1,4 @@
-#include "config.h"
+#include "Config.h"
 #include "engine/Engine.h"
 
 #ifdef EPOC
@@ -8,7 +8,7 @@
 #else
 #include <stdlib.h>
 #include <stdio.h>
-#include <SDL/SDL.h>
+#include <SDL.h>
 #endif
 
 #include "FixedPointMath.h"

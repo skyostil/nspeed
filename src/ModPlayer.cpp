@@ -29,6 +29,7 @@
  ***************************************************************************/
 
 #include "ModPlayer.h"
+#include "Config.h"
 #include <stdio.h>
 
 static const unsigned short periodTable[][36] =
@@ -160,12 +161,7 @@ ModPlayer::~ModPlayer()
 
 bool ModPlayer::load(const char *file)
 {
-#ifdef __VC32__
-#pragma pack(1);
-#define PACKED
-#else
-#define PACKED __attribute__((packed)) 
-#endif
+#pragma pack(1)
 	typedef struct
 	{
 		unsigned char	name[22];
@@ -183,9 +179,7 @@ bool ModPlayer::load(const char *file)
 		unsigned char	byte2;
 		unsigned char	byte3;
 	} PACKED Note;
-#ifdef __VC32__
-#pragma pack(0);
-#endif
+#pragma pack(0)
 
 	FILE *f = fopen(file,"rb");
 	char modType[4];

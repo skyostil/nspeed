@@ -25,10 +25,16 @@
 #define USE_WAVE_LOADER
 
 #include "engine/Engine.h"
-#include <SDL/SDL.h>
+#include <SDL.h>
 #ifdef USE_SDL_IMAGE
-#include <SDL/SDL_image.h>
+#include <SDL_image.h>
 #endif
+
+
+extern "C"
+{
+extern int main(int argc, char **argv);
+};
 
 class SDLFramework: public Game::Framework
 {
@@ -36,7 +42,7 @@ public:
 	SDLFramework();
 	~SDLFramework();
 
-	int run(int argc, const char **argv);
+	int run(int argc, char **argv);
 	
 	// framework services
 	void exit();
