@@ -23,16 +23,23 @@
 
 #include "FixedPointMath.h"
 #include "FixedPointVector.h"
+#include "Object.h"
+#include "World.h"
 
-class Car
+class Track;
+
+class Car: public Renderable
 {
 public:
-	Car();
+	Car(World *_world);
+	~Car();
 	
-	void update();
+	void update(Track *track);
 	void setThrust(bool _thrust);
 	void setBrake(bool _brake);
 	void setSteering(int _steering);
+	void render(World *world);
+	
 	scalar getAngle();
 	
 	Vector	origin, velocity;
@@ -53,6 +60,8 @@ private:
 	
 	bool	thrust, brake;
 	int	steering, steeringWheelPos;
+	
+	Object	*object;
 };
 
 #endif

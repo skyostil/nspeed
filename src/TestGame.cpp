@@ -50,12 +50,13 @@ public:
         Rasterizer      *rasterizer;
         View            *view;
         Game::Surface   *texture, *texture2, *font;
-        Object          *object;
+//        Object          *object;
         Land            *ground, *sky;
 	Track		*track;
-	Car		car;
+	Car		*car;
         scalar          t, lastTime;
 	BitmapFont	*bitmapFont;
+	World		*world;
         
         Mixer           *mixer;
         ModPlayer       *modplayer;
@@ -66,14 +67,18 @@ public:
                 rasterizer(NULL),
                 view(NULL),
 		t(0),
+		world(0),
 		lastTime(0),
+		car(0),
 		audioBuffer(0)
         {
         }
 
         ~MyEngine()
         {
-                delete object;
+		delete car;
+		delete world;
+//                delete object;
                 delete rasterizer;
                 delete texture;
                 delete texture2;
@@ -94,6 +99,7 @@ public:
                 
                 rasterizer = new Rasterizer(screen);
                 view = new View(rasterizer);
+		world = new World(framework, screen, rasterizer, view);
                 
                 texture = new Game::Surface(&screen->format, 256, 256);
                 pixels = texture->pixels;
@@ -184,9 +190,9 @@ public:
 //              object = new Duck(FPInt(1)>>9);
 //              object = new Loop(FPInt(1)>>3, texture2);
 //                object = new Alus(FPInt(1)>>8);
-                object = new CarModel(FPInt(1)>>8, framework->loadImage(framework->findResource("car.png"), &screen->format));
-		Vector axis(FP_ONE,0,0);
-		object->transformation = Matrix::makeRotation(axis, PI>>1);
+//                object = new CarModel(FPInt(1)>>8, framework->loadImage(framework->findResource("car.png"), &screen->format));
+//		Vector axis(FP_ONE,0,0);
+//		object->transformation = Matrix::makeRotation(axis, PI>>1);
 #else
                 object = new Object(8, 6);
                 object->beginMesh();
@@ -271,69 +277,9 @@ public:
 #endif          
                 font = framework->loadImage(framework->findResource("font.png"), &screen->format);
 		bitmapFont = new BitmapFont(font);
+		car = new Car(world);
         }
 
-#if 0
-        void renderObjectTest(View *view)
-        {
-                Vector axis(0,FP_ONE,0);
-//              Matrix tr = Matrix::makeTranslation(axis);
-//              object->transformation = Matrix::makeRotation(axis, ((t<<2) % (2*PI)));
-//              object->transformation *= tr;
-
-
-                rasterizer->flags &= ~Rasterizer::FlagPerspectiveCorrection;
-                object->render(view);
-                rasterizer->flags |= Rasterizer::FlagPerspectiveCorrection;
-        }
-#endif
-
-#if 0        
-        void renderLand()
-        {
-                scalar scale = FPInt(4);
-                Vector v0(-scale, 0,-scale);
-                Vector v1( scale, 0,-scale);
-                Vector v2( scale, 0, scale);
-                Vector v3(-scale, 0, scale);
-                scalar tSize = FPInt(32);
-                Vector tCenter = view->camera.origin;
-                
-                v0.x+=tCenter.x;
-                v0.z+=tCenter.z;
-                v1.x+=tCenter.x;
-                v1.z+=tCenter.z;
-                v2.x+=tCenter.x;
-                v2.z+=tCenter.z;
-                v3.x+=tCenter.x;
-                v3.z+=tCenter.z;
-                
-                tCenter *= FPInt(8);
-                tCenter+=Vector(FPInt(64),0,FPInt(64));
-                
-//              printf("%d, %d, %d\n", tCenter.x>>FP, tCenter.y>>FP, tCenter.z>>FP);
-                
-//              tCenter /= FPInt(20000);
-
-                view->rasterizer->flags |= Rasterizer::FlagTileTexture;
-                view->rasterizer->setTexture(texture3);
-                view->rasterizer->setTextureTileList(textureTileList);
-
-                view->beginPolygon();
-                view->setTexCoord(tCenter.x-tSize, tCenter.z-tSize);
-                view->addVertex(v0);
-                view->setTexCoord(tCenter.x+tSize, tCenter.z-tSize);
-                view->addVertex(v1);
-                view->setTexCoord(tCenter.x+tSize, tCenter.z+tSize);
-                view->addVertex(v2);
-                view->setTexCoord(tCenter.x-tSize, tCenter.z+tSize);
-                view->addVertex(v3);
-                view->endPolygon();
-                
-                view->rasterizer->flags &= ~Rasterizer::FlagTileTexture;
-        }
-#endif
-                
         void setupView()
         {
 #if 0	
@@ -358,12 +304,12 @@ public:
 //                view->camera.origin = Vector(FPInt(0),FPInt(3)>>4,FPInt(0));
 //                view->camera.target = Vector(x,0,z);
 #endif
-                scalar x = FPMul(FPCos(car.getAngle()), FPInt(1));
-                scalar z = FPMul(FPSin(car.getAngle()), FPInt(1));
+                scalar x = FPMul(FPCos(car->getAngle()), FPInt(1));
+                scalar z = FPMul(FPSin(car->getAngle()), FPInt(1));
                 scalar y = FPInt(3)>>3;
 
-                view->camera.target = car.origin;
-                view->camera.origin = Vector(car.origin.x-x,car.origin.y+y,car.origin.z-z);
+                view->camera.target = car->origin;
+                view->camera.origin = Vector(car->origin.x-x,car->origin.y+y,car->origin.z-z);
 		
                 view->camera.update();
         }
@@ -464,32 +410,40 @@ public:
 			screen->setPixel(x, y, screen->getPixel(x,y)^0xffff);
 		}
 	}
-        
-        void renderVideo(Game::Surface* screen)
-        {
-                screen->clear();
-#if 1
-                t = (100*framework->getTickCount() / framework->getTicksPerSecond()) << (FP-8);
-
+	
+	void step()
+	{
 		const int timestep = 256;
+	
+                t = (100*framework->getTickCount() / framework->getTicksPerSecond()) << (FP-8);
+		
 		if (t - lastTime > timestep)
 		{
 			while(t - lastTime > timestep)
 			{
 				lastTime+=timestep;
-				car.update();
+				car->update(track);
 			}
 			lastTime = t;
 		}
+	}
+        
+        void renderVideo(Game::Surface* screen)
+        {
+#if 1
+		step();
 
+                screen->clear();
 		setupView();
 
 //              renderBackground(screen);
 //              renderLand();
 //		sky->render(view);
-		ground->render(view);
-		track->render(view);
-
+		ground->render(world);
+		track->render(world);
+		car->render(world);
+		
+/*
 		rasterizer->flags &= ~Rasterizer::FlagPerspectiveCorrection;
 		Vector axis(0,FP_ONE,0);
 		Matrix translation = Matrix::makeTranslation(car.origin);
@@ -497,13 +451,7 @@ public:
 		object->transformation *= translation;
 		object->render(view);
 		rasterizer->flags |= Rasterizer::FlagPerspectiveCorrection;
-		
-		if (track->getCell(car.origin) == 0)
-		{
-			printf("Crash!\n");
-			car.speed = FPMul(car.speed, FPInt(-1));
-		}
-		
+*/
 //		track->setCell(car.origin);
 		
 //                renderRasterizerTest();
@@ -514,7 +462,7 @@ public:
 		
 		char hud[32];
 //		sprintf(hud, "%d", t);
-		sprintf(hud, "%d", car.speed);
+		sprintf(hud, "%d", car->speed);
 		bitmapFont->renderText(screen, hud, 1, 1);
         }
 
@@ -545,18 +493,18 @@ public:
                                 framework->exit();
                         break;
 			case KEY_UP:
-				car.setThrust(true);
-				car.setBrake(false);
+				car->setThrust(true);
+				car->setBrake(false);
 			break;
 			case KEY_DOWN:
-				car.setThrust(false);
-				car.setBrake(true);
+				car->setThrust(false);
+				car->setBrake(true);
 			break;
 			case KEY_LEFT:
-				car.setSteering(-1);
+				car->setSteering(-1);
 			break;
 			case KEY_RIGHT:
-				car.setSteering(1);
+				car->setSteering(1);
 			break;
                         }
                 }
@@ -567,12 +515,12 @@ public:
                         {
 			case KEY_UP:
 			case KEY_DOWN:
-				car.setThrust(false);
-				car.setBrake(false);
+				car->setThrust(false);
+				car->setBrake(false);
 			break;
 			case KEY_LEFT:
 			case KEY_RIGHT:
-				car.setSteering(0);
+				car->setSteering(0);
 			break;
                         }
                 }

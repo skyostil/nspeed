@@ -103,11 +103,13 @@ void Track::unload()
 	land = NULL;
 }
 
-void Track::render(View *view)
+void Track::render(World *world)
 {
-	view->rasterizer->setTextureTileList(textureTileList);
 	if (land)
-		land->render(view);
+	{
+		world->getView()->rasterizer->setTextureTileList(textureTileList);
+		land->render(world);
+	}
 }
 
 

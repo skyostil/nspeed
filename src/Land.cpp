@@ -28,12 +28,15 @@ Land::Land(Game::Surface *_texture,
 	texture(_texture),
 	textureScale(_textureScale),
 	invDepth(FPDiv(FP_ONE, _depth)),
-	flags(_flags)
+	flags(_flags),
+	skyTexture(NULL)
 {
 }
 
-void Land::render(View *view)
+void Land::render(World *world)
 {
+	View *view = world->getView();
+	
 #if 0  // we used to draw a textured quad
 	Vector center = view->camera.origin;
 	Vector v0, v1, v2, v3;

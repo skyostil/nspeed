@@ -18,37 +18,52 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef WORLD_H
-#define WORLD_H
+#ifndef OBJECT_H
+#define OBJECT_H
 
 #include "engine/Engine.h"
-#include "View.h"
-#include "FixedPointMatrix.h"
+#include "World.h"
 
-class Renderable
+typedef struct
+{
+	short		*vertex;
+	char		vertexCount;
+	Game::Pixel	color;
+	Game::Surface	*texture;
+	Vector		normal;
+	class Object	*object;	// required for qsort
+} Face;
+
+class Object: public Renderable
 {
 public:
-	virtual ~Renderable() {};
-	virtual void render(class World *world) = 0;
-};
-
-class World
-{
-public:
-	World(Game::Framework *_framework, Game::Surface *_screen, Rasterizer *_rasterizer, View *_view);
-	~World();
+	Object(int _vertexCount, int _faceCount);
+	~Object();
 	
-	Game::Surface	*getScreen() { return screen; }
-	Game::Framework	*getFramework() { return framework; }
-	Rasterizer	*getRasterizer() { return rasterizer; }
-	View		*getView() { return view; }
+	void	render(World *world);
 	
-	void	render();
+	void	beginMesh();
+	void	setTexCoord(scalar u, scalar v);
+	int	addVertex(Vector &pos);
+	void	beginFace(int vertexCount);
+	void	setTexture(Game::Surface *t);
+	void	setColor(Game::Pixel c);
+	void	addFaceVertex(short n);
+	void	endFace();
+	void	endMesh();
+	
+	Matrix		transformation;
+	
+	Vertex		*vertex;
+	Vertex		*transformedVertex;
+	int		vertexCount;
+	Face		*face;
+	int		faceCount;
 protected:
-	Game::Surface	*screen;
-	Game::Framework	*framework;
-	Rasterizer	*rasterizer;
-	View		*view;
+	static int	sortComparator(const void *_a, const void *_b);
+
+	int		currentFace;
+	int		currentVertex;
 };
 
 #endif

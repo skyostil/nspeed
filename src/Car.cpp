@@ -19,9 +19,11 @@
  ***************************************************************************/
 
 #include "Car.h"
+#include "models/CarModel.h"
+#include "Track.h"
 #include <stdio.h>
 
-Car::Car():
+Car::Car(World *_world):
 	angle(0),
 	acceleration(0),
 	speed(0),
@@ -33,6 +35,8 @@ Car::Car():
 	steering(0),
 	steeringWheelPos(0)
 {
+	object = new CarModel(FPInt(1)>>8, _world->getFramework()->loadImage(_world->getFramework()->findResource("car.png"), &_world->getScreen()->format));
+
 	// build an acceleration profile
 	accProfile[0].acc = 40;
 	accProfile[0].angleAcc = 200;
@@ -48,10 +52,26 @@ Car::Car():
 	accProfile[3].threshold = 0x7fffffff;
 }
 
+Car::~Car()
+{
+	delete object;
+}
+
 #define DAMPEN(x,amount) if (x) x += (x>(amount))?(-(amount)):(amount)
 
-void Car::update()
+void Car::update(Track *track)
 {
+	// collision detection & response
+	if (track->getCell(origin) == 0)
+	{
+		printf("Crash!\n");
+		
+		// backtrack to avoid collision
+		origin -= velocity;
+		speed = FPMul(speed, FPInt(-1));
+	}
+
+	// integration
 	velocity.x = FPMul(FPCos(angle), speed);
 	velocity.z = FPMul(FPSin(angle), speed);
 	origin += velocity;
@@ -85,7 +105,7 @@ void Car::update()
 		
 //	angleSpeed += (steeringWheelPos) * getAngleAcceleration();
 
-	if (speed > 200)
+	if (speed > 200 || speed < -200)
 		angle += steeringWheelPos * getAngleAcceleration();
 			
 	DAMPEN(speed, brake?32:4);
@@ -135,3 +155,15 @@ scalar Car::getAngle()
 	return angle;
 }
 
+void Car::render(World *world)
+{
+	Vector axis(0,FP_ONE,0);
+	Matrix translation = Matrix::makeTranslation(origin);
+
+	object->transformation = Matrix::makeRotation(axis, angle + (steeringWheelPos<<(FP-6)));
+	object->transformation *= translation;
+	
+	world->getView()->rasterizer->flags &= ~Rasterizer::FlagPerspectiveCorrection;
+	object->render(world);
+	world->getView()->rasterizer->flags |= Rasterizer::FlagPerspectiveCorrection;
+}

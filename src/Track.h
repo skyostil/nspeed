@@ -27,7 +27,7 @@
 
 class View;
 
-class Track
+class Track: public Renderable
 {
 public:
 	Track(Game::Framework *_framework, Game::Surface *_screen);
@@ -35,7 +35,7 @@ public:
 
 	bool		load(const char *name);
 	void		unload();
-	void		render(View *view);
+	void		render(World *world);
 	
 	int		getCell(Vector &pos);
 	void		setCell(Vector &pos);

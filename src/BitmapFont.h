@@ -18,37 +18,38 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef WORLD_H
-#define WORLD_H
+#ifndef BITMAPFONT_H
+#define BITMAPFONT_H
 
 #include "engine/Engine.h"
-#include "View.h"
-#include "FixedPointMatrix.h"
 
-class Renderable
+class BitmapFont
 {
 public:
-	virtual ~Renderable() {};
-	virtual void render(class World *world) = 0;
-};
+	//! the surface's pixel format must match that of the screen's.
+	BitmapFont(Game::Surface *t);
+	~BitmapFont();
+	
+	void	renderText(Game::Surface *screen, const char *text, int x, int y, Game::Pixel colorMask = -1);
+	
+private:
+	typedef struct
+	{
+		Game::Pixel	*pixels;
+		int		width, height;
+	} Glyph;
+	
+	//! this is a pretty generic blitter actually
+	template<typename Pixel>
+	void	renderGlyph(Game::Surface *screen, Glyph *g, int x, int y, Game::Pixel colorMask);
 
-class World
-{
-public:
-	World(Game::Framework *_framework, Game::Surface *_screen, Rasterizer *_rasterizer, View *_view);
-	~World();
-	
-	Game::Surface	*getScreen() { return screen; }
-	Game::Framework	*getFramework() { return framework; }
-	Rasterizer	*getRasterizer() { return rasterizer; }
-	View		*getView() { return view; }
-	
-	void	render();
-protected:
-	Game::Surface	*screen;
-	Game::Framework	*framework;
-	Rasterizer	*rasterizer;
-	View		*view;
+	void	build(Game::Surface *t);
+	void	clear();
+
+	//! the first glyph is always space
+	Glyph		*glyph;
+	int		minGlyph, maxGlyph;
+	Game::Surface	*texture;
 };
 
 #endif
