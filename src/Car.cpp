@@ -41,8 +41,8 @@ Car::Car(World *_world, const char *name):
 {
 	char meshName[128], textureName[128];
 	
-	snprintf(meshName, sizeof(meshName), "cars/%s.mesh", name);
-	snprintf(textureName, sizeof(textureName), "cars/%s.png", name);
+	sprintf(meshName, "cars/%s.mesh", name);
+	sprintf(textureName, "cars/%s.png", name);
 
 	texture = world->getEnvironment()->loadImage(textureName);
 	mesh = new Mesh(this, world->getEnvironment()->getFramework()->findResource(meshName), texture);

@@ -281,7 +281,7 @@ void Surface::renderTransparentSurface(const Surface *s, int x, int y, Game::Pix
 	}
 }
 #else
-void Surface::renderTransparentSurface(const Surface *s, int x, int y, Game::Pixel colorMask = -1);
+void Surface::renderTransparentSurface(const Surface *s, int x, int y, Game::Pixel colorMask)
 {
 }
 #endif

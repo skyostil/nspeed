@@ -174,13 +174,13 @@ void Land::render(World *world)
 //		angle = FPMod(angle, PI);
 
 //		printf("%f\n", (double)angle/(PI));
-		
+/*		
 		int i = 36 * (((double)angle/(PI))+1.0);
 		
 		while(i--)
 			printf("*");
 		printf("\n");
-
+*/
 		scalar x = FPMul(angle, -skyWidth) + skyWidth*4;
 
 		scalar u0 = x;

@@ -35,26 +35,26 @@ Object::~Object()
 	if (parent)
 		parent->removeChild(this);
 
-	printf("%p: Deleting %d children.\n", this, children.getCount());
+//	printf("%p: Deleting %d children.\n", this, children.getCount());
 			
 	for(i=copyChildren.begin(); i!=copyChildren.end(); i++)
 	{
-		printf("%p: Delete %p\n", this, *i);
+//		printf("%p: Delete %p\n", this, *i);
 		delete *i;
 	}
-	printf("%p: Delete done.\n", this);
+//	printf("%p: Delete done.\n", this);
 	children.clear();
 }
 
 void Object::addChild(Object *c)
 {
-	printf("%p: Add child %p\n", this, c);
+//	printf("%p: Add child %p\n", this, c);
 	children.add(c);
 }
 
 void Object::removeChild(Object *c)
 {
-	printf("%p: Remove child %p\n", this, c);
+//	printf("%p: Remove child %p\n", this, c);
 	children.remove(c);
 }
 
