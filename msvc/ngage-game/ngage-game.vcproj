@@ -19,7 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="D:\LIB_SDL\zlib;&quot;C:\Documents and Settings\Sami\My Documents\proj\ngage-game\msvc\ngage-game&quot;;&quot;D:\LIB_SDL\SDL_image-1.2.3\include&quot;;&quot;C:\Documents and Settings\Sami\My Documents\proj\ngage-game\src&quot;;&quot;D:\LIB_SDL\SDL-1.2.6\include&quot;"
+				AdditionalIncludeDirectories="&quot;D:\Documents and Settings\Sami.SPAM\My Documents\Code\include&quot;;&quot;g:\code\symbian\ngage-game\msvc\ngage-game&quot;;&quot;g:\code\symbian\ngage-game\src&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -70,7 +70,7 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="D:\LIB_SDL\zlib;&quot;C:\Documents and Settings\Sami\My Documents\proj\ngage-game\msvc\ngage-game&quot;;&quot;D:\LIB_SDL\SDL_image-1.2.3\include&quot;;&quot;C:\Documents and Settings\Sami\My Documents\proj\ngage-game\src&quot;;&quot;D:\LIB_SDL\SDL-1.2.6\include&quot;"
+				AdditionalIncludeDirectories="&quot;D:\Documents and Settings\Sami.SPAM\My Documents\Code\include&quot;;&quot;g:\code\symbian\ngage-game\msvc\ngage-game&quot;;&quot;g:\code\symbian\ngage-game\src&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -148,6 +148,9 @@
 				RelativePath="..\..\src\Land.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\Menu.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\Mesh.cpp">
 			</File>
 			<File
@@ -222,6 +225,9 @@
 				RelativePath="..\..\src\Land.h">
 			</File>
 			<File
+				RelativePath="..\..\src\Menu.h">
+			</File>
+			<File
 				RelativePath="..\..\src\Mesh.h">
 			</File>
 			<File
@@ -270,16 +276,16 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
 		</Filter>
 		<File
-			RelativePath="D:\LIB_SDL\SDL-1.2.6\lib\SDL.lib">
+			RelativePath="D:\Documents and Settings\Sami.SPAM\My Documents\Code\lib\SDL-1.2.5\VisualC\sdl\Release\sdl.lib">
 		</File>
 		<File
-			RelativePath="D:\LIB_SDL\SDL_image-1.2.3\lib\SDL_image.lib">
+			RelativePath="D:\Documents and Settings\Sami.SPAM\My Documents\Code\lib\SDL_image-1.2.2\lib\SDL_image.lib">
 		</File>
 		<File
-			RelativePath="D:\LIB_SDL\SDL-1.2.6\lib\SDLmain.lib">
+			RelativePath="D:\Documents and Settings\Sami.SPAM\My Documents\Code\lib\SDL-1.2.5\VisualC\SDLmain\Release\SDLmain.lib">
 		</File>
 		<File
-			RelativePath="D:\LIB_SDL\zlib\dll32\zlibwapi.lib">
+			RelativePath="D:\Documents and Settings\Sami.SPAM\My Documents\Code\lib\zlib121\static32\zlibstat.lib">
 		</File>
 	</Files>
 	<Globals>
