@@ -22,11 +22,12 @@
 #include "Track.h"
 #include "Environment.h"
 #include "World.h"
+#include "Mixer.h"
 #include <stdio.h>
 
 Car::Car(World *_world, const char *name):
 	Object(_world),
-	angle(0),
+	angle(PI/2),
 	speed(0),
 	texture(0),
 	angleSpeed(0),
@@ -40,34 +41,44 @@ Car::Car(World *_world, const char *name):
 	engineCycle(0),
 	world(_world)
 {
-	char meshName[128], textureName[128];
-	
-	sprintf(meshName, "cars/%s.mesh", name);
-	sprintf(textureName, "cars/%s.png", name);
+	char fileName[256];
 
-	texture = world->getEnvironment()->loadImage(textureName);
-	mesh = new Mesh(this, world->getEnvironment()->getFramework()->findResource(meshName), texture);
+	sfxChannel = 4;
+
+	sprintf(fileName, "cars/%s-engine.wav", name);
+	engineSound = world->getEnvironment()->getFramework()->loadSample(world->getEnvironment()->getFramework()->findResource(fileName));
+
+	sprintf(fileName, "cars/%s.png", name);
+	texture = world->getEnvironment()->loadImage(fileName);
+
+	sprintf(fileName, "cars/%s.mesh", name);
+	mesh = new Mesh(this, world->getEnvironment()->getFramework()->findResource(fileName), texture);
+
 	world->getEnvironment()->meshPool.add(mesh);
 
 	// build an acceleration profile
-	accProfile[0].acc = 14;
-	accProfile[0].angleAcc = 100;
-	accProfile[0].threshold = 500;
-	accProfile[1].acc = 10;
-	accProfile[1].angleAcc = 90;
-	accProfile[1].threshold = 1500;
-	accProfile[2].acc = 6;
-	accProfile[2].angleAcc = 80;
-	accProfile[2].threshold = 5000;
-	accProfile[3].acc = 2;
-	accProfile[3].angleAcc = 50;
+	accProfile[0].acc = 96;
+	accProfile[0].angleAcc = 128;
+	accProfile[0].threshold = 1200;
+	accProfile[1].acc = 64;
+	accProfile[1].angleAcc = 128;
+	accProfile[1].threshold = 3000;
+	accProfile[2].acc = 24;
+	accProfile[2].angleAcc = 128;
+	accProfile[2].threshold = 4000;
+	accProfile[3].acc = 12;
+	accProfile[3].angleAcc = 128;
 	accProfile[3].threshold = 0x7fffffff;
+
+	if (engineSound)
+		world->getEnvironment()->mixer->playSample(engineSound, 10000, true, sfxChannel);
 }
 
 Car::~Car()
 {
 	world->getEnvironment()->meshPool.remove(mesh);
 	delete texture;
+	delete engineSound;
 }
 
 #define DAMPEN(x,amount) if (x) x += (x>(amount))?(-(amount)):(amount)
@@ -75,21 +86,21 @@ Car::~Car()
 void Car::update(Track *track)
 {
 	Vector acceleration(0,0,0);
+	Vector worldOrigin = origin * (FP_ONE>>CAR_COORDINATE_SCALE);
 
 	// update the speedometer
-	speed = velocity.length();
+	speed = velocity.lengthSquared();
 
-//	printf("Speed: %d\n", speed);
 //	printf("Vel: %6d, %6d\n", velocity.x, velocity.z);
 	
 	// collision detection & response
-	if (track->getCell(origin) == 0)
+	if (track->getCell(worldOrigin) == 0)
 	{
-		Vector normal = track->getNormal(origin);
-		Vector vel = velocity;
-		int backtrackLimit = 8;
+		Vector normal = track->getNormal(worldOrigin);
+//		Vector vel = velocity;
+		int backtrackLimit = 16;
 
-		vel.normalize();
+//		vel.normalize();
 
 //		printf("%d\n", speed);
 
@@ -101,7 +112,7 @@ void Car::update(Track *track)
 		}
 		
 		// backtrack to avoid collision
-		while(track->getCell(origin)==0 && --backtrackLimit)
+		while(track->getCell(origin * (FP_ONE>>CAR_COORDINATE_SCALE))==0 && --backtrackLimit)
 			origin -= velocity;
 /*		
 		// rotate the normal 90 degress
@@ -111,7 +122,7 @@ void Car::update(Track *track)
 		normal.y = 0;
 */		
 //		scalar p = velocity.dot(normal);
-		scalar p = vel.dot(normal);
+//		scalar p = vel.dot(normal);
 /*
 		// make sure we bounce off the wall
 		if (p > -(FP_ONE) && p < 0)
@@ -149,12 +160,14 @@ void Car::update(Track *track)
 			scalar acc = getAcceleration(speed);
 			acceleration.x += (FPCos(angle) * acc) >> FP;
 			acceleration.z += (FPSin(angle) * acc) >> FP;
+
 	//		printf("Acc: %d\n", acc);
 		}
 
 		{
 	//		scalar acc = speed >> 5;
-			if (speed > 1024)
+//			if (speed > 1024)
+			if (speed > 16)
 			{
 				Vector vel = velocity;
 	//			Vector dir(FPCos(angle), 0, FPSin(angle));
@@ -163,24 +176,37 @@ void Car::update(Track *track)
 	//			Vector dir(FPCos(angle + (PI>>1)), 0, FPSin(angle + (PI>>1)));
 	//			Vector acc(FPCos(angle), 0, FPSin(angle));
 
-				vel.normalize();
+//				vel.normalize();
 
-	//			scalar acc = (FP_ONE - (vel.dot(dir))) >> 9;
 				scalar acc = vel.dot(dir);
-	//			scalar acc = FP_ONE - vel.dot(dir);
 
 	//			if (acc < 0)
 	//				acc = -acc;
 
-	//			printf("Angle: %6d\n", acc);
+				acc = FPDiv(acc, FPInt(speed)>>6);
+				printf("Angle acc: %6d\n", acc);
 
-				if (1)
+
 				{
-					acc>>=5;
+//					acc>>=7;
+				//	acc>>=8;
 	//				Vector dir(FPCos((angle + (PI>>1)) % 2*PI), 0, FPSin((angle + (PI>>1))) % 2*PI);
 	//				Vector dir(FPSin(angle), 0, -FPCos(angle));
 
 					acceleration -= dir * acc;
+
+//					scalar slip = FPMul(steeringWheelPos<<8, speed * thrustPos);
+					scalar slip = FPMul(steeringWheelPos<<6, FPSqrt(speed));
+					scalar maxSlip = 4096;
+//					printf("slip: %6d\n", slip);
+
+					if (slip > maxSlip)
+						slip = maxSlip;
+					else if (slip < -maxSlip)
+						slip = -maxSlip;
+
+					// slip
+//					acceleration += dir * slip;
 	/*
 					if (vel.cross(dir).y > 0)
 						acceleration += dir * acc;
@@ -228,7 +254,7 @@ void Car::update(Track *track)
 		
 //	angleSpeed += (steeringWheelPos) * getAngleAcceleration();
 
-	if (speed > 200 || speed < -200)
+	if (FPAbs(velocity.x) > 32 || FPAbs(velocity.z) > 32)
 		angle += (steeringWheelPos>>2) * getAngleAcceleration(speed);
 
 //	printf("Acc: %6d, %6d\n", acceleration.x, acceleration.z);
@@ -248,18 +274,20 @@ void Car::update(Track *track)
 		
 //	DAMPEN(speed, brake?32:4);
 
-	DAMPEN(velocity.x, brake?16:4);
-	DAMPEN(velocity.z, brake?16:4);
+	DAMPEN(velocity.x, brake?64:8);
+	DAMPEN(velocity.z, brake?64:8);
 	DAMPEN(angleSpeed, 1);
 
 	// update the model position
 	Vector verticalAxis(0,FP_ONE,0);
 	Vector rollAxis(FPCos(angle),0,FPSin(angle));
-	Matrix translation = Matrix::makeTranslation(origin + Vector(0, thrustPos<<(FP-10), 0));
+	Matrix translation = Matrix::makeTranslation(origin * (FP_ONE>>CAR_COORDINATE_SCALE) + Vector(0, thrustPos<<(FP-10), 0));
 
 	mesh->transformation = Matrix::makeRotation(verticalAxis, angle + (steeringWheelPos<<(FP-8)));
 	mesh->transformation *= Matrix::makeRotation(rollAxis, -(steeringWheelPos<<(FP-8)));
 	mesh->transformation *= translation;
+
+	updateSound();
 }
 
 scalar Car::getAcceleration(scalar speed)
@@ -272,6 +300,18 @@ scalar Car::getAcceleration(scalar speed)
 //	printf("%6d -> acceleration segment %d: %d\n", speed, i, accProfile[i].acc);
 		
 	return accProfile[i].acc;
+}
+
+void Car::updateSound()
+{
+	int freq;
+
+	if (thrust)
+		freq = (speed << 5) + 16000;
+	else
+		freq = (speed << 5) + 8000;
+
+	world->getEnvironment()->mixer->getChannel(sfxChannel)->setFrequency(freq);
 }
 
 scalar Car::getAngleAcceleration(scalar speed)

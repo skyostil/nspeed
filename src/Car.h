@@ -21,11 +21,14 @@
 #ifndef CAR_H
 #define CAR_H
 
+#include "engine/Engine.h"
 #include "FixedPointMath.h"
 #include "FixedPointVector.h"
 #include "Mesh.h"
 #include "World.h"
 #include "Object.h"
+
+#define CAR_COORDINATE_SCALE 4
 
 class Track;
 
@@ -41,12 +44,15 @@ public:
 	void setSteering(int _steering);
 	
 	int getSteering() { return steering; }
+//	scalar getSpeed() { return FPSqrt(speed); }
 	scalar getSpeed() { return speed; }
 	
 	scalar getAngle() { return angle; }
-	Vector &getOrigin() { return origin; }
+	Vector getOrigin() { return origin * (FP_ONE>>CAR_COORDINATE_SCALE); }
 	
 private:
+	void	updateSound();
+
 	Vector	origin, velocity;
 	scalar	angle, angleSpeed, speed;
 
@@ -68,6 +74,8 @@ private:
 	Mesh			*mesh;
 	Game::Surface	*texture;
 	World			*world;
+	Game::SampleChunk	*engineSound;
+	int				sfxChannel;
 };
 
 #endif

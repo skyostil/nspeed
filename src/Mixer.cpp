@@ -113,7 +113,8 @@ void Mixer::render(Game::SampleChunk *buffer)
 			}
 			
 //			*data++ = a / (channelCount*2);
-			*data++ = a / (8);
+//			*data++ = a / (1);
+			*data++ = a;
 			
 			if (ticker)
 			{
@@ -142,7 +143,8 @@ void Mixer::render(Game::SampleChunk *buffer)
 				}
 			}
 			
-			*data++ = (a/(channelCount*2))>>8;
+//			*data++ = (a/(channelCount*2))>>8;
+			*data++ = a>>8;
 			
 			if (ticker)
 			{

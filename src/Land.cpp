@@ -81,7 +81,7 @@ void Land::render(World *world)
 	view->camera.project(&center, &dummy0, &horizon, &dummy1, &dummy2, &dummy3);
 
 	// add magic number to ensure we don't see too far
-	horizon+=11*FP_ONE;
+	horizon+=13*FP_ONE;
 	
 	// clip the horizon
 	if (horizon < 0)
@@ -143,7 +143,6 @@ void Land::render(World *world)
 		scalar angle;
 		scalar skyWidth = FPDiv(FPInt(256),PI);
 		scalar skyHeight = FPInt(64);
-		scalar vOffset = 0;
 
 		if (FPAbs(v.z) > FPAbs(v.x))
 		{
@@ -159,13 +158,13 @@ void Land::render(World *world)
 		scalar x = FPMul(angle, -skyWidth) + skyWidth*4;
 
 		scalar u0 = x;
-		scalar v0 = horizon - skyHeight + vOffset;
+		scalar v0 = skyHeight - (horizon>>1);
 		scalar u1 = x + skyWidth;
-		scalar v1 = horizon - skyHeight + vOffset;
+		scalar v1 = skyHeight - (horizon>>1);
 		scalar u2 = x + skyWidth;
-		scalar v2 = skyHeight + vOffset;
+		scalar v2 = skyHeight;
 		scalar u3 = x;
-		scalar v3 = skyHeight + vOffset;
+		scalar v3 = skyHeight;
 
 		view->rasterizer->flags = 0;
 		view->rasterizer->setTexture(skyTexture);

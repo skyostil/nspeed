@@ -92,9 +92,10 @@ void GameEngine::configureAudio(Game::SampleChunk* sample)
 void GameEngine::lookAtCarFromBehind(Car *car)
 {
 	scalar angle = rotateCamera?FPMod(car->getAngle() + (time>>1), 2*PI):car->getAngle();
-	scalar x = FPMul(FPCos(angle), FPInt(3)>>1);
-	scalar z = FPMul(FPSin(angle), FPInt(3)>>1);
-	scalar y = FPInt(2)>>2;
+	scalar x = FPMul(FPCos(angle), FPInt(3)>>3);
+	scalar z = FPMul(FPSin(angle), FPInt(3)>>3);
+//	scalar y = FPInt(2)>>2;
+	scalar y = FPInt(3)>>3;
 
 	env->getView()->camera.target = car->getOrigin() + Vector(x,0,z);
 	env->getView()->camera.origin = car->getOrigin() + Vector(-x>>1,y,-z>>1);
@@ -133,10 +134,11 @@ void GameEngine::renderVideo(Game::Surface* screen)
 		int speedY = env->getScreen()->height - env->bigFont->getHeight() - 2;
 		scalar speed = playerCar->getSpeed();
 		
-		if (speed <= (32<<2))
-			speed = 0;
+//		if (speed <= (32<<2))
+//			speed = 0;
 		
-		sprintf(speedText, "%3d kph", speed >> 2);
+//		sprintf(speedText, "%3d km/h", speed >> 2);
+		sprintf(speedText, "%3d km/h", speed);
 		env->bigFont->renderText(env->getScreen(), speedText, speedX, speedY);
 	}
 	break;
@@ -189,7 +191,7 @@ void GameEngine::setState(State newState)
 		if (env->modplayer)
 		{
 			env->modplayer->load(framework->findResource("dallas.mod"));
-			env->modplayer->play();
+//			env->modplayer->play();
 		}
 
 		env->getWorld()->getRenderableSet().add(env->track);
@@ -285,7 +287,7 @@ void GameEngine::step()
 	
 	if (framework->getTickCount() - fpsCountStart > framework->getTicksPerSecond() / 4)
 	{
-		sprintf(debugMessage, "%d fps", frameCount*4);
+		sprintf(debugMessage, "%d fps, %d s", frameCount*4, framework->getTickCount() / framework->getTicksPerSecond());
 		fpsCountStart = framework->getTickCount();
 		frameCount = 0;
 	}
