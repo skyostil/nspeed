@@ -182,7 +182,7 @@ void Menu::renderSelectionRectangle(int x, int y, int w, int h) const
 		(screen->format.gmask & (screen->format.gmask>>1)) +
 		(screen->format.bmask & (screen->format.bmask>>1));
 	const int scale = 1;
-	int c = 31;
+	int c = (1<<(screen->format.rsize+1))-1;
 	const int r = 1, g = 0, b = 0;
 
 	p+=y * screen->width;
@@ -197,9 +197,8 @@ void Menu::renderSelectionRectangle(int x, int y, int w, int h) const
 		int gradg = ((g*c)>>scale) << screen->format.gshift;
 		int gradb = ((b*c)>>scale) << screen->format.bshift;
 		
-//		c-=(1<<(scale+1));
-		c-=2;
-
+		c-=(1<<(screen->format.rsize-3));
+		
 		for(x=0; x<screen->width; x++)
 		{
 			int r = (*p) & screen->format.rmask;
@@ -314,6 +313,7 @@ Menu::Action Menu::handleEvent(Game::Event* event)
 				return deferredAction;
 			break;
 			case KEY_LEFT:
+            case KEY_EXIT:
 				if (!topLevelMenu)
 				{
 					swooshDirection = 1;

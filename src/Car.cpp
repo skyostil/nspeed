@@ -427,7 +427,7 @@ void Car::updateGate()
                 {
                         int t = getTime();
 
-                        if (t - lapStart < bestLapTime)
+                        if (bestLapTime == -1 || t - lapStart < bestLapTime)
                         {
                             bestLapTime = t - lapStart;
                         }

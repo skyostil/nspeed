@@ -85,8 +85,8 @@ void Environment::muteSoundEffects(bool mute)
         }
         else
         {
-            getEngineSoundChannel()->setVolume(4);
-            getSfxChannel()->setVolume(4);
+            getEngineSoundChannel()->setVolume(16);
+            getSfxChannel()->setVolume(16);
         }
     }
 }

@@ -127,6 +127,7 @@ void GameEngine::renderVideo(Game::Surface* screen)
 		char text[64];
         Menu *menu = env->getMenu();
         World *world = env->getWorld();
+        Game::Pixel16 textMask = ((1<<screen->format.rsize)-1) << screen->format.rshift;
         BitmapFont *font = env->font;
 		int x, y, i;
 
@@ -219,31 +220,33 @@ void GameEngine::renderVideo(Game::Surface* screen)
                                 y = 48;
 
                                 sprintf(text, "Best lap:");
-                                font->renderText(env->getScreen(), text, 4, y);
+                                font->renderText(env->getScreen(), text, 4, y, textMask);
 
                                 i = track->getBestLapTime(text, sizeof(text));
 
                                 if (i != -1)
                                 {
-                                    font->renderText(env->getScreen(), text, 64, y);
+                                    font->renderText(env->getScreen(), text, 108, y + font->getHeight() + 2);
 
                                     sprintf(text, "%02d:%02d'%02d", (i/100)/60, (i/100)%60, i%100);
                                     font->renderText(env->getScreen(), text, 108, y);
+                                    y += font->getHeight() + 2;
                                 }
 
                                 y += font->getHeight() + 2;
 
                                 sprintf(text, "Best race:");
-                                font->renderText(env->getScreen(), text, 4, y);
+                                font->renderText(env->getScreen(), text, 4, y, textMask);
 
                                 i = track->getBestTotalTime(text, sizeof(text));
 
                                 if (i != -1)
                                 {
-                                    font->renderText(env->getScreen(), text, 64, y);
+                                    font->renderText(env->getScreen(), text, 108, y + font->getHeight() + 2);
 
                                     sprintf(text, "%02d:%02d'%02d", (i/100)/60, (i/100)%60, i%100);
                                     font->renderText(env->getScreen(), text, 108, y);
+                                    y += font->getHeight() + 2;
                                 }
 						}
                 }
@@ -277,46 +280,19 @@ void GameEngine::renderVideo(Game::Surface* screen)
                 // render the world
 
                 if (state == RaceOutroState)
-                    rotateAroundPosition(playerCar->getOrigin(), FPInt(1)>>2);
+                    rotateAroundPosition(playerCar->getOrigin(), FPInt(1)>>1);
                 else
                     lookAtCarFromBehind(playerCar);
 
                 env->getWorld()->render();
                 
                 // render the map & OSD
-                Game::Surface *map = env->track->getMap();
-
-                if (map)
+                
+                if (state == RaceState)
                 {
-                        int mapX = env->getScreen()->width - env->track->getMap()->width - 2;
-                        int mapY = env->getScreen()->height - env->track->getMap()->height - 2;
-                        env->getScreen()->renderTransparentSurface(env->track->getMap(), mapX, mapY);
+                    renderOSD(screen);
                 }
                 
-                x = 4;
-                y = env->getScreen()->height - font->getHeight() - 2;
-                scalar speed = playerCar->getSpeed();
-                
-                if (speed <= (32<<2))
-                        speed = 0;
-                
-                sprintf(text, "%3d km/h", speed >> 5);
-                font->renderText(env->getScreen(), text, x, y);
-                
-                y -= font->getHeight() - 2;
-                sprintf(text, "lap %d:%d", playerCar->getLapCount()+1, env->track->getLapCount());
-                font->renderText(env->getScreen(), text, x, y);
-
-                i = (state==RaceState) ? playerCar->getRaceTime() / 10 : 0;
-                sprintf(text, "%02d:%02d'%02d", (i/100)/60, (i/100)%60, i%100);
-                font->renderText(env->getScreen(), text, 4, 4);
-
-                i = (state==RaceState) ? playerCar->getLapTime() / 10 : 0;
-                sprintf(text, "%02d:%02d'%02d", (i/100)/60, (i/100)%60, i%100);
-                font->renderText(env->getScreen(), text, 4, 4 + font->getHeight());
-
-                renderEnergyBar(screen, playerCar->getEnergy(), screen->width - 54, 4, 8);
-
                 if (!playerCar->getEnergy())
                 {
                     renderStatic(screen);
@@ -326,11 +302,7 @@ void GameEngine::renderVideo(Game::Surface* screen)
                     renderDamage(screen);
                 }
 
-                if (state == RaceMenuState)
-                {
-                        menu->render(world);
-                }
-                else if (state == RaceCountDownState || raceCountDown > 0)
+                if (state == RaceCountDownState || raceCountDown > 0)
                 {
                         if (raceCountDown > 3*(RACECOUNTDOWN/4))
                                 strncpy(text, "3", sizeof(text));
@@ -345,6 +317,16 @@ void GameEngine::renderVideo(Game::Surface* screen)
                         }
                                 
                         env->bigFont->renderText(env->getScreen(), text, screen->width/2 - env->bigFont->getTextWidth(text), screen->height/2 - env->bigFont->getHeight());
+                }
+                
+                if (state == RaceOutroState)
+                {
+                    renderLapTimes(screen);
+                }
+                
+                if (state == RaceMenuState)
+                {
+                        menu->render(world);
                 }
         }
         break;
@@ -541,7 +523,7 @@ void GameEngine::handleMenuAction(Menu::Action action)
                         setState(ChooseCarState);
                 break;
                 case RaceMenuState:
-                        setState(RaceState);
+                        setState(oldState);
                 break;
                 }
         break;
@@ -608,6 +590,10 @@ void GameEngine::handleEvent(Game::Event* event)
         case RaceIntroState:
                 if (event->type == Game::Event::KeyPressEvent && event->key.code == KEY_SELECT)
                         setState(RaceCountDownState);
+        break;
+        case RaceOutroState:
+                if (event->type == Game::Event::KeyPressEvent && event->key.code == KEY_SELECT)
+                        setState(RaceMenuState);
         break;
 		case RaceCountDownState:
         case RaceState:
@@ -726,12 +712,12 @@ void GameEngine::atomicStep()
                 {
                     int l = car->getBestLapTime();
                     int r = car->getRaceTime();
-
+					
                     if (l != -1 && r != -1)
                     {
-                        if (l < env->track->getBestLapTime(0,0))
+                        if (l < env->track->getBestLapTime() || env->track->getBestLapTime() == -1)
                             env->track->setBestLapTime(l, playerName);
-                        if (r < env->track->getBestTotalTime(0,0))
+                        if (r < env->track->getBestTotalTime() || env->track->getBestTotalTime() == -1)
                             env->track->setBestTotalTime(r, playerName);
                         env->track->saveTimes(selectedTrack);
                     }
@@ -920,12 +906,98 @@ void GameEngine::renderDamage(Game::Surface *screen)
                     p[x] = p[x+r];
         }
 
-        q ^= 5213512301;
+        q ^= 13512301;
         q += (q>>5);
         q += 13421;
 
         p+=screen->width;
 	}
+}
+
+void GameEngine::renderLapTimes(Game::Surface *screen)
+{    
+    Car *car = env->carPool.getItem(0);
+    BitmapFont *font = env->font;
+    int l = car->getBestLapTime();
+    int r = car->getRaceTime();
+    int y = 64;
+    char text[64];
+    Game::Pixel16 recordMask = ((1<<screen->format.rsize)-1) << screen->format.rshift;
+    Game::Pixel16 normalMask = (Game::Pixel16)-1;
+    Game::Pixel16 mask;
+    Track *track = env->track;
+
+    env->getMenu()->dimScreen(screen, y-2, y+2*(font->getHeight()+2)+2);
+    
+    sprintf(text, "Best lap:");
+    font->renderText(env->getScreen(), text, 4, y);
+
+    if (l != -1)
+    {
+        sprintf(text, "%02d:%02d'%02d", (l/100)/60, (l/100)%60, l%100);
+        if (l < track->getBestLapTime() || track->getBestLapTime()==-1)
+            mask = recordMask;
+        else
+            mask = normalMask;
+        font->renderText(env->getScreen(), text, 108, y, mask);
+    }
+
+    y += font->getHeight() + 2;
+
+    sprintf(text, "Total:");
+    font->renderText(env->getScreen(), text, 4, y);
+
+    if (r != -1)
+    {
+        sprintf(text, "%02d:%02d'%02d", (r/100)/60, (r/100)%60, r%100);
+        if (r < track->getBestTotalTime() || track->getBestTotalTime()==-1)
+            mask = recordMask;
+        else
+            mask = normalMask;
+        font->renderText(env->getScreen(), text, 108, y, mask);
+    }
+    
+    renderTitle(screen, "Finished!");
+}
+
+void GameEngine::renderOSD(Game::Surface *screen)
+{
+    int x, y, i;
+    Game::Surface *map = env->track->getMap();
+    Car *car = env->carPool.getItem(0);
+    BitmapFont *font = env->font;
+    char text[64];
+
+    if (map)
+    {
+            int mapX = env->getScreen()->width - env->track->getMap()->width - 2;
+            int mapY = env->getScreen()->height - env->track->getMap()->height - 2;
+            env->getScreen()->renderTransparentSurface(env->track->getMap(), mapX, mapY);
+    }
+    
+    x = 4;
+    y = env->getScreen()->height - font->getHeight() - 2;
+    scalar speed = car->getSpeed();
+    
+    if (speed <= (32<<2))
+            speed = 0;
+    
+    sprintf(text, "%3d km/h", speed >> 5);
+    font->renderText(env->getScreen(), text, x, y);
+    
+    y -= font->getHeight() - 2;
+    sprintf(text, "lap %d of %d", car->getLapCount()+1, env->track->getLapCount());
+    font->renderText(env->getScreen(), text, x, y);
+
+    i = car->getRaceTime() / 10;
+    sprintf(text, "%02d:%02d'%02d", (i/100)/60, (i/100)%60, i%100);
+    font->renderText(env->getScreen(), text, 4, 4);
+
+    i = car->getLapTime() / 10;
+    sprintf(text, "%02d:%02d'%02d", (i/100)/60, (i/100)%60, i%100);
+    font->renderText(env->getScreen(), text, 4, 4 + font->getHeight());
+
+    renderEnergyBar(screen, car->getEnergy(), screen->width - 54, 4, 8);
 }
 
 // bootstrap

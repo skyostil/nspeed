@@ -92,11 +92,11 @@ public:
         bool            tileIsDirt(unsigned char tile) const;
         bool            tileIsTurbo(unsigned char tile) const;
         
-        int             getLapCount() const { return 5; }
+        int             getLapCount() const { return 1; }
         
         // these times are in milliseconds
-        int             getBestLapTime(char *name, unsigned int nameSize);
-        int             getBestTotalTime(char *name, unsigned int nameSize);
+        int             getBestLapTime(char *name = 0, unsigned int nameSize = 0);
+        int             getBestTotalTime(char *name = 0, unsigned int nameSize = 0);
         void            setBestLapTime(int t, const char *name);
         void            setBestTotalTime(int t, const char *name);
         

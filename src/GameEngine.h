@@ -72,6 +72,8 @@ private:
         void                    renderEnergyBar(Game::Surface *screen, int energy, int x, int y, int h) const;
         void                    renderStatic(Game::Surface *screen);
         void                    renderDamage(Game::Surface *screen);
+		void					renderLapTimes(Game::Surface *screen);
+        void                    renderOSD(Game::Surface *screen);
 
         Game::Framework *framework;
         State                   state, oldState;
