@@ -115,16 +115,51 @@ void Track::render(World *world)
 
 int Track::getCell(Vector &pos)
 {
-	unsigned char x = (pos.x << 3) >> FP;
-	unsigned char y = (pos.z << 3) >> FP;
+	unsigned char x, y;
 	
-	return ((Game::Pixel8*)(texture->pixels))[x + (y<<8)];
+	project(pos, x, y);
+	
+	return lookup(x,y);
 }
 
 void Track::setCell(Vector &pos)
 {
-	unsigned char x = (pos.x << 3) >> FP;
-	unsigned char y = (pos.z << 3) >> FP;
-	
+	unsigned char x, y;
+
+	project(pos, x, y);
+		
 	((Game::Pixel8*)(texture->pixels))[x + (y<<8)] = 1;
+}
+
+Vector &Track::getNormal(Vector &pos)
+{
+	const int size = 4; // sample square size / 2
+	unsigned char cx, cy;
+	int px, py;
+	Vector normal(0,0,0);
+
+	project(pos, cx, cy);
+	
+	for(py=cy-size; py<cy+size; py++)
+	for(px=cx-size; px<cx+size; px++)
+	{
+		Game::Pixel8 p = lookup((unsigned char)px, (unsigned char)py);
+		
+		if (p)
+		{
+			// XXX - possible sign issues here
+			normal.x += FPInt(px - cx);
+			normal.z += FPInt(py - cy);
+		}
+	}
+	
+	normal /= FPInt(size*size);
+	
+	return normal;
+}
+
+void Track::project(Vector &pos, unsigned char &x, unsigned char &y)
+{
+	x = (pos.x << 3) >> FP;
+	y = (pos.z << 3) >> FP;
 }

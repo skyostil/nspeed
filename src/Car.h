@@ -43,7 +43,7 @@ public:
 	scalar getAngle();
 	
 	Vector	origin, velocity;
-	scalar	angle, angleSpeed, speed, acceleration;
+	scalar	angle, angleSpeed, speed;
 
 private:
 	scalar	getAcceleration();

@@ -25,7 +25,6 @@
 
 Car::Car(World *_world):
 	angle(0),
-	acceleration(0),
 	speed(0),
 	angleSpeed(0),
 	velocity(0,0,0),
@@ -38,15 +37,15 @@ Car::Car(World *_world):
 	object = new CarModel(FPInt(1)>>8, _world->getFramework()->loadImage(_world->getFramework()->findResource("car.png"), &_world->getScreen()->format));
 
 	// build an acceleration profile
-	accProfile[0].acc = 40;
+	accProfile[0].acc = 1000;
 	accProfile[0].angleAcc = 200;
-	accProfile[0].threshold = 300;
-	accProfile[1].acc = 30;
+	accProfile[0].threshold = 1000;
+	accProfile[1].acc = 300;
 	accProfile[1].angleAcc = 180;
-	accProfile[1].threshold = 1500;
-	accProfile[2].acc = 10;
+	accProfile[1].threshold = 2000;
+	accProfile[2].acc = 100;
 	accProfile[2].angleAcc = 150;
-	accProfile[2].threshold = 4000;
+	accProfile[2].threshold = 6000;
 	accProfile[3].acc = 0;
 	accProfile[3].angleAcc = 90;
 	accProfile[3].threshold = 0x7fffffff;
@@ -61,32 +60,57 @@ Car::~Car()
 
 void Car::update(Track *track)
 {
+	Vector acceleration(0,0,0);
+	
+//	velocity.x = FPMul(FPCos(angle), speed);
+//	velocity.z = FPMul(FPSin(angle), speed);
+	
+	speed = velocity.length();
+
+//	printf("Speed: %d\n", speed);
+//	printf("Vel: %6d, %6d\n", velocity.x, velocity.z);
+	
 	// collision detection & response
-	if (track->getCell(origin) == 0)
+	if (0 && track->getCell(origin) == 0)
 	{
-		printf("Crash!\n");
+		Vector normal = track->getNormal(origin);
 		
 		// backtrack to avoid collision
-		origin -= velocity;
-		speed = FPMul(speed, FPInt(-1));
+//		origin -= velocity * FPInt(1);
+		
+		// rotate the normal 90 degress
+		normal.y = normal.x;
+		normal.x = -normal.z;
+		normal.z = normal.y;
+		normal.y = 0;
+		
+		scalar p = velocity.dot(normal);
+		
+//		if (p < 0) p = -p;
+		
+		velocity = normal * p - velocity * (FPInt(1)>>2);
+		printf("Crash %d\n", p);
+		
+//		speed = 0;
+//		speed = FPMul(speed, FPInt(-1));
+//		origin += normal * 10000;
 	}
-
-	// integration
-	velocity.x = FPMul(FPCos(angle), speed);
-	velocity.z = FPMul(FPSin(angle), speed);
-	origin += velocity;
-	angle += angleSpeed;
-	
-	// bring angle back in range
-	while(angle > 2*PI)
-		angle -= 2*PI;
-
-	while(angle < 0)
-		angle += 2*PI;
 		
 	if (thrust)
-		speed += getAcceleration();
-		
+	{
+//		speed += getAcceleration();
+		scalar acc = getAcceleration();
+		acceleration.x += FPMul(FPCos(angle), acc);
+		acceleration.z += FPMul(FPSin(angle), acc);
+		printf("Acc: %d\n", acc);
+	} else
+	{
+		scalar acc = speed >> 4;
+		acceleration.x += FPMul(FPCos(angle), acc);
+		acceleration.z += FPMul(FPSin(angle), acc);
+		printf("Spd: %d\n", acc);
+	}
+	
 	switch(steering)
 	{
 	case -1:
@@ -100,14 +124,29 @@ void Car::update(Track *track)
 		if (steeringWheelPos < 8) steeringWheelPos++;
 	break;
 	}
-	
-	printf("%d\n", steeringWheelPos);
+		
+//	printf("%d\n", steeringWheelPos);
 		
 //	angleSpeed += (steeringWheelPos) * getAngleAcceleration();
 
 	if (speed > 200 || speed < -200)
 		angle += steeringWheelPos * getAngleAcceleration();
-			
+
+//	printf("Acc: %6d, %6d\n", acceleration.x, acceleration.z);
+		
+	// integration
+//	acceleration *= (FPInt(1)>>5);
+	velocity += acceleration;
+	origin += velocity;
+	angle += angleSpeed;
+		
+	// bring angle back in range
+	while(angle > 2*PI)
+		angle -= 2*PI;
+
+	while(angle < 0)
+		angle += 2*PI;
+		
 	DAMPEN(speed, brake?32:4);
 	DAMPEN(angleSpeed, 1);
 }
@@ -119,7 +158,7 @@ scalar Car::getAcceleration()
 	while(speed > accProfile[i].threshold && (i < sizeof(accProfile)/sizeof(accProfile[0])))
 		i++;
 		
-	printf("%6d -> acceleration segment %d: %d\n", speed, i, accProfile[i].acc);
+//	printf("%6d -> acceleration segment %d: %d\n", speed, i, accProfile[i].acc);
 		
 	return accProfile[i].acc;
 }

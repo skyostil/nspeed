@@ -39,8 +39,17 @@ public:
 	
 	int		getCell(Vector &pos);
 	void		setCell(Vector &pos);
+	
+	//! Returns approximate the 2D normal (x,z) of the track at the given position
+	Vector		&getNormal(Vector &pos);
 
 protected:
+	void		project(Vector &pos, unsigned char &x, unsigned char &y);
+	inline Game::Pixel8 lookup(unsigned char x, unsigned char y)
+	{
+		return ((Game::Pixel8*)(texture->pixels))[x + (y<<8)];
+	}
+
 	Land		*land;
 	Game::Surface	*texture;
 	Game::Surface   *textureTileList[256];
