@@ -128,12 +128,13 @@ dump_m_file(Lib3dsFile *f, FILE *o)
       lib3ds_vector_transform(pos, m->matrix, m->pointL[i].pos);
       if (m->texelL) {
         fprintf(o, "		setTexCoord(%d, %d);\n",
-          (int)(m->texelL[i][0]*256.0*65536.0),
-          (int)(m->texelL[i][1]*256.0*65536.0));
+          (int)((1.0-m->texelL[i][0])*256.0*65536.0),
+          (int)((1.0-m->texelL[i][1])*256.0*65536.0));
       }
       
       fprintf(o, "		v.set(FPMul(%d,s), FPMul(%d,s), FPMul(%d,s)); addVertex(v);\n",
         (int)(pos[0]*65536.0), (int)(pos[1]*65536.0), (int)(pos[2]*65536.0));
+/*        (int)(m->pointL[i].pos[0]*65536.0), (int)(m->pointL[i].pos[1]*65536.0), (int)(m->pointL[i].pos[2]*65536.0)); */
     }
 
     for (i=0; i<m->faces; ++i) {

@@ -23,6 +23,7 @@
 
 #include "engine/Engine.h"
 #include "Land.h"
+#include "FixedPointVector.h"
 
 class View;
 
@@ -35,6 +36,9 @@ public:
 	bool		load(const char *name);
 	void		unload();
 	void		render(View *view);
+	
+	int		getCell(Vector &pos);
+	void		setCell(Vector &pos);
 
 protected:
 	Land		*land;

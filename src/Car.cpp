@@ -24,34 +24,114 @@
 Car::Car():
 	angle(0),
 	acceleration(0),
-	angleAcceleration(0),
 	speed(0),
 	angleSpeed(0),
 	velocity(0,0,0),
-	origin(0,0,0)
+	origin(0,0,0),
+	thrust(false),
+	brake(false),
+	steering(0),
+	steeringWheelPos(0)
 {
+	// build an acceleration profile
+	accProfile[0].acc = 40;
+	accProfile[0].angleAcc = 200;
+	accProfile[0].threshold = 300;
+	accProfile[1].acc = 30;
+	accProfile[1].angleAcc = 180;
+	accProfile[1].threshold = 1500;
+	accProfile[2].acc = 10;
+	accProfile[2].angleAcc = 150;
+	accProfile[2].threshold = 4000;
+	accProfile[3].acc = 0;
+	accProfile[3].angleAcc = 90;
+	accProfile[3].threshold = 0x7fffffff;
 }
 
-#define DAMPEN(x,amount) if (x) x += (x>0)?(-amount):amount
+#define DAMPEN(x,amount) if (x) x += (x>(amount))?(-(amount)):(amount)
 
-void Car::update(scalar t)
+void Car::update()
 {
 	velocity.x = FPMul(FPCos(angle), speed);
 	velocity.z = FPMul(FPSin(angle), speed);
 	origin += velocity;
 	angle += angleSpeed;
 	
+	// bring angle back in range
 	while(angle > 2*PI)
 		angle -= 2*PI;
 
 	while(angle < 0)
 		angle += 2*PI;
 		
-	speed += acceleration;
-	angleSpeed += angleAcceleration;
+	if (thrust)
+		speed += getAcceleration();
+		
+	switch(steering)
+	{
+	case -1:
+		if (steeringWheelPos > -8) steeringWheelPos--;
+	break;
+	case 0:
+		if (steeringWheelPos > 0) steeringWheelPos--;
+		else if (steeringWheelPos < 0) steeringWheelPos++;
+	break;
+	case 1:
+		if (steeringWheelPos < 8) steeringWheelPos++;
+	break;
+	}
+	
+	printf("%d\n", steeringWheelPos);
+		
+//	angleSpeed += (steeringWheelPos) * getAngleAcceleration();
+
+	if (speed > 200)
+		angle += steeringWheelPos * getAngleAcceleration();
 			
-	DAMPEN(speed, 1);
+	DAMPEN(speed, brake?32:4);
 	DAMPEN(angleSpeed, 1);
 }
 
+scalar Car::getAcceleration()
+{
+	int i = 0;
+	
+	while(speed > accProfile[i].threshold && (i < sizeof(accProfile)/sizeof(accProfile[0])))
+		i++;
+		
+	printf("%6d -> acceleration segment %d: %d\n", speed, i, accProfile[i].acc);
+		
+	return accProfile[i].acc;
+}
+
+scalar Car::getAngleAcceleration()
+{
+	int i = 0;
+	
+	while(speed > accProfile[i].threshold && (i < sizeof(accProfile)/sizeof(accProfile[0])))
+		i++;
+		
+//	printf("%6d -> acceleration segment %d: %d\n", speed, i, accProfile[i].acc);
+	return accProfile[i].angleAcc;
+}
+
+void Car::setThrust(bool _thrust)
+{
+	thrust = _thrust;
+}
+
+void Car::setBrake(bool _brake)
+{
+	brake = _brake;
+}
+
+void Car::setSteering(int _steering)
+{
+	steering = _steering;
+}
+
+scalar Car::getAngle()
+{
+	return angle;
+}
 

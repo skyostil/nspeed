@@ -1,14 +1,20 @@
 #!/usr/bin/python
+# -*- coding: iso-8859-1 -*-
 
 import zlib
 import Image
 import ImageChops
 import struct
+import sys
 
 offset = (128, 128)
-i = Image.open("track2.png")
-o = open("track.trk","wb")
 
+if not len(sys.argv)>1:
+	print "Rata puuttuu, hölö!"
+	sys.exit(1)
+	
+i = Image.open(sys.argv[1])
+o = open(sys.argv[1].replace(".png",".trk"),"wb")
 
 i = ImageChops.offset(i, offset[0], offset[1])
 

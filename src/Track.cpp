@@ -110,3 +110,19 @@ void Track::render(View *view)
 		land->render(view);
 }
 
+
+int Track::getCell(Vector &pos)
+{
+	unsigned char x = (pos.x << 3) >> FP;
+	unsigned char y = (pos.z << 3) >> FP;
+	
+	return ((Game::Pixel8*)(texture->pixels))[x + (y<<8)];
+}
+
+void Track::setCell(Vector &pos)
+{
+	unsigned char x = (pos.x << 3) >> FP;
+	unsigned char y = (pos.z << 3) >> FP;
+	
+	((Game::Pixel8*)(texture->pixels))[x + (y<<8)] = 1;
+}

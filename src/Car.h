@@ -29,10 +29,30 @@ class Car
 public:
 	Car();
 	
-	void update(scalar t);
+	void update();
+	void setThrust(bool _thrust);
+	void setBrake(bool _brake);
+	void setSteering(int _steering);
+	scalar getAngle();
 	
 	Vector	origin, velocity;
-	scalar	angle, angleSpeed, speed, acceleration, angleAcceleration;
+	scalar	angle, angleSpeed, speed, acceleration;
+
+private:
+	scalar	getAcceleration();
+	scalar	getAngleAcceleration();
+
+	typedef struct
+	{
+		scalar	acc;
+		scalar	angleAcc;
+		scalar	threshold;
+	} AccelerationSegment;
+	
+	AccelerationSegment	accProfile[4];
+	
+	bool	thrust, brake;
+	int	steering, steeringWheelPos;
 };
 
 #endif

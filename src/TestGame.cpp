@@ -22,6 +22,7 @@
 #include "ModPlayer.h"
 #include "Track.h"
 #include "Car.h"
+#include "BitmapFont.h"
 
 #ifdef EPOC
 #define KEY_LEFT	EStdKeyLeftArrow
@@ -48,12 +49,13 @@ class MyEngine: public Game::Engine
 public:
         Rasterizer      *rasterizer;
         View            *view;
-        Game::Surface   *texture, *texture2;
+        Game::Surface   *texture, *texture2, *font;
         Object          *object;
         Land            *ground, *sky;
 	Track		*track;
 	Car		car;
         scalar          t, lastTime;
+	BitmapFont	*bitmapFont;
         
         Mixer           *mixer;
         ModPlayer       *modplayer;
@@ -81,6 +83,8 @@ public:
                 delete view;
                 delete mixer;
                 delete modplayer;
+		delete font;
+		delete bitmapFont;
         }
         
         void configureVideo(Game::Surface* screen)
@@ -265,6 +269,8 @@ public:
                                 
                 object->endMesh();
 #endif          
+                font = framework->loadImage(framework->findResource("font.png"), &screen->format);
+		bitmapFont = new BitmapFont(font);
         }
 
 #if 0
@@ -352,8 +358,8 @@ public:
 //                view->camera.origin = Vector(FPInt(0),FPInt(3)>>4,FPInt(0));
 //                view->camera.target = Vector(x,0,z);
 #endif
-                scalar x = FPMul(FPCos(car.angle), FPInt(1));
-                scalar z = FPMul(FPSin(car.angle), FPInt(1));
+                scalar x = FPMul(FPCos(car.getAngle()), FPInt(1));
+                scalar z = FPMul(FPSin(car.getAngle()), FPInt(1));
                 scalar y = FPInt(3)>>3;
 
                 view->camera.target = car.origin;
@@ -465,14 +471,16 @@ public:
 #if 1
                 t = (100*framework->getTickCount() / framework->getTicksPerSecond()) << (FP-8);
 
-		while(lastTime < t)
+		const int timestep = 256;
+		if (t - lastTime > timestep)
 		{
-			lastTime+=128;
-			car.update(FP_ONE);
+			while(t - lastTime > timestep)
+			{
+				lastTime+=timestep;
+				car.update();
+			}
+			lastTime = t;
 		}
-
-
-		lastTime = t;
 
 		setupView();
 
@@ -483,18 +491,31 @@ public:
 		track->render(view);
 
 		rasterizer->flags &= ~Rasterizer::FlagPerspectiveCorrection;
-		Vector axis(FP_ONE,0,0);
+		Vector axis(0,FP_ONE,0);
 		Matrix translation = Matrix::makeTranslation(car.origin);
-		object->transformation = Matrix::makeRotation(axis, PI>>1);
+		object->transformation = Matrix::makeRotation(axis, car.getAngle());
 		object->transformation *= translation;
 		object->render(view);
 		rasterizer->flags |= Rasterizer::FlagPerspectiveCorrection;
+		
+		if (track->getCell(car.origin) == 0)
+		{
+			printf("Crash!\n");
+			car.speed = FPMul(car.speed, FPInt(-1));
+		}
+		
+//		track->setCell(car.origin);
 		
 //                renderRasterizerTest();
 		
 //                renderObjectTest(view);
 #endif
 		renderAudioBuffer(screen);
+		
+		char hud[32];
+//		sprintf(hud, "%d", t);
+		sprintf(hud, "%d", car.speed);
+		bitmapFont->renderText(screen, hud, 1, 1);
         }
 
         void configureAudio(Game::SampleChunk* sample)
@@ -524,16 +545,18 @@ public:
                                 framework->exit();
                         break;
 			case KEY_UP:
-				car.acceleration = 2;
+				car.setThrust(true);
+				car.setBrake(false);
 			break;
 			case KEY_DOWN:
-				car.acceleration = -2;
+				car.setThrust(false);
+				car.setBrake(true);
 			break;
 			case KEY_LEFT:
-				car.angleAcceleration = -2;
+				car.setSteering(-1);
 			break;
 			case KEY_RIGHT:
-				car.angleAcceleration = 2;
+				car.setSteering(1);
 			break;
                         }
                 }
@@ -544,11 +567,12 @@ public:
                         {
 			case KEY_UP:
 			case KEY_DOWN:
-				car.acceleration = 0;
+				car.setThrust(false);
+				car.setBrake(false);
 			break;
 			case KEY_LEFT:
 			case KEY_RIGHT:
-				car.angleAcceleration = 0;
+				car.setSteering(0);
 			break;
                         }
                 }
