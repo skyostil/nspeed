@@ -215,7 +215,8 @@ void Land::render(World *world)
 			(view->rasterizer->screen->format.rmask & (view->rasterizer->screen->format.rmask>>1)) +
 			(view->rasterizer->screen->format.gmask & (view->rasterizer->screen->format.gmask>>1)) +
 			(view->rasterizer->screen->format.bmask & (view->rasterizer->screen->format.bmask>>1));
-		int c = 16;
+		const int scale = 2;
+		int c = 16 << scale;
 
 		p+=(horizon>>FP) * view->rasterizer->screen->width;
 
@@ -226,9 +227,9 @@ void Land::render(World *world)
 			int maxb = ((1<<view->rasterizer->screen->format.bsize)-1) <<view->rasterizer->screen->format.bshift;
 			while(c--)
 			{
-				int gradr = c << view->rasterizer->screen->format.rshift;
-				int gradg = c << view->rasterizer->screen->format.gshift;
-				int gradb = c << view->rasterizer->screen->format.bshift;
+				int gradr = (c>>scale) << view->rasterizer->screen->format.rshift;
+				int gradg = (c>>scale) << view->rasterizer->screen->format.gshift;
+				int gradb = (c>>scale) << view->rasterizer->screen->format.bshift;
 
 				for(x=0; x<view->rasterizer->screen->width; x++)
 				{
@@ -236,9 +237,9 @@ void Land::render(World *world)
 					int g = (*p) & view->rasterizer->screen->format.gmask;
 					int b = (*p) & view->rasterizer->screen->format.bmask;
 
-					r += c << view->rasterizer->screen->format.rshift;
-					g += c << view->rasterizer->screen->format.gshift;
-					b += c << view->rasterizer->screen->format.bshift;
+					r += gradr;
+					g += gradg;
+					b += gradb;
 
 					if (r > maxr) r = maxr;
 					if (g > maxg) g = maxg;
@@ -255,9 +256,9 @@ void Land::render(World *world)
 			int minb = (1<<view->rasterizer->screen->format.bshift);
 			while(c++)
 			{
-				int gradr = c << view->rasterizer->screen->format.rshift;
-				int gradg = c << view->rasterizer->screen->format.gshift;
-				int gradb = c << view->rasterizer->screen->format.bshift;
+				int gradr = (c>>scale) << view->rasterizer->screen->format.rshift;
+				int gradg = (c>>scale) << view->rasterizer->screen->format.gshift;
+				int gradb = (c>>scale) << view->rasterizer->screen->format.bshift;
 
 				for(x=0; x<view->rasterizer->screen->width; x++)
 				{

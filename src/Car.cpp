@@ -58,19 +58,19 @@ Car::Car(World *_world, const char *name):
 
 	// build an acceleration profile
 	accProfile[0].acc = 96;
-	accProfile[0].angleAcc = 128;
-	accProfile[0].threshold = 1200;
+	accProfile[0].angleAcc = 96;
+	accProfile[0].threshold = 1200*2;
 	accProfile[1].acc = 64;
-	accProfile[1].angleAcc = 128;
-	accProfile[1].threshold = 3000;
-	accProfile[2].acc = 24;
-	accProfile[2].angleAcc = 128;
-	accProfile[2].threshold = 4000;
+	accProfile[1].angleAcc = 72;
+	accProfile[1].threshold = 3000*2;
+	accProfile[2].acc = 16;
+	accProfile[2].angleAcc = 64;
+	accProfile[2].threshold = 4000*2;
 	accProfile[3].acc = 12;
-	accProfile[3].angleAcc = 128;
+	accProfile[3].angleAcc = 64;
 	accProfile[3].threshold = 0x7fffffff;
 
-	if (engineSound)
+	if (world->getEnvironment()->mixer && engineSound)
 		world->getEnvironment()->mixer->playSample(engineSound, 10000, true, sfxChannel);
 }
 
@@ -183,8 +183,8 @@ void Car::update(Track *track)
 	//			if (acc < 0)
 	//				acc = -acc;
 
-				acc = FPDiv(acc, FPInt(speed)>>6);
-				printf("Angle acc: %6d\n", acc);
+				acc = FPDiv(acc, FPInt(speed)>>7);
+//				printf("Angle acc: %6d\n", acc);
 
 
 				{
@@ -307,11 +307,12 @@ void Car::updateSound()
 	int freq;
 
 	if (thrust)
-		freq = (speed << 5) + 16000;
+		freq = (speed << 3) + 16000;
 	else
-		freq = (speed << 5) + 8000;
+		freq = (speed << 3) + 8000;
 
-	world->getEnvironment()->mixer->getChannel(sfxChannel)->setFrequency(freq);
+	if (world->getEnvironment()->mixer)
+		world->getEnvironment()->mixer->getChannel(sfxChannel)->setFrequency(freq);
 }
 
 scalar Car::getAngleAcceleration(scalar speed)

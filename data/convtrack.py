@@ -7,7 +7,7 @@ import ImageChops
 import struct
 import sys
 
-offset = (80, 150)
+offset = (128, 128)
 
 if not len(sys.argv)>1:
 	print "Rata puuttuu, hölö!"

@@ -67,7 +67,7 @@ inline scalar FPDiv(scalar a, scalar b)
 inline scalar FPHighPrecDiv(scalar a, scalar b)
 {
 		// hack: this seems to do the trick
-        return ((a<<8) / (b>>4))<<4;
+		return ((a<<8) / (b>>4))<<4;
 
 #if 0
         // don't crash on zero division

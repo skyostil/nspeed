@@ -87,7 +87,8 @@ Mesh::Mesh(Object *parent, const char *fileName, Game::Surface *texture, int _fl
 		for(i=0; i<vertexCount; i++)
 		{
 			setTexCoord(v[i].u, v[i].v);
-			addVertex(Vector(v[i].x >> 1, v[i].y >> 1, v[i].z >> 1));
+//			addVertex(Vector(v[i].x >> 1, v[i].y >> 1, v[i].z >> 1));
+			addVertex(Vector(v[i].x, v[i].y, v[i].z));
 		}
 		
 		delete[] v;
