@@ -39,6 +39,7 @@ Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surf
         mixer(0),
         modplayer(0),
         menu(0),
+        aiCount(3),
         sfxVolume(16), musicVolume(16),
         musicChangeScheduled(false),
         stopSfxScheduled(false),
@@ -78,6 +79,8 @@ Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surf
     enemyCarDot = loadImage("bluedot.png");
 
     scheduledMusicName[0] = 0;
+
+    loadSettings();
 }
 
 void Environment::initializeSound(Game::SampleChunk *sample)
@@ -85,9 +88,7 @@ void Environment::initializeSound(Game::SampleChunk *sample)
     mixer = new Mixer(sample->rate, 8);
     modplayer = new ModPlayer(mixer);
 
-    muteSoundEffects(false);
-
-    loadSettings();
+    setVolumes();
 }
 
 void Environment::muteSoundEffects(bool mute)
@@ -170,10 +171,18 @@ void Environment::loadSettings()
         case 2: // music volume
             file.readData((unsigned char*)&musicVolume, sizeof(musicVolume));
             break;
+        case 3: // ai count
+            file.readData((unsigned char*)&aiCount, sizeof(aiCount));
+            break;
         default:
             return;
         }
 
+    setVolumes();
+}
+
+void Environment::setVolumes()
+{
     setSfxVolume(sfxVolume);
     setMusicVolume(musicVolume);
 }
@@ -185,6 +194,7 @@ void Environment::saveSettings()
     file.writeTag(0, (unsigned char*)playerName, sizeof(playerName));
     file.writeTag(1, (unsigned char*)&sfxVolume, sizeof(sfxVolume));
     file.writeTag(2, (unsigned char*)&musicVolume, sizeof(musicVolume));
+    file.writeTag(3, (unsigned char*)&aiCount, sizeof(aiCount));
 }
 
 void Environment::scheduleMusicChange(const char *name)
@@ -284,3 +294,19 @@ void Environment::doScheduledAudioEvents()
     }
 }
 
+int Environment::getTimeInMs() const
+{
+    return 1000 * framework->getTickCount() / framework->getTicksPerSecond();
+}
+
+int Environment::getAiCount() const
+{
+    return aiCount;
+}
+
+void Environment::setAiCount(int c)
+{
+    if (c < 0) c = 0;
+    if (c > 7) c = 7;
+    aiCount = c;
+}

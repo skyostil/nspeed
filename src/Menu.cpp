@@ -288,6 +288,9 @@ Menu::Action Menu::handleEvent(Game::Event* event)
 	if (swooshDirection)
 		return NoAction;
 
+    if (deferredAction != NoAction)
+        return NoAction;
+        
 	switch(event->type)
 	{
 		case Game::Event::ExitEvent:

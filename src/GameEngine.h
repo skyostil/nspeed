@@ -103,7 +103,7 @@ private:
     Set<Track*>     allTracks;
 
     // race
-    int             raceCountDown, stateChangeTime;
+    int             raceCountDown, stateChangeTime, raceSuspendTime;
 
     // race menu
     MenuItem        menuItemContinue;
@@ -113,6 +113,7 @@ private:
     // settings menu
     MenuItem        menuItemSfxVolume;
     MenuItem        menuItemMusicVolume;
+    MenuItem        menuItemAiCount;
 
     Set<MenuItem*>  menuItemList;
 

@@ -92,6 +92,8 @@ public:
     void                    setMusicVolume(int v);
     Channel                 *getEngineSoundChannel() const;
     Channel                 *getSfxChannel() const;
+    int                     getAiCount() const;
+    void                    setAiCount(int c);
 
     Track                   *track;
     BitmapFont              *font, *bigFont;
@@ -104,13 +106,15 @@ public:
     Set<Game::Surface*>     texturePool;
     Set<Car*>               carPool;
     
-    int                     sfxVolume, musicVolume;
     char                    playerName[8];
+    
+    int                     getTimeInMs() const;
 
 private:
     void                    loadSettings();
     void                    saveSettings();
     void                    doScheduledAudioEvents();
+    void                    setVolumes();
 
     Game::Surface           *fontImage;
     Menu                    *menu;
@@ -125,6 +129,8 @@ private:
     char                    scheduledMusicName[256];
     bool                    musicChangeScheduled; // use a mutex for these
     bool                    stopSfxScheduled;
+    
+    int                     sfxVolume, musicVolume, aiCount;
 };
 
 #endif

@@ -28,23 +28,25 @@
 class MeshSet: public Renderable
 {
 public:
-	MeshSet();
-	void	render(World *world);
-	int		add(Mesh *o);
-	void	remove(Mesh *o);
+    MeshSet();
+    void	render(World *world);
+    int		add(Mesh *o);
+    void	remove(Mesh *o);
+    void    clear();
 
 protected:
-	static int	sortComparator(const void *_a, const void *_b);
+    static int	sortComparator(const void *_a, const void *_b);
 
-	typedef struct
-	{
-		class MeshSet	*self;
-		Mesh			*mesh;
-	} SortItem;
-		
-	World	*world;
-	SortItem sortList[MAX_MESHES];
-	Set<Mesh*> meshes;
+    typedef struct
+    {
+        class MeshSet	*self;
+        Mesh			*mesh;
+    }
+    SortItem;
+
+    World	*world;
+    SortItem sortList[MAX_MESHES];
+    Set<Mesh*> meshes;
 };
 
 #endif

@@ -84,7 +84,6 @@ private:
         void    updateTileEffects(Track *track);
         void    checkCollision(Car *other);
         void    explode();
-        int     getTime() const;
 
         Vector  origin, velocity, acceleration;
         scalar  angle, angleSpeed, speed; // note: the speed is squared!

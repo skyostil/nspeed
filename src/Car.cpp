@@ -136,7 +136,7 @@ void Car::update(Track *track)
         //              printf("%d\n", speed);
 
         // if we were going too slow, use the normal as the new velocity
-        if (speed < 256)
+        if (speed < 2048)
         {
             velocity = normal * -512;
             //                      printf("Crash %6d, %6d\n", normal.x, normal.z);
@@ -145,45 +145,17 @@ void Car::update(Track *track)
         // backtrack to avoid collision
         while(track->getCell(origin * (FP_ONE>>CAR_COORDINATE_SCALE))==0 && --backtrackLimit)
             origin -= velocity;
-        /*
-                        // rotate the normal 90 degress
-                        normal.y = normal.x;
-                        normal.x = -normal.z;
-                        normal.z = normal.y;
-                        normal.y = 0;
-        */
-        //              scalar p = velocity.dot(normal);
-        //              scalar p = vel.dot(normal);
-        /*
-                        // make sure we bounce off the wall
-                        if (p > -(FP_ONE) && p < 0)
-                                p = -(FP_ONE);
-                        else if (p < (FP_ONE) && p > 0)
-                                p = (FP_ONE);
-        */
-        //              if (p < 0) p = -p;
-
-        //              velocity = normal * p - velocity * (FPInt(1)>>2);
-        //              acceleration = normal * p - velocity * (FPInt(1)>>5);
-        //              acceleration = normal * p - velocity * (FP_ONE + 3*FP_ONE/4);
-        //              acceleration = normal * p - velocity * (FP_ONE<<1);
-        //              acceleration = -velocity + (vel - normal * FPMul(FPInt(2), p)) * speed;
-        //              acceleration = -velocity + (vel - normal * FPMul(FPInt(2), p)) * speed + normal * 1000;
 
         if (normal.dot(velocity) < 0)
             acceleration = normal * FPMul(normal.dot(velocity), FPInt(-2));
         else
             acceleration = normal * 512;
 
-        if (acceleration.lengthSquared() < 128)
-            acceleration += normal * 256;
+        if (acceleration.lengthSquared() < 32)
+            acceleration += normal * (FP_ONE>>3);
 
-        //              printf("%d\n", acceleration.lengthSquared());
-        //              printf("%d\n", normal.dot(velocity));
-
-        //              speed = 0;
-        //              speed = FPMul(speed, FPInt(-1));
-        //              origin += normal * 10000;
+        // printf("%d, %d\n", acceleration.lengthSquared(), normal.lengthSquared());
+        // printf("%d\n", normal.dot(velocity));
     }
     else
     {
@@ -203,63 +175,24 @@ void Car::update(Track *track)
             if (speed > 16)
             {
                 Vector vel = velocity;
-                //                      Vector dir(FPCos(angle), 0, FPSin(angle));
                 Vector dir(FPSin(angle), 0, -FPCos(angle));
-                //                      Vector dir(FPMul(FPCos(angle), speed), 0, FPMul(FPSin(angle), speed));
-                //                      Vector dir(FPCos(angle + (PI>>1)), 0, FPSin(angle + (PI>>1)));
-                //                      Vector acc(FPCos(angle), 0, FPSin(angle));
-
-                //                              vel.normalize();
 
                 scalar acc = vel.dot(dir);
 
-                //                      if (acc < 0)
-                //                              acc = -acc;
-
                 acc = FPDiv(acc, FPInt(speed)>>7);
-                //                              printf("Angle acc: %6d\n", acc);
+                    
+                acceleration -= dir * acc;
+#if 0
+                //                                      scalar slip = FPMul(steeringWheelPos<<8, speed * thrustPos);
+                scalar slip = FPMul(steeringWheelPos<<6, FPSqrt(speed));
+                scalar maxSlip = 4096;
+                //                                      printf("slip: %6d\n", slip);
 
-
-                {
-                    //                                      acc>>=7;
-                    //      acc>>=8;
-                    //                              Vector dir(FPCos((angle + (PI>>1)) % 2*PI), 0, FPSin((angle + (PI>>1))) % 2*PI);
-                    //                              Vector dir(FPSin(angle), 0, -FPCos(angle));
-
-                    acceleration -= dir * acc;
-
-                    //                                      scalar slip = FPMul(steeringWheelPos<<8, speed * thrustPos);
-                    scalar slip = FPMul(steeringWheelPos<<6, FPSqrt(speed));
-                    scalar maxSlip = 4096;
-                    //                                      printf("slip: %6d\n", slip);
-
-                    if (slip > maxSlip)
-                        slip = maxSlip;
-                    else if (slip < -maxSlip)
-                        slip = -maxSlip;
-
-                    // slip
-                    //                                      acceleration += dir * slip;
-                    /*
-                                                    if (vel.cross(dir).y > 0)
-                                                            acceleration += dir * acc;
-                                                    else
-                                                            acceleration += dir * -acc;
-                    */
-                    //                              printf("Turn: %6d\n", acc);
-                }
-                //                              printf("No Turn: %6d\n", acc);
-
-                /*
-                                        scalar acc = ((FP_ONE - vel.dot(dir))) >> 9;
-
-                                        if (vel.cross(dir).y > 0)
-                                                acc = -acc;
-
-                                        acceleration.x += FPMul(FPCos(angle + (PI>>1)), acc);
-                                        acceleration.z += FPMul(FPSin(angle + (PI>>1)), acc);
-                                        printf("Turn: %6d, %d\n", acc, vel.cross(dir).y);
-                */
+                if (slip > maxSlip)
+                    slip = maxSlip;
+                else if (slip < -maxSlip)
+                    slip = -maxSlip;
+#endif                    
             }
         }
     }
@@ -342,7 +275,7 @@ void Car::update(Track *track)
     Vector rollAxis(FPCos(angle),0,FPSin(angle));
     Matrix translation = Matrix::makeTranslation(origin * (FP_ONE>>CAR_COORDINATE_SCALE) + Vector(0, thrustPos<<(FP-10), 0));
 
-    mesh->transformation = Matrix::makeRotation(verticalAxis, angle + (steeringWheelPos<<(FP-8)));
+    mesh->transformation = Matrix::makeRotation(verticalAxis, angle + (steeringWheelPos<<(FP-7)));
     mesh->transformation *= Matrix::makeRotation(rollAxis, -(steeringWheelPos<<(FP-8)));
     mesh->transformation *= translation;
 
@@ -433,10 +366,14 @@ void Car::updateGate()
 
     if (nextGate && nextGate->isInside(getOrigin()))
     {
-        if (nextGateIndex < gateIndex)
-        {
-            int t = getTime();
+        bool newLap = nextGateIndex < gateIndex;
 
+        gateIndex = nextGateIndex;
+                
+        if (newLap)
+        {
+            int t = world->getEnvironment()->getTimeInMs();
+   
             if (bestLapTime == -1 || t - lapStart < bestLapTime)
             {
                 bestLapTime = t - lapStart;
@@ -448,12 +385,11 @@ void Car::updateGate()
             // we finished the race
             if (!hasFinished() && lapCount == world->getEnvironment()->track->getLapCount())
             {
-                raceTime = t - raceStart;
                 finishingRank = getRank();
+                raceTime = t - raceStart;
                 setAiState(true);
             }
         }
-        gateIndex = nextGateIndex;
     }
 }
 
@@ -488,7 +424,7 @@ void Car::checkCollision(Car *other)
 {
     scalar radius = FP_ONE * 2;
     Vector dist = other->origin - origin;
-    const int collisionDampening = 2; // logarithmic
+    const int collisionDampening = 8; // logarithmic
 
     // this peculiar double-test is needed because of numerical overflow
     if (FPAbs(dist.x) <= radius && FPAbs(dist.z) <= radius)
@@ -545,10 +481,10 @@ void Car::prepareForRace(int position)
     lapStart = 0;
     raceStart = 0;
 
-    show();
     setAiState(position > 0);
 
-    setOrigin(world->getEnvironment()->track->getStartingPosition(position));
+    // make sure the player starts last
+    setOrigin(world->getEnvironment()->track->getStartingPosition(world->getEnvironment()->carPool.getCount() - position - 1));
     angle = world->getEnvironment()->track->getStartingAngle();
 
     if (world->getEnvironment()->mixer && engineSound && carNumber == 0)
@@ -559,29 +495,27 @@ void Car::prepareForRace(int position)
     update(world->getEnvironment()->track);
 }
 
-int Car::getTime() const
-{
-    return 1000 * world->getEnvironment()->getFramework()->getTickCount() / world->getEnvironment()->getFramework()->getTicksPerSecond();
-}
-
 void Car::startRace()
 {
     bestLapTime = -1;
     raceTime = -1;
-    lapStart = raceStart = getTime();
+    lapStart = raceStart = world->getEnvironment()->getTimeInMs();
 }
 
 void Car::updateAi()
 {
     Track *track = world->getEnvironment()->track;
     Vector o = getOrigin();
-    Vector target, steerTarget;
+    Vector target, steerTarget, previousSteerTarget;
     const int probeCount = 4;
     int i;
     bool onDirt = track->tileIsDirt(track->getCell(o));
     Vector probe[probeCount];
+    
+//    if (carNumber == 0)
+//        printf("%d\n", speed);
 
-    if (speed < 128)
+    if (speed < 1024)
     {
         // probe ahead
         probe[0] = o + (Vector(FPCos(angle), 0, FPSin(angle)) * (FPInt(1)>>3));
@@ -633,24 +567,40 @@ void Car::updateAi()
             // avoid emptyness and edges
             if (track->shouldAiAvoidTile(tile))
             {
-                track->getNextPointOnAiPath(o, steerTarget);
+                scalar distance = speed<<4;
+                
+                if (distance < (FPInt(1)))
+                    distance = (FPInt(1));
+                
+                if (!track->getNextPointOnAiPath(o, steerTarget, distance))
+                    continue;
 //                steerTarget = target;
-/*
-                if (carNumber == 0)
-                {
-                    track->setCell(steerTarget, (world->getEnvironment()->getFramework()->getTickCount()&1)?1:2);
-                }
-*/
+
+//                if (carNumber == 0)
+//                    track->setCell(steerTarget, (world->getEnvironment()->getFramework()->getTickCount()&1)?1:2);
+
 //                if (track->shouldAiAvoidTile(track->getCell(o + (velocity * FPInt(3)))))
                 if (!onDirt && i < 2)
                     setBrake(true);
                 
                 if (i < probeCount-1)
                 {
+//                    scalar error = (probe[i] - o).normalize().dot((steerTarget - o).normalize());
+                    scalar error = (probe[i] - o).normalize().dot((steerTarget - o).normalize());
+                    
+//                    if (carNumber == 0)
+//                        printf("%d\t%d\n", error, speed);
+                    
                     // something's ahead -> slow down and turn toward the path
                     if (!onDirt)
                         setThrust(false);
-                    
+
+                    if (error > (FPInt(7)>>8) && speed < 800)
+                    {
+//                        steerTarget = previousSteerTarget;
+                        track->getNextPointOnAiPath(o, steerTarget, FP_ONE>>1);
+                    }
+                                            
                     if (((probe[i] - o).cross(steerTarget - o)).y < 0)
                         setSteering(1);
                     else
@@ -692,7 +642,7 @@ bool Car::hasFinished() const
 
 int Car::getLapTime() const
 {
-    return getTime() - lapStart;
+    return world->getEnvironment()->getTimeInMs() - lapStart;
 }
 
 int Car::getBestLapTime() const
@@ -708,7 +658,7 @@ int Car::getRaceTime() const
     }
     else
     {
-        return getTime() - raceStart;
+        return world->getEnvironment()->getTimeInMs() - raceStart;
     }
 }
 
@@ -735,12 +685,15 @@ int Car::getRank() const
         Car *other = world->getEnvironment()->carPool.getItem(i);
         int otherIndex = other->lapCount * track->getGateCount() + other->gateIndex;
 
+        if (this == other)
+            continue;
+
         if (index == otherIndex)
         {
             scalar dist, otherDist;
 
-            dist = (getOrigin() - track->getGate(nextGateIndex)->getCenter()).lengthSquared();
-            otherDist = (other->getOrigin() - track->getGate(nextGateIndex)->getCenter()).lengthSquared();
+            dist = (getOrigin() - track->getGate(nextGateIndex)->getCenter()).manhattanNorm();
+            otherDist = (other->getOrigin() - track->getGate(nextGateIndex)->getCenter()).manhattanNorm();
 
             if (otherDist < dist)
             {

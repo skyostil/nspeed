@@ -527,14 +527,66 @@ bool Track::getNearestPointOnAiPath(const Vector &pos, Vector &out) const
     return foundAny;
 }
 
-bool Track::getNextPointOnAiPath(const Vector &pos, Vector &out) const
+bool Track::getNextPointOnAiPath(const Vector &pos, Vector &out, scalar distance) const
 {
     int i;
     scalar nearest = FPInt(4096), dist;
-    Vector point;
-    LineSegment *nearestSegment = NULL;
-    scalar limit = FPInt(1);
+    Vector point, nearestPoint;
+    int nearestIndex = -1;
+    
+    for(i=0; i<aiPathLength; i++)
+    {
+        if (aiPath[i].getNearestPoint(pos, point))
+        {
+            dist = (point - pos).manhattanNorm();
 
+            if (dist < nearest)
+            {
+                nearest = dist;
+                nearestPoint = point;
+                nearestIndex = i;
+            }
+        }
+    }
+    
+    for(i=0; i<aiPathLength; i++)
+    {
+        dist = (pos - aiPath[i].getLeft()).manhattanNorm();
+
+        if (dist < nearest)
+        {
+            nearest = dist;
+            nearestPoint = aiPath[i].getLeft();
+            nearestIndex = i;
+        }
+    }
+    
+    
+    if (nearestIndex == -1)
+        return false;
+        
+    out = nearestPoint;
+    while(distance > 0)
+    {
+        dist = (aiPath[nearestIndex].getRight() - pos).manhattanNorm();
+//        dist = (aiPath[nearestIndex].getRight() - pos).length();
+//        printf("%d\t%d\t%d\n", nearestIndex, distance,dist);
+        
+        if (dist < distance)
+        {
+            nearestIndex = (nearestIndex + 1) % aiPathLength;
+            distance -= dist;
+            out = aiPath[nearestIndex].getRight();
+        } else
+        {
+            Vector dir = Vector(aiPath[nearestIndex].getLeftToRight()).normalize();
+            out += dir * distance;
+            break;
+        }
+    }
+    
+    
+#if 0
     for(i=0; i<aiPathLength; i++)
     {
         if (aiPath[i].getNearestPoint(pos, point))
@@ -548,12 +600,15 @@ bool Track::getNextPointOnAiPath(const Vector &pos, Vector &out) const
                 nearest = dist;
 
                 out = aiPath[i].getRight();
+                previousOut = aiPath[i].getLeft();
                 dist = (out - pos).manhattanNorm();
                                 
                 if (dist < limit)
                 {
+                    int next = (i + 1) % aiPathLength;
 //                    printf("seuraava\t%d\n", dist);
-                    out = aiPath[(i + 1) % aiPathLength].getRight();
+                    out = aiPath[next].getRight();
+                    previousOut = aiPath[next].getLeft();
                 }
                 else
                 {
@@ -561,8 +616,8 @@ bool Track::getNextPointOnAiPath(const Vector &pos, Vector &out) const
                 }
                 
 //                out = aiPath[i].getRight();
-                nearestSegment = &aiPath[i];
-                nearestSegment = &aiPath[(i + 1) % aiPathLength];
+//                nearestSegment = &aiPath[i];
+//                nearestSegment = &aiPath[(i + 1) % aiPathLength];
             }
         }
     }
@@ -608,7 +663,9 @@ bool Track::getNextPointOnAiPath(const Vector &pos, Vector &out) const
     } else
         printf("tämä\t%d\n",len);
 */
-    return nearestSegment != NULL;
+//    return nearestSegment != NULL;
+    return true;
+#endif    
 }
 
 bool Track::shouldAiAvoidTile(unsigned char tile) const

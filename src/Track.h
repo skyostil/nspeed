@@ -74,7 +74,7 @@ public:
         Track(Object *parent, Environment *_env);
         ~Track();
 
-        bool            load(const char *name, int mapScale = 6, bool loadOnlyMetadata = false);
+        bool            load(const char *name, int mapScale = 4, bool loadOnlyMetadata = false);
         bool            saveTimes(const char *name);
         void            unload();
         void            render(World *world);
@@ -85,7 +85,7 @@ public:
         Vector          getStartingPosition(int carNumber) const;
         scalar          getStartingAngle() const;
         bool            getNearestPointOnAiPath(const Vector &pos, Vector &out) const;
-        bool            getNextPointOnAiPath(const Vector &pos, Vector &out) const;
+        bool            getNextPointOnAiPath(const Vector &pos, Vector &out, scalar distance) const;
         bool            shouldAiAvoidTile(unsigned char tile) const;
         bool            tileIsDamaging(unsigned char tile) const;
         bool            tileGivesEnergy(unsigned char tile) const;
@@ -93,7 +93,7 @@ public:
         bool            tileIsDirt(unsigned char tile) const;
         bool            tileIsTurbo(unsigned char tile) const;
         
-        int             getLapCount() const { return 5; }
+        int             getLapCount() const { return 1; }
         
         // these times are in milliseconds
         int             getBestLapTime(char *name = 0, unsigned int nameSize = 0);
