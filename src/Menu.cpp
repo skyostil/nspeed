@@ -291,9 +291,6 @@ Menu::Action Menu::handleEvent(Game::Event* event)
     if (deferredAction != NoAction)
         return NoAction;
 
-    if (!items.getCount())
-        return NoAction;
-
 	switch(event->type)
 	{
 		case Game::Event::ExitEvent:

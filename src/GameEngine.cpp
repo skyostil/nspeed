@@ -458,8 +458,8 @@ void GameEngine::setState(State newState)
         allCars.clear();
         for(i=0; i<menu->getItemCount(); i++)
         {
-            Car *car = new Car(env->getWorld(), menu->getItem(i)->getText());
-            if (car)
+            Car *car = new Car(env->getWorld());
+            if (car && car->load(menu->getItem(i)->getText()))
                 allCars.add(car);
         }
 
@@ -501,7 +501,7 @@ void GameEngine::setState(State newState)
             oldState != CreditsState
             )
         {
-            env->scheduleMusicChange(framework->findResource("music/menu.mod"));
+            env->scheduleMusicChange(framework->findResource("music/menu.mod.tag"));
         }
 
         for(i=0; i<env->carPool.getCount(); i++)
@@ -550,7 +550,7 @@ void GameEngine::setState(State newState)
         spawnCars();
 
         char song[128];
-        sprintf(song, "tracks/%.32s/music.mod", selectedTrack);
+        sprintf(song, "tracks/%.32s/music.mod.tag", selectedTrack);
         env->scheduleMusicChange(framework->findResource(song));
 
         renderableSet->add(env->track);
@@ -1313,33 +1313,27 @@ void GameEngine::spawnCars()
 {
     int i;
     Menu *menu = env->getMenu();
+    Car *car;
     int q = framework->getTickCount();
 
     env->carPool.clear();
     env->meshPool.clear();
 
     // player
-    env->carPool.add(new Car(env->getWorld(), selectedCar));
+    car = new Car(env->getWorld());
+    car->load(selectedCar);
+    env->carPool.add(car);
 
     // get a list of all cars
     menu->clear();
     fillMenuWithDirectories(menu, framework->findResource("cars"));
 
-    for(i=0; i<menu->getItemCount(); i++)
-    {
-        Car *car = new Car(env->getWorld(), menu->getItem(i)->getText());
-        if (car)
-            allCars.add(car);
-    }
-
     // randomly select the AI cars
     for(i=0; i<env->getAiCount(); i++)
     {
-        env->carPool.add(
-            new Car(
-                env->getWorld(), menu->getItem(q % menu->getItemCount())->getText()
-                )
-            );
+        car = new Car(env->getWorld());
+        car->load(menu->getItem(q % menu->getItemCount())->getText());
+        env->carPool.add(car);
         q ^= 52135123;
         q += (q>>1);
         q += 13421;

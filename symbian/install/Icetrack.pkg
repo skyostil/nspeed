@@ -18,7 +18,7 @@
 "..\..\data\tracks\icetrack\track.trk"   -"!:\system\apps\N-Speed\tracks\icetrack\track.trk"
 "..\..\data\tracks\icetrack\ground.png"  -"!:\system\apps\N-Speed\tracks\icetrack\ground.png"
 "..\..\data\tracks\icetrack\sky.png"     -"!:\system\apps\N-Speed\tracks\icetrack\sky.png"
-;"..\..\data\tracks\icetrack\music.mod"   -"!:\system\apps\N-Speed\tracks\icetrack\music.mod"
+;"..\..\data\tracks\icetrack\music.mod.tag" -"!:\system\apps\N-Speed\tracks\icetrack\music.mod.tag"
 "..\..\data\tracks\icetrack\tile1.png"   -"!:\system\apps\N-Speed\tracks\icetrack\tile1.png"
 "..\..\data\tracks\icetrack\tile2.png"   -"!:\system\apps\N-Speed\tracks\icetrack\tile2.png"
 "..\..\data\tracks\icetrack\tile3.png"   -"!:\system\apps\N-Speed\tracks\icetrack\tile3.png"

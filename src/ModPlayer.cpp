@@ -29,11 +29,14 @@
  ***************************************************************************/
 
 #include "ModPlayer.h"
+
+#ifdef MOD_USE_TAGFILE
 #include "TagFile.h"
+#include <string.h>
+#endif
+
 #include "Config.h"
 #include <stdio.h>
-
-//#define USE_FINETUNING
 
 static const unsigned short periodTable[][36] =
 {
@@ -43,7 +46,7 @@ static const unsigned short periodTable[][36] =
                 428,404,381,360,339,320,302,285,269,254,240,226, // C-2 to B-2
                 214,202,190,180,170,160,151,143,135,127,120,113, // C-3 to B-3
         },
-#ifdef USE_FINETUNING
+#ifdef MOD_USE_FINETUNING
         {
         // Tuning 1
                 850,802,757,715,674,637,601,567,535,505,477,450, // same as above
@@ -192,6 +195,12 @@ bool ModPlayer::load(const char *file)
 #pragma pack(pop)
 #endif
 
+#ifdef MOD_USE_TAGFILE
+        if (!strcmp(file + strlen(file)-4, ".tag"))
+            return loadTagFile(file);
+#endif
+
+
         FILE *f = fopen(file,"rb");
         char modType[4];
         int i, j, k;
@@ -204,7 +213,7 @@ bool ModPlayer::load(const char *file)
         if (sizeof(SampleHeader)!=30) return false;
         
         unload();
-        
+
         fseek(f,1080,SEEK_SET);
         fread(modType, sizeof(modType), 1, f);
         
@@ -236,7 +245,7 @@ bool ModPlayer::load(const char *file)
                 if (header.loopLength <= 2)
                         header.loopLength = 0;
                 
-#ifdef USE_FINETUNING
+#ifdef MOD_USE_FINETUNING
                  if (header.fineTune > 7)
                         header.fineTune -= 16;
 #else
@@ -319,13 +328,13 @@ unsigned short ModPlayer::bigEndian16(unsigned short x)
 typedef struct
 {
     signed char     songLength, songSpeed;
-    signed char     channelCount, sampleCount;
+    signed char     channelCount, sampleCount, patternCount;
 } PACKED PackedModHeader;
 
 typedef struct
 {
     signed char     fineTune, volume;
-    unsigned short  loopStart, loopLength;
+    unsigned short  length, loopStart, loopLength;
 } PACKED PackedModSample;
 
 typedef struct
@@ -341,6 +350,9 @@ typedef struct
 #endif
 
 
+#ifdef MOD_USE_TAGFILE
+
+#ifdef MOD_USE_TAGFILE_SAVING
 bool ModPlayer::save(const char *fileName) const
 {
     PackedModHeader header;
@@ -354,6 +366,7 @@ bool ModPlayer::save(const char *fileName) const
     header.songLength = songLength;
     header.songSpeed = songSpeed;
     header.channelCount = channels;
+    header.patternCount = patternCount;
 
     for(i=0; i<sizeof(sample)/sizeof(sample[0]); i++)
         if (sample[i])
@@ -382,18 +395,92 @@ bool ModPlayer::save(const char *fileName) const
     for(i=0; i<sizeof(sample)/sizeof(sample[0]); i++)
     {
         if (!sample[i])
-            break;
+            continue;
 
         sampleHeader.fineTune = sample[i]->fineTune;
         sampleHeader.volume = sample[i]->volume;
+        sampleHeader.length = sample[i]->sample->length;
         sampleHeader.loopStart = sample[i]->loopStart;
         sampleHeader.loopLength = sample[i]->loopLength;
-        file.writeTag(2*i+3, (unsigned char*)&sampleHeader, sizeof(sampleHeader));
-        file.writeTag(2*i+4, (unsigned char*)&sample[i]->sample->data, sample[i]->sample->bytes);
+        file.writeTag(3, (unsigned char*)&sampleHeader, sizeof(sampleHeader));
+        file.writeTag(4, (unsigned char*)sample[i]->sample->data, sample[i]->sample->bytes);
     }
 
     return true;
 }
+#endif // MOD_USE_TAGFILE_SAVING
+
+bool ModPlayer::loadTagFile(const char *fileName)
+{
+    int id, i, loadedSampleCount = 0;
+    TagFile file(fileName);
+    PackedModHeader header;
+    PackedModSample sampleHeader;
+    PackedModNote *packedNote;
+
+    unload();
+
+    while(1)
+        switch(id = file.readTag())
+        {
+        case 0:
+            file.readData((unsigned char*)&header, sizeof(header));
+
+            // sampleCount = header.sampleCount;
+            songLength = header.songLength ;
+            songSpeed = header.songSpeed;
+            channels = header.channelCount;
+            patternCount = header.patternCount;
+
+            channel = new ModChannel[channels];
+            order = new signed char[songLength];
+            note = new ModNote[channels * 64 /* rows per channel */ * patternCount];
+
+            if (!channel || !order || !note)
+                return false;
+            break;
+        case 1:
+            file.readData((unsigned char*)order, songLength);
+            break;
+        case 2:
+            packedNote = new PackedModNote[channels * 64 /* rows per channel */ * patternCount];
+
+            if (!packedNote)
+                return false;
+
+            file.readData((unsigned char*)packedNote, channels * 64 /* rows per channel */ * patternCount * sizeof(PackedModNote));
+
+            for(i=0; i<channels * 64 /* rows per channel */ * patternCount; i++)
+            {
+                note[i].sampleNumber = packedNote[i].sampleNumber;
+                note[i].amigaPeriod = packedNote[i].amigaPeriod;
+                note[i].note = packedNote[i].note;
+                note[i].effectNumber = packedNote[i].effectNumber;
+                note[i].effectParameter = packedNote[i].effectParameter;
+            }
+            delete[] packedNote;
+            break;
+        case 3:
+            file.readData((unsigned char*)&sampleHeader, sizeof(sampleHeader));
+            sample[loadedSampleCount] =
+                new ModSample(sampleHeader.length, sampleHeader.fineTune, sampleHeader.volume,
+                              sampleHeader.loopStart, sampleHeader.loopLength);
+            break;
+        case 4:
+            if (sample[loadedSampleCount])
+            {
+                file.readData(
+                    (unsigned char*)sample[loadedSampleCount]->sample->data,
+                    sample[loadedSampleCount]->sample->bytes); 
+                loadedSampleCount++;
+            }
+            break;
+        default:
+            return channels > 0;
+            break;
+        }
+}
+#endif // MOD_USE_TAGFILE
 
 ModPlayer::ModSample::ModSample(int _length, char _fineTune, char _volume, unsigned short _loopStart, unsigned short _loopLength):
         fineTune(_fineTune),
@@ -424,6 +511,7 @@ void ModPlayer::unload()
         delete[] note;
         delete[] channel;
         delete[] order;
+        channels = 0;
 }
 
 void ModPlayer::play()
@@ -830,7 +918,8 @@ void ModPlayer::stop()
 
         for(i=0; i<channels; i++)
         {
-                mixer->getChannel(i)->stop();
+                if (mixer->getChannel(i))
+                   mixer->getChannel(i)->stop();
         }
 }
 

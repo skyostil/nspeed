@@ -124,6 +124,9 @@ Surface::~Surface()
 
 void Surface::clear(Pixel color)
 {
+        if (!pixels)
+            return;
+
         switch(format.bytesPerPixel)
         {
         case 1:
@@ -267,6 +270,9 @@ void Surface::renderTransparentSurfaceTemplate(const Surface *s, int x, int y, P
 
 void Surface::renderTransparentSurface(const Surface *s, int x, int y, Game::Pixel colorMask)
 {
+    if (pixels == 0 || s == 0)
+        return;
+
 	switch(format.bytesPerPixel)
 	{
 	case 1:

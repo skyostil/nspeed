@@ -35,7 +35,7 @@ class Track;
 class Car: public Object
 {
 public:
-        Car(World *_world, const char *name);
+        Car(World *_world);
         ~Car();
         
         void update(Track *track);
@@ -45,6 +45,8 @@ public:
         void setAiState(bool enabled);
         void show();
         void hide();
+        bool load(const char *name);
+        void unload();
         Mesh *getMesh() const { return mesh; }
         
         int getSteering() const { return steering; }

@@ -132,9 +132,14 @@ Environment::~Environment()
 
 Game::Surface *Environment::loadImage(const char *name)
 {
-    Game::Surface *img = framework->loadImage(framework->findResource(name), &screen->format);
+    const char *resName = framework->findResource(name);
 
-    return img;
+    if (resName && strlen(resName))
+    {
+        Game::Surface *img = framework->loadImage(resName, &screen->format);
+        return img;
+    }
+    return NULL;
 }
 
 Channel *Environment::getEngineSoundChannel() const
@@ -199,7 +204,7 @@ void Environment::saveSettings()
 
 void Environment::scheduleMusicChange(const char *name)
 {
-    if (mixer && !musicChangeScheduled)
+    if (mixer && !musicChangeScheduled && name)
     {
         // don't schedule the music if we're already playing it
         if (strcmp(scheduledMusicName, name))
@@ -223,7 +228,8 @@ void Environment::stopMusic()
 
 void Environment::scheduleSampleDeletion(Game::SampleChunk *sample)
 {
-    sampleDeletionQueue.add(sample);
+    if (sample)
+        sampleDeletionQueue.add(sample);
 }
 
 int Environment::getSfxVolume() const
@@ -274,7 +280,6 @@ void Environment::doScheduledAudioEvents()
             modplayer->load(scheduledMusicName);
             modplayer->play();
         }
-
         musicChangeScheduled = false;
     }
 

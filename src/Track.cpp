@@ -205,7 +205,6 @@ bool Track::load(const char *name, int mapScale, bool loadOnlyMetadata)
                     texture = 0;
                 }
 
-
                 // load best times
                 sprintf(fileName, "tracks/%.64s/times.tag", name);
                 TagFile timeFile(env->getFramework()->findResource(fileName));

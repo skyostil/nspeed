@@ -18,4 +18,4 @@
 "..\..\data\tracks\test\track.trk"       -"!:\system\apps\N-Speed\tracks\test\track.trk"
 "..\..\data\tracks\test\ground.png"      -"!:\system\apps\N-Speed\tracks\test\ground.png"
 "..\..\data\tracks\test\sky.png"         -"!:\system\apps\N-Speed\tracks\test\sky.png"
-"..\..\data\tracks\test\music.mod"       -"!:\system\apps\N-Speed\tracks\test\music.mod"
+"..\..\data\tracks\test\music.mod.tag"   -"!:\system\apps\N-Speed\tracks\test\music.mod.tag"

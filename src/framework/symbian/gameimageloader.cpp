@@ -24,6 +24,7 @@ Game::Surface *CGameImageLoader::LoadImageL(const TDesC &aFilename, Game::PixelF
 {
    // construct new loader instance
    CGameImageLoader *loader = new (ELeave) CGameImageLoader(&aFilename, pf);
+
    CleanupStack::PushL(loader);
 
    // add the loader to active scheduler
@@ -41,7 +42,6 @@ Game::Surface *CGameImageLoader::LoadImageL(const TDesC &aFilename, Game::PixelF
        // instance will be destroyed by the cleanupstack
        //User::Leave(loader->iErrorCode);
        CleanupStack::PopAndDestroy();
-       return NULL;
    }
 
    // get a local copy of the instance's created surface
@@ -65,7 +65,6 @@ CGameImageLoader::CGameImageLoader(const TDesC *aFilename, Game::PixelFormat *pf
 
 CGameImageLoader::~CGameImageLoader()
 {
-   // deallocate all data
    delete iFilename;
    delete iTimer;
    delete iConverter;
@@ -145,9 +144,6 @@ void CGameImageLoader::CreateSurface()
 {
    TSize imagesize = iBitmap->SizeInPixels();
 
-   // allocate memory for the indexed texture data    
-   Game::PixelFormat bitmapPixelFormat(12);
-
    if (iPixelFormat)
    {
 	// the image must be converted to the requested pixel format
@@ -182,8 +178,10 @@ void CGameImageLoader::CreateSurface()
    {
 	// no pixel conversion required
 	Game::PixelFormat bitmapPixelFormat(12);
+    Game::Surface tmpSurface(&bitmapPixelFormat, (Game::Pixel*)iBitmap->DataAddress(), imagesize.iWidth, imagesize.iHeight);
 	
-	TRAPD(error, iSurface = new Game::Surface(&bitmapPixelFormat, (Game::Pixel*)iBitmap->DataAddress(), imagesize.iWidth, imagesize.iHeight));
+//	TRAPD(error, iSurface = new Game::Surface(&bitmapPixelFormat, (Game::Pixel*)iBitmap->DataAddress(), imagesize.iWidth, imagesize.iHeight));
+	TRAPD(error, iSurface = new Game::Surface(&bitmapPixelFormat, &tmpSurface));
 
 	if( error != KErrNone )
 	{

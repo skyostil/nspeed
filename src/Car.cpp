@@ -25,11 +25,13 @@
 #include "Mixer.h"
 #include <stdio.h>
 
-Car::Car(World *_world, const char *name):
+Car::Car(World *_world):
         Object(_world),
         angle(PI/2),
         speed(0),
         texture(0),
+        mesh(0),
+        engineSound(0),
         angleSpeed(0),
         velocity(0,0,0),
         origin(0,0,0),
@@ -52,8 +54,27 @@ Car::Car(World *_world, const char *name):
         finishingRank(1),
         world(_world)
 {
+    // build a default acceleration profile
+    accProfile[0].acc = 96;
+    accProfile[0].angleAcc = 96;
+    accProfile[0].threshold = 1200*2;
+    accProfile[1].acc = 64;
+    accProfile[1].angleAcc = 72;
+    accProfile[1].threshold = 3000*2;
+    accProfile[2].acc = 16;
+    accProfile[2].angleAcc = 64;
+    accProfile[2].threshold = 4000*2;
+    accProfile[3].acc = 12;
+    accProfile[3].angleAcc = 64;
+    accProfile[3].threshold = 0x7fffffff;
+}
+
+bool Car::load(const char *name)
+{
     char fileName[256];
     FILE *f;
+
+    unload();
 
     sprintf(fileName, "cars/%.64s/engine.wav", name);
     engineSound = world->getEnvironment()->getFramework()->loadSample(world->getEnvironment()->getFramework()->findResource(fileName));
@@ -64,7 +85,7 @@ Car::Car(World *_world, const char *name):
     sprintf(fileName, "cars/%.64s/mesh.mesh", name);
     mesh = new Mesh(this, world->getEnvironment()->getFramework()->findResource(fileName), texture);
 
-    // build an acceleration profile
+    // build the default acceleration profile
     accProfile[0].acc = 96;
     accProfile[0].angleAcc = 96;
     accProfile[0].threshold = 1200*2;
@@ -93,13 +114,24 @@ Car::Car(World *_world, const char *name):
         }
         fclose(f);
     }
+    return true;
+}
+
+void Car::unload()
+{
+    hide();
+    world->getEnvironment()->scheduleSampleDeletion(engineSound);
+
+    delete texture;
+    texture = 0;
+
+    delete mesh;
+    mesh = 0;
 }
 
 Car::~Car()
 {
-    hide();
-    world->getEnvironment()->scheduleSampleDeletion(engineSound);
-    delete texture;
+    unload();
 }
 
 #define DAMPEN(x,amount) if (x) x += (x>(amount))?(-(amount)):(amount)

@@ -104,7 +104,7 @@ public:
         
         //! \returns the channel the sample ended up on.
         Channel *playSample(Game::SampleChunk *sample, int freq, bool loop = false, int ch = -1);
-        Channel *getChannel(int ch) { return &channel[ch]; }
+        Channel *getChannel(int ch) const;
 
         int     channelCount;
         int     outputFreq;

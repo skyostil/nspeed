@@ -194,3 +194,9 @@ void Mixer::installTicker(Ticker *t, int hz)
         }
 }
 
+Channel *Mixer::getChannel(int ch) const
+{
+    if (ch < channelCount)
+        return &channel[ch];
+    return 0;
+}

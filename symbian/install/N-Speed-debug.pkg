@@ -17,10 +17,10 @@
 ;
 ; Files to install
 ;
-"\Symbian\6.1\Series60\Epoc32\release\armi\urel\N-Speed.app"         -"!:\system\apps\N-Speed\N-Speed.app"
-"\Symbian\6.1\Series60\Epoc32\release\armi\urel\N-Speed.rsc"         -"!:\system\apps\N-Speed\N-Speed.rsc"
-"\Symbian\6.1\Series60\Epoc32\release\armi\urel\N-Speed_caption.rsc" -"!:\system\apps\N-Speed\N-Speed_caption.rsc"
-"\Symbian\6.1\Series60\Epoc32\release\armi\urel\N-Speed.aif"         -"!:\system\apps\N-Speed\N-Speed.aif"
+"\Symbian\6.1\Series60\Epoc32\release\armi\udeb\N-Speed.app"         -"!:\system\apps\N-Speed\N-Speed.app"
+"\Symbian\6.1\Series60\Epoc32\release\armi\udeb\N-Speed.rsc"         -"!:\system\apps\N-Speed\N-Speed.rsc"
+"\Symbian\6.1\Series60\Epoc32\release\armi\udeb\N-Speed_caption.rsc" -"!:\system\apps\N-Speed\N-Speed_caption.rsc"
+"\Symbian\6.1\Series60\Epoc32\release\armi\udeb\N-Speed.aif"         -"!:\system\apps\N-Speed\N-Speed.aif"
 
 ; graphics
 "..\..\data\logo.png"                   -"!:\system\apps\N-Speed\logo.png"
@@ -34,18 +34,13 @@
 ; sound & music
 "..\..\data\music\menu.mod.tag"         -"!:\system\apps\N-Speed\music\menu.mod.tag"
 
-; settings
-"..\..\data\settings.tag"               -"!:\system\apps\N-Speed\settings.tag"
-
 ; cars
 ;"..\..\data\cars\default\mesh.mesh"     -"!:\system\apps\N-Speed\cars\default\mesh.mesh"
 ;"..\..\data\cars\default\texture.png"   -"!:\system\apps\N-Speed\cars\default\texture.png"
 ;"..\..\data\cars\default\engine.wav"    -"!:\system\apps\N-Speed\cars\default\engine.wav"
 ;"..\..\data\cars\default\acceleration.dat" -"!:\system\apps\N-Speed\cars\default\acceleration.dat"
 
-; default track tiles
-"..\..\data\tracks\sky.png"             -"!:\system\apps\N-Speed\tracks\sky.png"
-"..\..\data\tracks\ground.png"          -"!:\system\apps\N-Speed\tracks\ground.png"
+; tracks
 "..\..\data\tracks\tile1.png"           -"!:\system\apps\N-Speed\tracks\tile1.png"
 "..\..\data\tracks\tile2.png"           -"!:\system\apps\N-Speed\tracks\tile2.png"
 "..\..\data\tracks\tile4.png"           -"!:\system\apps\N-Speed\tracks\tile4.png"

@@ -21,14 +21,18 @@
 #ifndef MODPLAYER_H
 #define MODPLAYER_H
 
-#include "Mixer.h"
-#include "engine/Engine.h"
-
 // PAL
 #define MOD_FREQ_BASE   (int)(7159090.5)
 
 // NTSC
 //#define MOD_FREQ_BASE (int)(7093789.2)
+
+#define MOD_USE_TAGFILE
+#define MOD_USE_TAGFILE_SAVING
+//#define MOD_USE_FINETUNING
+
+#include "Mixer.h"
+#include "engine/Engine.h"
 
 class ModPlayer: private Ticker
 {
@@ -40,7 +44,12 @@ public:
     void    unload();
     void    play();
     void    stop();
+#ifdef MOD_USE_TAGFILE
+    bool    loadTagFile(const char *fileName);
+#ifdef MOD_USE_TAGFILE_SAVING
     bool    save(const char *fileName) const;
+#endif
+#endif
 
     //! \param vol is in the range [0, 64]
     void    setVolume(int vol);

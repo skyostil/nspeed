@@ -15,5 +15,7 @@ makesis GameTrack.pkg
 makesis TestTrack.pkg
 makesis IceTrack.pkg
 makesis DesertTrack.pkg
+makesis CityTrack.pkg
+makesis KiersioeTrack.pkg
 cd ..
 
