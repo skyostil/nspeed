@@ -442,11 +442,11 @@ void LineSegment::set(const Vector &_left, const Vector &_right)
 
         if (FPAbs(leftToRight.z) > FPAbs(leftToRight.x))
         {
-            angle = FPArcTan2(leftToRight.z, leftToRight.x) + PI/2;
+            angle = FPArcTan2(leftToRight.z, leftToRight.x);
         }
         else
         {
-            angle = -FPArcTan2(leftToRight.x, leftToRight.z) + PI;
+            angle = -FPArcTan2(leftToRight.x, leftToRight.z) + PI / 2;
         }
     }
 }
@@ -470,7 +470,7 @@ Vector Track::getStartingPosition(int carNumber) const
 
 scalar Track::getStartingAngle() const
 {
-    return gate[0].getAngle() + PI/2;
+    return -gate[0].getAngle();
 }
 
 bool LineSegment::getNearestPoint(const Vector &pos, Vector &out) const

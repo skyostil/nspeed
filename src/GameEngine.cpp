@@ -118,12 +118,12 @@ void GameEngine::lookAtCarFromBehind(Car *car)
     env->getView()->camera.update();
 }
 
-void GameEngine::rotateAroundCar(Car *car)
+void GameEngine::rotateAroundCar(Car *car, const int dist)
 {
     scalar angle = FPMod(car->getAngle() + (time>>1), 2*PI);
-    scalar x = FPMul(FPCos(angle), FPInt(1)>>1)>>2;
-    scalar z = FPMul(FPSin(angle), FPInt(1)>>1)>>2;
-    scalar y = FPInt(3)>>4;
+    scalar x = FPMul(FPCos(angle), FPInt(dist)>>1)>>2;
+    scalar z = FPMul(FPSin(angle), FPInt(dist)>>1)>>2;
+    scalar y = FPInt(3*dist)>>4;
 
     env->getView()->camera.target = car->getOrigin();
     env->getView()->camera.origin = car->getOrigin() + Vector(x,y,z);
@@ -170,6 +170,15 @@ void GameEngine::renderVideo(Game::Surface* screen)
         break;
     case CreditsState:
         screen->clear(0);
+
+		if (logo)
+		{
+		    scalar angle = FPMod((time<<1), 2*PI);
+            rotateAroundPosition(Vector(0,0,0), FPInt(1));
+			renderRotatingQuad(env->getView(), logo, FPCos(angle) - FPInt(1));
+	        menu->dimScreen(screen, 0, screen->height);
+		}
+
         y = 48;
 
         font->renderText(env->getScreen(), "Code, Graphics, Models", 8, y);
@@ -180,6 +189,8 @@ void GameEngine::renderVideo(Game::Surface* screen)
         font->renderText(env->getScreen(), "Tracks, Graphics", 8, y);
         y += font->getHeight() + 2;
         font->renderText(env->getScreen(), "Joonas Kerttula", 16, y, textMask);
+        y += font->getHeight() + 2;
+        font->renderText(env->getScreen(), "Olli Kantola", 16, y, textMask);
         y += font->getHeight() + 2;
 
         font->renderText(env->getScreen(), "Music", 8, y);
@@ -277,7 +288,8 @@ void GameEngine::renderVideo(Game::Surface* screen)
                     speed += car->getAcceleration(speed);
             }
 
-            rotateAroundCar(car);
+            rotateAroundCar(car, 8);
+			car->getMesh()->transformation = Matrix::makeScaling(Vector(FPInt(8), FPInt(8), FPInt(8)));
             car->getMesh()->render(world);
 //            world->render();
         }
@@ -451,6 +463,10 @@ void GameEngine::setState(State newState)
         delete logo;
         logo = 0;
         break;
+	case CreditsState:
+        delete logo;
+        logo = 0;
+		break;
     case ChooseCarState:
         break;
     case ChooseTrackState:
@@ -573,6 +589,17 @@ void GameEngine::setState(State newState)
         env->stopMusic();
         env->muteSoundEffects(true);
         break;
+	case CreditsState:
+		{
+			Game::Surface *l = env->loadImage("logo.png");
+			if (l)
+			{
+				logo = new Game::Surface(&env->getScreen()->format, 256, 256);
+				logo->renderTransparentSurface(l, logo->width / 2 - l->width / 2, logo->height / 2 - l->height / 2);
+				delete l;
+			}
+		}
+		break;
     case RaceIntroState:
         if (!env->track->load(selectedTrack))
         {
@@ -1074,10 +1101,9 @@ void GameEngine::renderTitle(Game::Surface *s, const char *title)
     env->bigFont->renderText(s, title, 4, 2);
 }
 
-void GameEngine::renderRotatingQuad(View *view, Game::Surface *texture)
+void GameEngine::renderRotatingQuad(View *view, Game::Surface *texture, const scalar depth)
 {
     const scalar scale = FPInt(4);
-    const scalar depth = FPInt(-1);
     Vector center = view->camera.target;
     Vector v0, v1, v2, v3;
 

@@ -62,7 +62,7 @@ private:
     void setState(State newState);
     void handleMenuAction(Menu::Action action);
     void lookAtCarFromBehind(Car *car);
-    void rotateAroundCar(Car *car);
+    void rotateAroundCar(Car *car, const int dist = 1);
     void rotateAroundPosition(const Vector &pos, int scale = FPInt(3));
     void handleRaceEvent(Game::Event* event);
     void handleRaceOutroEvent(Game::Event* event);
@@ -75,7 +75,7 @@ private:
     void formatTime(char *out, int milliseconds) const;
     void spawnCars();
     
-    void renderRotatingQuad(View *view, Game::Surface *texture);
+    void renderRotatingQuad(View *view, Game::Surface *texture, const scalar depth = FPInt(-1));
     void renderEnergyBar(Game::Surface *screen, int energy, int x, int y, int h) const;
     void renderStatic(Game::Surface *screen);
     void renderDamage(Game::Surface *screen);
