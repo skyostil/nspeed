@@ -189,9 +189,9 @@ void Rasterizer::addEdge(ScreenVertex *v1, ScreenVertex *v2)
 //	h = y2 - y1;
 
 	// update vertical limits
-	if (y1 < minY)
+	if (y1 < minY && y1 >= 0)
 		minY = y1;
-	if (y2 > maxY)
+	if (y2 > maxY && y2 < screen->height)
 		maxY = y2;
 		
 	Scanline *scanline = &edge[y1];

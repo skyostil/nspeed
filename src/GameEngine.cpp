@@ -74,6 +74,7 @@ GameEngine::GameEngine(Game::Framework* _framework):
     selectedTrack[0] = 0;
     allCars.setAutoDelete(true);
     allTracks.setAutoDelete(true);
+    menuItemList.setAutoDelete(true);
 }
 
 GameEngine::~GameEngine()

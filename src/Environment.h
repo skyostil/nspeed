@@ -110,6 +110,7 @@ public:
 private:
     void                    loadSettings();
     void                    saveSettings();
+    void                    doScheduledAudioEvents();
 
     Game::Surface           *fontImage;
     Menu                    *menu;

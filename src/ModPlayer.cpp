@@ -715,6 +715,7 @@ void ModPlayer::playNote(int ch, ModNote *n)
 
 ModPlayer::ModChannel::ModChannel():
         sample(0),
+        note(0),
         glissando(false),
         portaSpeed(0),
 //      vibratoWaveform(0),
@@ -730,7 +731,8 @@ ModPlayer::ModChannel::ModChannel():
         volume(64),
         arpeggioCounter(0),
         loopRow(0),
-        loopCounter(0)
+        loopCounter(0),
+        amigaPeriod(0)
 {
 }
 

@@ -170,7 +170,7 @@ void Menu::renderItem(MenuItem *item, int x, int y, int w, int h, bool selected)
 	if (y < clipMinY)
 		return;
 	
-	env->font->renderText(env->getScreen(), item->getText(), x, y, -1);
+	env->font->renderText(env->getScreen(), item->getText(), x, y);
 }
 
 void Menu::renderSelectionRectangle(int x, int y, int w, int h) const

@@ -75,7 +75,7 @@ Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surf
     // load graphics
     carDot = loadImage("reddot.png");
     enemyCarDot = loadImage("bluedot.png");
-        
+
     scheduledMusicName[0] = 0;
 }
 
@@ -108,8 +108,9 @@ void Environment::muteSoundEffects(bool mute)
 
 Environment::~Environment()
 {
+    doScheduledAudioEvents();
     saveSettings();
-    
+
     delete view;
     delete rasterizer;
     delete world;
@@ -156,7 +157,7 @@ void Environment::stopSoundEffects()
 void Environment::loadSettings()
 {
     TagFile file(framework->findResource("settings.tag"));
-    
+
     while(1) switch(file.readTag())
         {
         case 0: // player name
@@ -179,7 +180,7 @@ void Environment::loadSettings()
 void Environment::saveSettings()
 {
     WriteTagFile file(framework->findResource("settings.tag", false));
-    
+
     file.writeTag(0, (unsigned char*)playerName, sizeof(playerName));
     file.writeTag(1, (unsigned char*)&sfxVolume, sizeof(sfxVolume));
     file.writeTag(2, (unsigned char*)&musicVolume, sizeof(musicVolume));
@@ -200,36 +201,7 @@ void Environment::scheduleMusicChange(const char *name)
 
 void Environment::renderAudio(Game::SampleChunk* sample)
 {
-    if (!mixer)
-        return;
-
-    if (musicChangeScheduled)
-    {
-        modplayer->stop();
-        if (strlen(scheduledMusicName))
-        {
-            modplayer->load(scheduledMusicName);
-            modplayer->play();
-        }
-
-        musicChangeScheduled = false;
-    }
-
-    if (sampleDeletionQueue.getCount())
-    {
-        int i;
-        for(i=0; i<sampleDeletionQueue.getCount(); i++)
-            delete(sampleDeletionQueue.getItem(i));
-        sampleDeletionQueue.clear();
-    }
-
-    if (stopSfxScheduled)
-    {
-        getEngineSoundChannel()->stop();
-        getSfxChannel()->stop();
-        stopSfxScheduled = false;
-    }
-
+    doScheduledAudioEvents();
     mixer->render(sample);
 }
 
@@ -258,8 +230,12 @@ void Environment::setSfxVolume(int v)
     if (v < 0) v = 0;
     if (v > 64) v = 64;
     sfxVolume = v;
-    getEngineSoundChannel()->setVolume(sfxVolume);
-    getSfxChannel()->setVolume(sfxVolume);
+
+    if (mixer)
+    {
+        getEngineSoundChannel()->setVolume(sfxVolume);
+        getSfxChannel()->setVolume(sfxVolume);
+    }
 }
 
 void Environment::setMusicVolume(int v)
@@ -267,6 +243,43 @@ void Environment::setMusicVolume(int v)
     if (v < 0) v = 0;
     if (v > 64) v = 64;
     musicVolume = v;
-    modplayer->setVolume(musicVolume);
+
+    if (mixer)
+    {
+        modplayer->setVolume(musicVolume);
+    }
+}
+
+void Environment::doScheduledAudioEvents()
+{
+    if (!mixer)
+        return;
+        
+    if (musicChangeScheduled)
+    {
+        modplayer->stop();
+        if (strlen(scheduledMusicName))
+        {
+            modplayer->load(scheduledMusicName);
+            modplayer->play();
+        }
+
+        musicChangeScheduled = false;
+    }
+
+    if (sampleDeletionQueue.getCount())
+    {
+        int i;
+        for(i=0; i<sampleDeletionQueue.getCount(); i++)
+            delete(sampleDeletionQueue.getItem(i));
+        sampleDeletionQueue.clear();
+    }
+
+    if (stopSfxScheduled)
+    {
+        getEngineSoundChannel()->stop();
+        getSfxChannel()->stop();
+        stopSfxScheduled = false;
+    }
 }
 
