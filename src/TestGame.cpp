@@ -34,6 +34,7 @@ public:
 	
 	Mixer			*mixer;
 	Game::SampleChunk	*sample, *sample2;
+	ModPlayer		*modplayer;
 
 	MyEngine(Game::Framework* _framework):
 		Game::Engine(_framework),
@@ -64,6 +65,7 @@ public:
 		delete sample;
 		delete sample2;
 		delete mixer;
+		delete modplayer;
 	}
 	
 	void configureVideo(Game::Surface* screen)
@@ -429,7 +431,10 @@ public:
 		mixer = new Mixer(sample->rate);
 		this->sample = framework->loadSample("../../data/test.wav");
 		sample2 = framework->loadSample("../../data/test2.wav");
-		Channel *ch = mixer->playSample(this->sample, this->sample->rate, true);
+//		Channel *ch = mixer->playSample(this->sample, this->sample->rate, true);
+		
+		modplayer = new ModPlayer(mixer);
+		modplayer->load("../../data/commando.mod");
 	}
 
 	void renderAudio(Game::SampleChunk* sample)

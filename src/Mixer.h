@@ -60,10 +60,11 @@ public:
 			pos++;
 		}
 		
-		if (pos>=loopEnd)
-		{
-			pos-=loopEnd;
-		}
+		if (loopLength)
+			if (pos>=loopStart+loopLength)
+			{
+				pos-=loopLength;
+			}
 		
 		if (pos >= sample->length)
 			sample = 0;
@@ -71,14 +72,20 @@ public:
 		return a;
 	}
 	
-	void	start(Game::SampleChunk *_sample, int _freq);
+	void	start(Game::SampleChunk *_sample, int _freq, int _loopStart = 0, int _loopLength = 0);
 
 	Game::SampleChunk	*sample;
-	int			pos, counter;
+	int			pos, counter, freq;
 	int			lspeed, hspeed;
-	int			loopEnd;
+	int			loopStart, loopLength;
 	int			volume;
 	int			outputFreq;
+};
+
+class Ticker
+{
+public:
+	virtual void tick() = 0;
 };
 
 class Mixer
@@ -88,6 +95,7 @@ public:
 	~Mixer();
 
 	void	render(Game::SampleChunk *buffer);
+	void	installTicker(Ticker *t, int bpm);
 	
 	//! \returns the channel the sample ended up on.
 	Channel	*playSample(Game::SampleChunk *sample, int freq, bool loop = false, int ch = -1);
@@ -95,16 +103,68 @@ public:
 	Channel	*channel;
 	int	channelCount;
 	int	outputFreq;
+protected:
+	Ticker	*ticker;
+	int	tickerCounter, tickerInterval;
 };
 
-class ModulePlayer
+// PAL
+//#define MOD_FREQ_BASE	(int)(7159090.5)
+
+// NTSC
+#define MOD_FREQ_BASE	(int)(7093789.2)
+
+
+class ModPlayer: private Ticker
 {
 public:
-	ModulePlayer();
+	ModPlayer(Mixer *_mixer);
+	~ModPlayer();
 
-	void	render(Game::SampleChunk *buffer);
+	bool	load(const char *file);
+	void	unload();
+	void	restart();
 	
 	Mixer	*mixer;
+
+protected:
+	unsigned short	bigEndian16(unsigned short b);
+	int		amigaToHz(int amigaval);
+
+	int	channels;
+	
+	class ModSample
+	{
+	public:
+		ModSample(int _length, char _fineTune, char _volume, unsigned short _loopStart, unsigned short _loopLength);
+		~ModSample();
+		
+		Game::SampleChunk	*sample;
+		char			fineTune, volume;
+		unsigned short		loopStart, loopLength;
+	};
+	
+	class ModNote
+	{
+	public:
+		unsigned char	sampleNumber;
+		unsigned char	periodFrequency;
+		unsigned char	effectNumber;
+		unsigned char	effectParameter;
+	};
+
+	ModSample	*sample[31];
+	ModNote		*note;
+	char		order[128]; // XXX - allocate this dynamically
+	char		songLength;
+	char		patternCount;
+	char		currentOrder;
+	char		currentTick;
+	char		currentRow;
+
+private:
+	void	tick();
+	void	playNote(Channel *channel, ModNote *n);
 };
 
 #endif
