@@ -35,10 +35,10 @@
 "..\..\data\music\menu.mod"             -"!:\system\apps\N-Speed\music\menu.mod"
 
 ; cars
-"..\..\data\cars\default\mesh.mesh"     -"!:\system\apps\N-Speed\cars\default\mesh.mesh"
-"..\..\data\cars\default\texture.png"   -"!:\system\apps\N-Speed\cars\default\texture.png"
-"..\..\data\cars\default\engine.wav"    -"!:\system\apps\N-Speed\cars\default\engine.wav"
-"..\..\data\cars\default\acceleration.dat" -"!:\system\apps\N-Speed\cars\default\acceleration.dat"
+;"..\..\data\cars\default\mesh.mesh"     -"!:\system\apps\N-Speed\cars\default\mesh.mesh"
+;"..\..\data\cars\default\texture.png"   -"!:\system\apps\N-Speed\cars\default\texture.png"
+;"..\..\data\cars\default\engine.wav"    -"!:\system\apps\N-Speed\cars\default\engine.wav"
+;"..\..\data\cars\default\acceleration.dat" -"!:\system\apps\N-Speed\cars\default\acceleration.dat"
 
 ; tracks
 "..\..\data\tracks\tile1.png"           -"!:\system\apps\N-Speed\tracks\tile1.png"

@@ -102,9 +102,12 @@ void GameEngine::lookAtCarFromBehind(Car *car)
     scalar z = FPMul(FPSin(angle), FPInt(3)>>3);
     //      scalar y = FPInt(2)>>2;
     scalar y = FPInt(3)>>3;
+    Vector o = car->getOrigin();
 
-    env->getView()->camera.target = car->getOrigin() + Vector(x,0,z);
-    env->getView()->camera.origin = car->getOrigin() + Vector(-x>>1,y,-z>>1);
+    if (o.y < 0) o.y = 0;
+
+    env->getView()->camera.target = o + Vector(x,0,z);
+    env->getView()->camera.origin = o + Vector(-x>>1,y,-z>>1);
     env->getView()->camera.update();
 }
 
