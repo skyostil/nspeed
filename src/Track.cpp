@@ -33,13 +33,16 @@ Track::Track(Game::Framework *_framework, Game::Surface *_screen):
 	framework(_framework),
 	screen(_screen),
 	texture(0),
-	land(0)
+	groundTexture(0),
+	skyTexture(0),
+	land(0),
+	ground(0)
 {
 	int i;
 
 	for(i=0; i<sizeof(textureTileList)/sizeof(textureTileList[0]); i++)
 	{
-		textureTileList[i] = NULL;
+		textureTileList[i] = 0;
 	}
 }
 
@@ -77,11 +80,15 @@ bool Track::load(const char *name)
 		unload();
 		return false;
 	}
+	delete[] cdata;
 
 	textureTileList[1] = framework->loadImage(framework->findResource("test.png"), &screen->format);
 	textureTileList[2] = framework->loadImage(framework->findResource("test2.png"), &screen->format);
 
-	delete[] cdata;
+	groundTexture = framework->loadImage(framework->findResource("ground.png"), &screen->format);
+	skyTexture = framework->loadImage(framework->findResource("sky.png"), &screen->format);
+	ground = new Land(groundTexture, skyTexture, Rasterizer::FlagPerspectiveCorrection, 0 /* textureScale */, FPInt(6));
+
 	fclose(f);
 	return true;
 }
@@ -93,18 +100,32 @@ void Track::unload()
 	for(i=0; i<sizeof(textureTileList)/sizeof(textureTileList[0]); i++)
 	{
 		delete textureTileList[i];
-		textureTileList[i] = NULL;
+		textureTileList[i] = 0;
 	}
 
 	delete texture;
-	texture = NULL;
+	texture = 0;
 
 	delete land;
-	land = NULL;
+	land = 0;
+
+	delete ground;
+	ground = 0;
+
+	delete skyTexture;
+	skyTexture = 0;
+
+	delete groundTexture;
+	groundTexture = 0;
 }
 
 void Track::render(World *world)
 {
+	if (ground)
+	{
+		ground->render(world);
+	}
+
 	if (land)
 	{
 		world->getView()->rasterizer->setTextureTileList(textureTileList);

@@ -20,14 +20,24 @@
 
 #include "World.h"
 
-World::World(Game::Framework *_framework, Game::Surface *_screen, Rasterizer *_rasterizer, View *_view):
+World::World(Game::Framework *_framework, Game::Surface *_screen, Rasterizer *_rasterizer, View *_view, Environment *_env):
 	framework(_framework),
 	screen(_screen),
 	rasterizer(_rasterizer),
-	view(_view)
+	view(_view),
+	env(_env),
+	renderables(MAX_RENDERABLES)
 {
 }
 
 World::~World()
 {
+}
+
+void World::render()
+{
+	int i;
+
+	for(i=0; i<renderables.getCount(); i++)
+		renderables.getItem(i)->render(this);
 }

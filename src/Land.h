@@ -32,7 +32,8 @@ class Land: public Renderable
 public:
 	//! Depth must be > (1<<FP)
 	Land(Game::Surface *_texture,
-	     int _flags = Rasterizer::FlagTileTexture,
+		 Game::Surface *_skyTexture = 0,
+	     int _flags = Rasterizer::FlagTileTexture | Rasterizer::FlagPerspectiveCorrection,
 	     int _textureScale = 4,
 	     scalar _depth = FPInt(1));
 	

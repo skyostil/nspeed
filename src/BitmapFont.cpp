@@ -169,3 +169,4 @@ void BitmapFont::renderText(Game::Surface *screen, const char *text, int x, int 
 		text++;
 	}
 }
+

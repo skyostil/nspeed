@@ -27,10 +27,13 @@ class BitmapFont
 {
 public:
 	//! the surface's pixel format must match that of the screen's.
-	BitmapFont(Game::Surface *t);
+	BitmapFont(Game::Surface *t = 0);
 	~BitmapFont();
 	
 	void	renderText(Game::Surface *screen, const char *text, int x, int y, Game::Pixel colorMask = -1);
+
+	void	load(Game::Framework *framework, const char *name);
+	void	unload();
 	
 private:
 	typedef struct
@@ -50,6 +53,7 @@ private:
 	Glyph		*glyph;
 	int		minGlyph, maxGlyph;
 	Game::Surface	*texture;
+	bool	autoDelete;
 };
 
 #endif

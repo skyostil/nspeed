@@ -1,6 +1,8 @@
 #include "Config.h"
 #include "engine/Engine.h"
 
+#if 0
+
 #ifdef EPOC
 #include <e32keys.h>
 #include <stdlib.h>
@@ -64,8 +66,8 @@ public:
 
         MyEngine(Game::Framework* _framework):
                 Game::Engine(_framework),
-                rasterizer(NULL),
-                view(NULL),
+                rasterizer(0),
+                view(0),
 		t(0),
 		world(0),
 		lastTime(0),
@@ -99,7 +101,7 @@ public:
                 
                 rasterizer = new Rasterizer(screen);
                 view = new View(rasterizer);
-		world = new World(framework, screen, rasterizer, view);
+				world = new World(framework, rasterizer, view);
                 
                 texture = new Game::Surface(&screen->format, 256, 256);
                 pixels = texture->pixels;
@@ -308,8 +310,8 @@ public:
                 scalar z = FPMul(FPSin(car->getAngle()), FPInt(1));
                 scalar y = FPInt(3)>>3;
 
-                view->camera.target = car->origin;
-                view->camera.origin = Vector(car->origin.x-x,car->origin.y+y,car->origin.z-z);
+                view->camera.target = car->getOrigin();
+                view->camera.origin = car->getOrigin() + Vector(-x,y,-z);
 		
                 view->camera.update();
         }
@@ -428,8 +430,8 @@ public:
 		}
 	}
         
-        void renderVideo(Game::Surface* screen)
-        {
+	void renderVideo(Game::Surface* screen)
+	{
 #if 1
 		step();
 
@@ -462,22 +464,22 @@ public:
 		
 		char hud[32];
 //		sprintf(hud, "%d", t);
-		sprintf(hud, "%d", car->speed);
+		sprintf(hud, "%d", (car->getSpeed()-128) >> 3);
 		bitmapFont->renderText(screen, hud, 1, 1);
-        }
+	}
 
-        void configureAudio(Game::SampleChunk* sample)
-        {
-                mixer = new Mixer(sample->rate, 4);
-                modplayer = new ModPlayer(mixer);
-                modplayer->load(framework->findResource("dallas.mod"));
-        }
+	void configureAudio(Game::SampleChunk* sample)
+	{
+			mixer = new Mixer(sample->rate, 4);
+			modplayer = new ModPlayer(mixer);
+			modplayer->load(framework->findResource("dallas.mod"));
+	}
 
-        void renderAudio(Game::SampleChunk* sample)
-        {
-                mixer->render(sample);
-		audioBuffer = sample;
-        }
+	void renderAudio(Game::SampleChunk* sample)
+	{
+			mixer->render(sample);
+			audioBuffer = sample;
+	}
 
         void handleEvent(Game::Event* event)
         {
@@ -490,7 +492,7 @@ public:
 					switch(event->key.code)
 					{
 					case KEY_EXIT:
-							framework->exit();
+						framework->exit();
 					break;
 					case KEY_UP:
 						car->setThrust(true);
@@ -538,10 +540,12 @@ public:
 extern "C"
 {
 
+/*
 Game::Engine* CreateEngine(Game::Framework* framework)
 {
         return new MyEngine(framework);
 }
-
+*/
 
 };
+#endif

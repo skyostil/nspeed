@@ -1,12 +1,12 @@
 #ifndef FIXEDPOINTMATH_H
 #define FIXEDPOINTMATH_H
 
-#define FP	16	// don't touch this, m'kay
+#define FP      16      // don't touch this, m'kay
 
-#define FP_ONE		(1<<FP)
-#define FP_INTMASK	(~((1<<FP)-1))
-#define FP_FRACMASK	((1<<FP)-1)
-#define FP_MIN_DIVISOR	(1<<6)
+#define FP_ONE          (1<<FP)
+#define FP_INTMASK      (~((1<<FP)-1))
+#define FP_FRACMASK     ((1<<FP)-1)
+#define FP_MIN_DIVISOR  (1<<6)
 
 typedef signed int scalar;
 
@@ -28,65 +28,70 @@ scalar FPArcCos(scalar f);
 
 inline scalar FPInt(int i)
 {
-	return i << FP;
+        return i << FP;
 }
 
 inline scalar FPMul(scalar a, scalar b)
 {
-	return ((a>>6) * (b>>6))>>4;
-//	return ((a>>7) * (b>>5))>>4;
-//	return (a * b)>>FP;
+        return ((a>>6) * (b>>6))>>4;
+//      return ((a>>7) * (b>>5))>>4;
+//      return (a * b)>>FP;
 }
 
 inline scalar FPDiv(scalar a, scalar b)
 {
 #if 0 // make sure we crash on zero division
-	if (b < (1<<6) && b > -(1>>6))
-	{
-		*((char*)(0)) = 0xdeadbeef;
-		return 0x80000000;
-	}
-#endif	
-	return ((a<<6) / (b>>6))<<4;
-//	return ((a<<7) / (b>>5))<<4;
-//	return (a / b)<<FP;
+        if (b < (1<<6) && b > -(1>>6))
+        {
+                *((char*)(0)) = 0xdeadbeef;
+                return 0x80000000;
+        }
+#endif  
+        return ((a<<6) / (b>>6))<<4;
+//      return ((a<<7) / (b>>5))<<4;
+//      return (a / b)<<FP;
 }
 
 inline scalar FPHighPrecDiv(scalar a, scalar b)
 {
-	// don't crash on zero division
-	if (b < (1<<6) && b > -(1<<6))
-	{
-		return 0x80000000;
-	}
-//	return ((a<<6) / (b>>6))<<4;
-//	return ((((long long)(a))<<9) / (b>>3))<<4;
-	return ((((long long)(a))<<FP) / (b));
-//	return ((a<<7) / (b>>5))<<4;
-//	return (a / b)<<FP;
+        // don't crash on zero division
+        if (b < (1<<6) && b > -(1<<6))
+        {
+                return 0x80000000;
+        }
+//      return ((a<<6) / (b>>6))<<4;
+//      return ((((long long)(a))<<9) / (b>>3))<<4;
+        return ((((long long)(a))<<FP) / (b));
+//      return ((a<<7) / (b>>5))<<4;
+//      return (a / b)<<FP;
 }
 
 inline scalar FPSqrt(scalar a)
 {
-	int r = (a + (1<<FP))>>1;
-	int i;
+        int r = (a + (1<<FP))>>1;
+        int i;
 
-	for (i=0; i<8; i++)
-	{
-		r = (r + FPDiv(a, r)) >> 1;
-	}
-	return r;
+        for (i=0; i<8; i++)
+        {
+                r = (r + FPDiv(a, r)) >> 1;
+        }
+        return r;
 }
 
 // signed modulo
 inline scalar FPMod(scalar a, scalar m)
 {
-	scalar s = a % m;
-	
-	if (a<0)
-		s+=m;
-	
-	return s;
+        scalar s = a % m;
+        
+        if (a<0)
+                s+=m;
+        
+        return s;
+}
+
+inline scalar FPAbs(scalar a)
+{
+	return (a<0)?-a:a;
 }
 
 #endif

@@ -25,7 +25,7 @@
 Rasterizer::Rasterizer(Game::Surface *_screen):
 	screen(_screen),
 	currentVertex(0),
-	texture(NULL),
+	texture(0),
 	color(0xffff),
 	initialEdgeFlag(false),
 	textureTileList(0),

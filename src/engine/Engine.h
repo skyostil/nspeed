@@ -14,6 +14,8 @@ typedef signed short    Sample16;
 typedef signed char     Sample8;
 typedef Sample16        Sample;         // default format
 
+typedef unsigned long	Size;
+
 class PixelFormat
 {
 public:
@@ -145,7 +147,7 @@ public:
         virtual unsigned int getTickCount() = 0;
         virtual unsigned int getTicksPerSecond() = 0;
         
-	virtual const char *findResource(const char *name) { return name; }
+		virtual const char *findResource(const char *name) { return name; }
 
         virtual Surface *loadImage(const char *name, PixelFormat *pf = 0);
         virtual SampleChunk *loadSample(const char *name, SampleFormat *sf = 0);

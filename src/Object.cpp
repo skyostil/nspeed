@@ -20,11 +20,12 @@
 #include "Object.h"
 #include <stdlib.h> // for qsort
  
-Object::Object(int _vertexCount, int _faceCount):
+Object::Object(int _vertexCount, int _faceCount, int _flags):
 	vertexCount(_vertexCount),
 	faceCount(_faceCount),
 	currentFace(0),
-	currentVertex(0)
+	currentVertex(0),
+	flags(_flags)
 {
 	transformation.makeIdentity();
 	vertex = new Vertex[vertexCount];
@@ -78,6 +79,8 @@ void Object::render(World *world)
 	}
 	
 	qsort(face, faceCount, sizeof(Face), sortComparator);
+
+	world->getView()->rasterizer->flags = flags;
 	
 	fc = faceCount;
 	while(fc--)
@@ -162,9 +165,64 @@ void Object::endFace()
 		currentFace++;
 }
 
+void Object::setFlags(int _flags)
+{
+	flags = _flags;
+}
+
 void Object::endMesh()
 {
 	vertexCount = currentVertex+1;
 	faceCount = currentFace+1;
 }
 
+Vector &Object::getOrigin()
+{
+	return transformation.getColumn(3);
+}
+
+ObjectSet::ObjectSet():
+	objects(MAX_OBJECTS, true)
+{
+}
+
+void ObjectSet::render(class World *_world)
+{
+	int i;
+
+	world = _world;
+	for(i=0; i<objects.getCount(); i++)
+	{
+		sortList[i].self = this;
+		sortList[i].object = objects.getItem(i);
+	}
+
+	qsort(sortList, objects.getCount(), sizeof(SortItem), sortComparator);
+
+	for(i=0; i<objects.getCount(); i++)
+		sortList[i].object->render(world);
+}
+
+int ObjectSet::sortComparator(const void *_a, const void *_b)
+{
+	SortItem *a = (SortItem*)_a;
+	SortItem *b = (SortItem*)_b;
+	Vector distA = a->object->getOrigin() - a->self->world->getView()->camera.origin;
+	Vector distB = b->object->getOrigin() - a->self->world->getView()->camera.origin;
+	
+	if (
+		distA.lengthSquared() >
+		distB.lengthSquared())
+		return -1;
+	return 1;
+}
+
+int ObjectSet::add(Object *o)
+{
+	return objects.add(o);
+}
+
+void ObjectSet::remove(Object *o)
+{
+	objects.remove(o);
+}

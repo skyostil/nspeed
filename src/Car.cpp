@@ -21,9 +21,10 @@
 #include "Car.h"
 #include "models/CarModel.h"
 #include "Track.h"
+#include "Environment.h"
 #include <stdio.h>
 
-Car::Car(World *_world):
+Car::Car(World *_world, const char *name):
 	angle(0),
 	speed(0),
 	angleSpeed(0),
@@ -32,9 +33,12 @@ Car::Car(World *_world):
 	thrust(false),
 	brake(false),
 	steering(0),
-	steeringWheelPos(0)
+	steeringWheelPos(0),
+	thrustPos(0),
+	world(_world)
 {
-	object = new CarModel(FPInt(1)>>8, _world->getFramework()->loadImage(_world->getFramework()->findResource("car.png"), &_world->getScreen()->format));
+	object = new CarModel(FPInt(1)>>8, world->getFramework()->loadImage(world->getFramework()->findResource("car.png"), &world->getScreen()->format));
+	world->getEnvironment()->objectPool.add(object);
 
 	// build an acceleration profile
 	accProfile[0].acc = 60;
@@ -47,12 +51,13 @@ Car::Car(World *_world):
 	accProfile[2].angleAcc = 150;
 	accProfile[2].threshold = 8000;
 	accProfile[3].acc = 3;
-	accProfile[3].angleAcc = 150;
+	accProfile[3].angleAcc = 100;
 	accProfile[3].threshold = 0x7fffffff;
 }
 
 Car::~Car()
 {
+	world->getEnvironment()->objectPool.remove(object);
 	delete object;
 }
 
@@ -61,43 +66,67 @@ Car::~Car()
 void Car::update(Track *track)
 {
 	Vector acceleration(0,0,0);
-	
-//	velocity.x = FPMul(FPCos(angle), speed);
-//	velocity.z = FPMul(FPSin(angle), speed);
-	
+
+	// update the speedometer
 	speed = velocity.length();
 
 //	printf("Speed: %d\n", speed);
 //	printf("Vel: %6d, %6d\n", velocity.x, velocity.z);
 	
 	// collision detection & response
-	if (1 && track->getCell(origin) == 0)
+	if (track->getCell(origin) == 0)
 	{
 		Vector normal = track->getNormal(origin);
 		Vector vel = velocity;
 
 		vel.normalize();
+
+//		printf("%d\n", speed);
+
+		// if we were going too slow, use the normal as the new velocity
+		if (speed < 256)
+		{
+			velocity = normal * -1000;
+//			printf("Crash %6d, %6d\n", normal.x, normal.z);
+		}
 		
 		// backtrack to avoid collision
 		while(track->getCell(origin)==0)
 			origin -= velocity;
-		
+/*		
 		// rotate the normal 90 degress
 		normal.y = normal.x;
 		normal.x = -normal.z;
 		normal.z = normal.y;
 		normal.y = 0;
-		
-		scalar p = velocity.dot(normal);
-
+*/		
+//		scalar p = velocity.dot(normal);
+		scalar p = vel.dot(normal);
+/*
+		// make sure we bounce off the wall
+		if (p > -(FP_ONE) && p < 0)
+			p = -(FP_ONE);
+		else if (p < (FP_ONE) && p > 0)
+			p = (FP_ONE);
+*/
 //		if (p < 0) p = -p;
 		
 //		velocity = normal * p - velocity * (FPInt(1)>>2);
 //		acceleration = normal * p - velocity * (FPInt(1)>>5);
 //		acceleration = normal * p - velocity * (FP_ONE + 3*FP_ONE/4);
-		acceleration = normal * p - velocity * (FP_ONE<<1);
-//		acceleration = -velocity - (normal * FPInt(2) * normal.dot(vel) - vel) * speed;
-		printf("Crash %d, %6d, %6d\n", p, acceleration.x, acceleration.z);
+//		acceleration = normal * p - velocity * (FP_ONE<<1);
+//		acceleration = -velocity + (vel - normal * FPMul(FPInt(2), p)) * speed;
+//		acceleration = -velocity + (vel - normal * FPMul(FPInt(2), p)) * speed + normal * 1000;
+
+		if (normal.dot(velocity) < 0)
+			acceleration = normal * FPMul(normal.dot(velocity), FPInt(-2));
+		else
+			acceleration = normal * 1024;
+
+		if (acceleration.lengthSquared() < 128)
+			acceleration += normal * 2048;
+//		printf("%d\n", acceleration.lengthSquared());
+//		printf("%d\n", normal.dot(velocity));
 		
 //		speed = 0;
 //		speed = FPMul(speed, FPInt(-1));
@@ -137,7 +166,7 @@ void Car::update(Track *track)
 
 				if (1)
 				{
-					acc>>=5;
+					acc>>=6;
 	//				Vector dir(FPCos((angle + (PI>>1)) % 2*PI), 0, FPSin((angle + (PI>>1))) % 2*PI);
 	//				Vector dir(FPSin(angle), 0, -FPCos(angle));
 
@@ -179,6 +208,11 @@ void Car::update(Track *track)
 		if (steeringWheelPos < 8) steeringWheelPos++;
 	break;
 	}
+
+	if (thrust && thrustPos < 8)
+		thrustPos++;
+	else if (!thrust && thrustPos > 0)
+		thrustPos--;
 		
 //	printf("%d\n", steeringWheelPos);
 		
@@ -206,6 +240,15 @@ void Car::update(Track *track)
 	DAMPEN(velocity.x, brake?32:4);
 	DAMPEN(velocity.z, brake?32:4);
 	DAMPEN(angleSpeed, 1);
+
+	// update the model position
+	Vector verticalAxis(0,FP_ONE,0);
+	Vector rollAxis(FPCos(angle),0,FPSin(angle));
+	Matrix translation = Matrix::makeTranslation(origin + Vector(0, thrustPos<<(FP-10), 0));
+
+	object->transformation = Matrix::makeRotation(verticalAxis, angle + (steeringWheelPos<<(FP-6)));
+	object->transformation *= Matrix::makeRotation(rollAxis, -(steeringWheelPos<<(FP-6)));
+	object->transformation *= translation;
 }
 
 scalar Car::getAcceleration(scalar speed)
@@ -246,19 +289,9 @@ void Car::setSteering(int _steering)
 	steering = _steering;
 }
 
-scalar Car::getAngle()
-{
-	return angle;
-}
-
 void Car::render(World *world)
 {
-	Vector axis(0,FP_ONE,0);
-	Matrix translation = Matrix::makeTranslation(origin);
-
-	object->transformation = Matrix::makeRotation(axis, angle + (steeringWheelPos<<(FP-6)));
-	object->transformation *= translation;
-	
+/*
 	world->getView()->rasterizer->flags &= ~Rasterizer::FlagPerspectiveCorrection;
 	object->render(world);
 	world->getView()->rasterizer->flags |= Rasterizer::FlagPerspectiveCorrection;
@@ -283,4 +316,5 @@ void Car::render(World *world)
 				world->getScreen()->setPixel(x, world->getScreen()->height - y, -1);
 		}
 	}
+*/
 }

@@ -22,6 +22,7 @@
 #define OBJECT_H
 
 #include "engine/Engine.h"
+#include "FixedPointMatrix.h"
 #include "World.h"
 
 typedef struct
@@ -37,14 +38,18 @@ typedef struct
 class Object: public Renderable
 {
 public:
-	Object(int _vertexCount, int _faceCount);
+	Object(int _vertexCount, int _faceCount, int _flags = 0);
 	~Object();
 	
 	void	render(World *world);
-	
+	Vector	&getOrigin();
+
+	//! Sets flags for the Rasterizer
+	void	setFlags(int _flags);
+
 	void	beginMesh();
 	void	setTexCoord(scalar u, scalar v);
-	int	addVertex(Vector &pos);
+	int		addVertex(Vector &pos);
 	void	beginFace(int vertexCount);
 	void	setTexture(Game::Surface *t);
 	void	setColor(Game::Pixel c);
@@ -56,14 +61,40 @@ public:
 	
 	Vertex		*vertex;
 	Vertex		*transformedVertex;
-	int		vertexCount;
+	int			vertexCount;
 	Face		*face;
-	int		faceCount;
+	int			faceCount;
 protected:
 	static int	sortComparator(const void *_a, const void *_b);
 
 	int		currentFace;
 	int		currentVertex;
+	int		flags;
 };
+
+#define MAX_OBJECTS	32
+
+class ObjectSet: public Renderable
+{
+public:
+	ObjectSet();
+	void	render(class World *world);
+	int		add(Object *o);
+	void	remove(Object *o);
+
+protected:
+	static int	sortComparator(const void *_a, const void *_b);
+
+	typedef struct
+	{
+		class ObjectSet	*self;
+		Object			*object;
+	} SortItem;
+		
+	World	*world;
+	SortItem sortList[MAX_OBJECTS];
+	Set<Object*> objects;
+};
+
 
 #endif

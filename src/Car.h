@@ -31,7 +31,7 @@ class Track;
 class Car: public Renderable
 {
 public:
-	Car(World *_world);
+	Car(World *_world, const char *name);
 	~Car();
 	
 	void update(Track *track);
@@ -41,13 +41,15 @@ public:
 	void render(World *world);
 
 	int getSteering() { return steering; }
+	scalar getSpeed() { return speed; }
 	
-	scalar getAngle();
+	scalar getAngle() { return angle; }
+	Vector &getOrigin() { return origin; }
 	
+private:
 	Vector	origin, velocity;
 	scalar	angle, angleSpeed, speed;
 
-private:
 	scalar	getAcceleration(scalar speed);
 	scalar	getAngleAcceleration(scalar speed);
 
@@ -61,9 +63,10 @@ private:
 	AccelerationSegment	accProfile[4];
 	
 	bool	thrust, brake;
-	int	steering, steeringWheelPos;
+	int		steering, steeringWheelPos, thrustPos;
 	
 	Object	*object;
+	World	*world;
 };
 
 #endif

@@ -18,48 +18,58 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef WORLD_H
-#define WORLD_H
+#ifndef ENGINE_H
+#define ENGINE_H
 
 #include "engine/Engine.h"
-#include "View.h"
-#include "Set.h"
+#include "Car.h"
 
-#define MAX_RENDERABLES	32
+#ifdef EPOC
+#define KEY_LEFT	EStdKeyLeftArrow
+#define KEY_RIGHT	EStdKeyRightArrow
+#define KEY_UP		EStdKeyUpArrow
+#define KEY_DOWN	EStdKeyDownArrow
+#define KEY_EXIT	EStdKeyDevice0
+#else
+#define KEY_LEFT	SDLK_LEFT
+#define KEY_RIGHT	SDLK_RIGHT
+#define KEY_UP		SDLK_UP
+#define KEY_DOWN	SDLK_DOWN
+#define KEY_EXIT	SDLK_ESCAPE
+#endif
 
-class Renderable
+class Engine: public Game::Engine
 {
 public:
-	virtual ~Renderable() {};
-	virtual void render(class World *world) = 0;
-};
+	enum State
+	{
+		IdleState,
+		RaceState
+	};
 
-class Environment;
-class View;
-class Rasterizer;
-class Framework;
+	Engine(Game::Framework* _framework);
+	~Engine();
 
-class World
-{
-public:
-	World(Game::Framework *_framework, Game::Surface *_screen, Rasterizer *_rasterizer, View *_view, Environment *_env);
-	~World();
-	
-	Game::Surface	*getScreen() { return screen; }
-	Game::Framework	*getFramework() { return framework; }
-	Rasterizer		*getRasterizer() { return rasterizer; }
-	View			*getView() { return view; }
-	Environment		*getEnvironment() { return env; }
-	Set<Renderable*> &getRenderableSet() { return renderables; }
-	
-	void	render();
-protected:
-	Game::Surface	*screen;
+	void configureVideo(Game::Surface* screen);
+	void configureAudio(Game::SampleChunk* sample);
+	void renderVideo(Game::Surface* screen);
+	void renderAudio(Game::SampleChunk* sample);
+	void handleEvent(Game::Event* event);
+
+private:
+	void			setState(State newState);
+	void			lookAtCarFromBehind(Car *car);
+	void			handleRaceEvent(Game::Event* event);
+	void			step();
+	void			atomicStep();
+
 	Game::Framework	*framework;
-	Rasterizer		*rasterizer;
-	View			*view;
+	State			state;
+	Rasterizer      *rasterizer;
+	View            *view;
+	World			*world;
 	Environment		*env;
-	Set<Renderable*>	renderables;
+	scalar			time, lastTime;
 };
 
 #endif

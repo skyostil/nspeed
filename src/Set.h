@@ -18,48 +18,87 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef WORLD_H
-#define WORLD_H
+#ifndef SET_H
+#define SET_H
 
-#include "engine/Engine.h"
-#include "View.h"
-#include "Set.h"
+// gee, thanks for not supporting stl, symbian...
 
-#define MAX_RENDERABLES	32
-
-class Renderable
+template<typename T>
+class Set
 {
 public:
-	virtual ~Renderable() {};
-	virtual void render(class World *world) = 0;
-};
+	Set(int _size, bool _autoDelete = false):
+	  size(_size),
+	  autoDelete(_autoDelete),
+	  count(0)
+	{
+		int i;
+		item = new T[size];
 
-class Environment;
-class View;
-class Rasterizer;
-class Framework;
+		for(i=0; i<size; i++)
+			item[i] = 0;
+	}
 
-class World
-{
-public:
-	World(Game::Framework *_framework, Game::Surface *_screen, Rasterizer *_rasterizer, View *_view, Environment *_env);
-	~World();
-	
-	Game::Surface	*getScreen() { return screen; }
-	Game::Framework	*getFramework() { return framework; }
-	Rasterizer		*getRasterizer() { return rasterizer; }
-	View			*getView() { return view; }
-	Environment		*getEnvironment() { return env; }
-	Set<Renderable*> &getRenderableSet() { return renderables; }
-	
-	void	render();
-protected:
-	Game::Surface	*screen;
-	Game::Framework	*framework;
-	Rasterizer		*rasterizer;
-	View			*view;
-	Environment		*env;
-	Set<Renderable*>	renderables;
+	virtual ~Set()
+	{
+		if (autoDelete)
+		{
+			int i;
+			for(i=0; i<count; i++)
+				delete item[i];
+		}
+		delete[] item;
+	}
+
+	int add(T t)
+	{
+		if (count < size-1)
+		{
+			item[count] = t;
+			return count++;
+		}
+		return -1;
+	}
+
+	void clear()
+	{
+		count = 0;
+	}
+
+	void remove(T t)
+	{
+		int i;
+
+		for(i=0; i<count; i++)
+			if (item[i] == t)
+			{
+				count--;
+				for(; i<count; i++)
+					item[i] = item[i+1];
+				return;
+			}
+	}
+
+	inline T getItem(int i)
+	{
+#if 0
+		if (i>=0 && i<size-1)
+			return item[i];
+		return 0;
+#else // unsafe and proud of it
+		return item[i];
+#endif
+	}
+
+	inline int getCount()
+	{
+		return count;
+	}
+
+private:
+	bool autoDelete;
+	int count, size;
+	T *item;
 };
 
 #endif

@@ -18,48 +18,27 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef WORLD_H
-#define WORLD_H
+#include "Environment.h"
+#include "Track.h"
+#include "BitmapFont.h"
+#include "Mixer.h"
+#include "ModPlayer.h"
 
-#include "engine/Engine.h"
-#include "View.h"
-#include "Set.h"
-
-#define MAX_RENDERABLES	32
-
-class Renderable
+Environment::Environment():
+	track(0),
+	font(0),
+	mixer(0),
+	modplayer(0),
+	texturePool(MAX_TEXTURES, true),
+	carPool(MAX_CARS, true)
 {
-public:
-	virtual ~Renderable() {};
-	virtual void render(class World *world) = 0;
-};
+}
 
-class Environment;
-class View;
-class Rasterizer;
-class Framework;
-
-class World
+Environment::~Environment()
 {
-public:
-	World(Game::Framework *_framework, Game::Surface *_screen, Rasterizer *_rasterizer, View *_view, Environment *_env);
-	~World();
-	
-	Game::Surface	*getScreen() { return screen; }
-	Game::Framework	*getFramework() { return framework; }
-	Rasterizer		*getRasterizer() { return rasterizer; }
-	View			*getView() { return view; }
-	Environment		*getEnvironment() { return env; }
-	Set<Renderable*> &getRenderableSet() { return renderables; }
-	
-	void	render();
-protected:
-	Game::Surface	*screen;
-	Game::Framework	*framework;
-	Rasterizer		*rasterizer;
-	View			*view;
-	Environment		*env;
-	Set<Renderable*>	renderables;
-};
+	delete track;
+	delete font;
+	delete mixer;
+	delete modplayer;
+}
 
-#endif

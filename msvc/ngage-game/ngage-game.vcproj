@@ -130,6 +130,24 @@
 				RelativePath="..\..\src\engine\Engine.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\Engine.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\src\Environment.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\FixedPointMath.cpp">
 			</File>
 			<File
@@ -189,6 +207,12 @@
 				RelativePath="..\..\src\engine\Engine.h">
 			</File>
 			<File
+				RelativePath="..\..\src\Engine.h">
+			</File>
+			<File
+				RelativePath="..\..\src\Environment.h">
+			</File>
+			<File
 				RelativePath="..\..\src\FixedPointMath.h">
 			</File>
 			<File
@@ -214,6 +238,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\framework\sdl\SDLFramework.h">
+			</File>
+			<File
+				RelativePath="..\..\src\Set.h">
 			</File>
 			<File
 				RelativePath="..\..\src\Track.h">

@@ -50,8 +50,8 @@ protected:
 		return ((Game::Pixel8*)(texture->pixels))[x + (y<<8)];
 	}
 
-	Land		*land;
-	Game::Surface	*texture;
+	Land		*land, *ground;
+	Game::Surface	*texture, *groundTexture, *skyTexture;
 	Game::Surface   *textureTileList[256];
 	Game::Surface	*screen;
 	Game::Framework	*framework;

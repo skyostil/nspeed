@@ -18,48 +18,38 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef WORLD_H
-#define WORLD_H
+#ifndef ENVIRONMENT_H
+#define ENVIRONMENT_H
 
 #include "engine/Engine.h"
-#include "View.h"
 #include "Set.h"
+#include "Object.h"
 
-#define MAX_RENDERABLES	32
+class Track;
+class BitmapFont;
+class Mixer;
+class ModPlayer;
+class Car;
 
-class Renderable
+#define MAX_TEXTURES	64
+#define MAX_CARS		4
+
+//! This class contains all the global game related data
+class Environment
 {
 public:
-	virtual ~Renderable() {};
-	virtual void render(class World *world) = 0;
-};
+	Environment();
+	~Environment();
 
-class Environment;
-class View;
-class Rasterizer;
-class Framework;
+	Track		*track;
+	BitmapFont	*font;
 
-class World
-{
-public:
-	World(Game::Framework *_framework, Game::Surface *_screen, Rasterizer *_rasterizer, View *_view, Environment *_env);
-	~World();
-	
-	Game::Surface	*getScreen() { return screen; }
-	Game::Framework	*getFramework() { return framework; }
-	Rasterizer		*getRasterizer() { return rasterizer; }
-	View			*getView() { return view; }
-	Environment		*getEnvironment() { return env; }
-	Set<Renderable*> &getRenderableSet() { return renderables; }
-	
-	void	render();
-protected:
-	Game::Surface	*screen;
-	Game::Framework	*framework;
-	Rasterizer		*rasterizer;
-	View			*view;
-	Environment		*env;
-	Set<Renderable*>	renderables;
+	Mixer		*mixer;
+	ModPlayer	*modplayer;
+
+	ObjectSet			objectPool;
+	Set<Game::Surface*>	texturePool;
+	Set<Car*>			carPool;
 };
 
 #endif

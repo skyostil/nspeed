@@ -36,10 +36,10 @@ int main(int argc, char **argv)
 //}
 
 SDLFramework::SDLFramework():
-	screen(NULL),
-	gameScreen(NULL),
-	gameAudio(NULL),
-	engine(NULL)
+	screen(0),
+	gameScreen(0),
+	gameAudio(0),
+	engine(0)
 {
 }
 
@@ -151,7 +151,7 @@ int SDLFramework::run(int argc, char **argv)
 			audio.freq = 22050;
 			audio.format = AUDIO_S16;
 			audio.channels = 1;
-			audio.samples = 512;
+			audio.samples = 2048;
 			audio.callback = audioCallback;
 			audio.userdata = this;
 			
@@ -163,7 +163,7 @@ int SDLFramework::run(int argc, char **argv)
 				printf("SDLFramework: %d sample audio buffer at %d Hz, %d channels, 16 bits.\n", audioResult.samples, audioResult.freq, audioResult.channels);
 				
 				Game::SampleFormat sf(16, audioResult.channels);
-				gameAudio = new Game::SampleChunk(&sf, NULL, audioResult.samples, audioResult.freq);
+				gameAudio = new Game::SampleChunk(&sf, 0, audioResult.samples, audioResult.freq);
 				gameAudio->autoDelete = false;
 				engine->configureAudio(gameAudio);
 				SDL_PauseAudio(0);
@@ -261,7 +261,7 @@ void SDLFramework::audioCallback(void *userdata, Uint8 *stream, int len)
 Game::Surface *SDLFramework::loadImage(const char *name, Game::PixelFormat *pf)
 {
 	SDL_Surface *img = IMG_Load(name);
-	Game::Surface *surface = NULL;
+	Game::Surface *surface = 0;
 	int x, y;
 	
 	if (img)
@@ -327,7 +327,9 @@ Game::Surface *SDLFramework::loadImage(const char *name, Game::PixelFormat *pf)
 #ifdef USE_WAVE_LOADER
 Game::SampleChunk *SDLFramework::loadSample(const char *name, Game::SampleFormat *sf)
 {
+#ifdef _MSVC
 #pragma pack(push, 1)
+#endif
 	typedef struct
 	{
 		unsigned int chunkID;
@@ -344,10 +346,12 @@ Game::SampleChunk *SDLFramework::loadSample(const char *name, Game::SampleFormat
 		unsigned int subChunk2ID;
 		unsigned int subChunk2Size;
 	} PACKED WaveHeader;
+#ifdef _MSVC
 #pragma pack(pop)
+#endif
 
 	FILE *f = fopen(name, "rb");
-	Game::SampleChunk *sample = NULL;
+	Game::SampleChunk *sample = 0;
 	
 	if (f)
 	{

@@ -690,7 +690,7 @@ void ModPlayer::playNote(int ch, ModNote *n)
 }
 
 ModPlayer::ModChannel::ModChannel():
-	sample(NULL),
+	sample(0),
 	glissando(false),
 	portaSpeed(0),
 //	vibratoWaveform(0),

@@ -19,17 +19,19 @@
  ***************************************************************************/
 
 #include "Land.h"
+#include <math.h>
 #include <stdio.h>
  
 Land::Land(Game::Surface *_texture,
+		   Game::Surface *_skyTexture,
            int _flags,
-	   int _textureScale,
+		   int _textureScale,
            scalar _depth):
 	texture(_texture),
 	textureScale(_textureScale),
 	invDepth(FPDiv(FP_ONE, _depth)),
 	flags(_flags),
-	skyTexture(NULL)
+	skyTexture(_skyTexture)
 {
 }
 
@@ -132,11 +134,59 @@ void Land::render(World *world)
 	v1.pos *= invz1;
 	v2.pos *= invz2;
 	v3.pos *= invz3;	
-		
+
+	// draw the sky rectangle
+	if (skyTexture)
+	{
+		Vector v = view->camera.target - view->camera.origin;
+		scalar angle;
+		scalar skyWidth = FPInt(64);
+		scalar skyHeight = FPInt(64);
+
+		if (v.z)
+		{
+			if (FPAbs(v.z) > FPAbs(v.x))
+				angle = FPArcTan(FPDiv(v.x, v.z));
+			else
+				angle = 2*PI - FPArcTan(FPDiv(v.z, v.x));
+		}
+		else
+			angle = 2*PI;
+
+		scalar x = FPMul(angle, -skyWidth) - skyWidth*4;
+
+		scalar u0 = x;
+		scalar v0 = FPInt(0);
+		scalar u1 = x + skyWidth;
+		scalar v1 = FPInt(0);
+		scalar u2 = x + skyWidth;
+		scalar v2 = skyHeight;
+		scalar u3 = x;
+		scalar v3 = skyHeight;
+
+		view->rasterizer->flags = 0;
+		view->rasterizer->setTexture(skyTexture);
+
+		view->rasterizer->beginPolygon();
+		view->rasterizer->setInvZ(1);
+		view->rasterizer->setTexCoord(u0, v0);
+		view->rasterizer->addVertex(0, 0);
+		view->rasterizer->setInvZ(1);
+		view->rasterizer->setTexCoord(u1, v1);
+		view->rasterizer->addVertex(w, 0);
+		view->rasterizer->setInvZ(1);
+		view->rasterizer->setTexCoord(u2, v2);
+		view->rasterizer->addVertex(w, horizon);
+		view->rasterizer->setInvZ(1);
+		view->rasterizer->setTexCoord(u3, v3);
+		view->rasterizer->addVertex(0, horizon);
+		view->rasterizer->endPolygon();
+	}
+
 	view->rasterizer->flags |= flags;
 	view->rasterizer->setTexture(texture);
 	
-	// draw the rectangle
+	// draw the ground rectangle
 	view->rasterizer->beginPolygon();
 	view->rasterizer->setInvZ(invz0);
 	view->rasterizer->setTexCoord(v0.pos.x >> textureScale, v0.pos.z >> textureScale);
@@ -151,6 +201,6 @@ void Land::render(World *world)
 	view->rasterizer->setTexCoord(v3.pos.x >> textureScale, v3.pos.z >> textureScale);
 	view->rasterizer->addVertex(0, h);
 	view->rasterizer->endPolygon();
-		
+
 	view->rasterizer->flags &= ~flags;
 }
