@@ -25,7 +25,8 @@
 #include "FixedPointMath.h"
 
 //! Number of extra fraction bits used for inverse z (for perspective correction)
-#define INVZ_SCALE		6
+//#define INVZ_SCALE		6
+#define INVZ_SCALE		7
 
 // This slows things down a bit
 //#define RASTERIZER_2D_CLIPPING

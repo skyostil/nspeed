@@ -40,7 +40,8 @@
 
 //#include "models/Duck.h"
 //#include "models/Loop.h"
-#include "models/Alus.h"
+//#include "models/Alus.h"
+#include "models/CarModel.h"
 
 class MyEngine: public Game::Engine
 {
@@ -178,7 +179,8 @@ public:
 #if 1
 //              object = new Duck(FPInt(1)>>9);
 //              object = new Loop(FPInt(1)>>3, texture2);
-                object = new Alus(FPInt(1)>>8);
+//                object = new Alus(FPInt(1)>>8);
+                object = new CarModel(FPInt(1)>>8, framework->loadImage(framework->findResource("car.png"), &screen->format));
 		Vector axis(FP_ONE,0,0);
 		object->transformation = Matrix::makeRotation(axis, PI>>1);
 #else

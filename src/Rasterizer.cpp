@@ -164,9 +164,10 @@ void Rasterizer::addEdge(ScreenVertex *v1, ScreenVertex *v2)
 	z += FPMul(subpixFix, dz);
 	u += FPMul(subpixFix, du);
 	v += FPMul(subpixFix, dv);
-
+	
 	h = (v2->sy>>FP) - (v1->sy>>FP);
-//	h = (v2->sy - v1->sy + 0x8000) >> FP;
+//	h = (v2->sy + 0x8000) - (v1->sy);
+//	h = (v2->sy - v1->sy + 0xffff) >> FP;
 
 #ifdef RASTERIZER_2D_CLIPPING
 	if (y1 < 0)
@@ -204,7 +205,7 @@ void Rasterizer::addEdge(ScreenVertex *v1, ScreenVertex *v2)
 		printf(":  %3d, %3d, %3d, %3d\n", v1->sx>>FP, v2->sx>>FP, (v2->sx - v1->sx)>>FP, dx>>FP);
 	}
 */	
-//	while((h-=(1<<16)) > 0)
+//	while((h-=(1<<16)) >= 0)
 	while(h-->0)
 	{
 		if (x < scanline->x1)
@@ -375,16 +376,11 @@ void Rasterizer::perspectiveTextureRasterizer()
 			
 			if (len < (1<<FP))
 				continue;
-			/*	
-			scalar u1 = FPDiv(edge[y].u1z, edge[y].invz1?edge[y].invz1>>INVZ_SCALE:1);
-			scalar v1 = FPDiv(edge[y].v1z, edge[y].invz1?edge[y].invz1>>INVZ_SCALE:1);
-			scalar u2 = FPDiv(edge[y].u2z, edge[y].invz2?edge[y].invz2>>INVZ_SCALE:1);
-			scalar v2 = FPDiv(edge[y].v2z, edge[y].invz2?edge[y].invz2>>INVZ_SCALE:1);
-			*/
-			scalar u1 = SafeFPDiv(edge[y].u1z,edge[y].invz1>>INVZ_SCALE);
-			scalar v1 = SafeFPDiv(edge[y].v1z,edge[y].invz1>>INVZ_SCALE);
-			scalar u2 = SafeFPDiv(edge[y].u2z,edge[y].invz2>>INVZ_SCALE);
-			scalar v2 = SafeFPDiv(edge[y].v2z,edge[y].invz2>>INVZ_SCALE);
+				
+			scalar u1 = FPHighPrecDiv(edge[y].u1z,edge[y].invz1>>INVZ_SCALE);
+			scalar v1 = FPHighPrecDiv(edge[y].v1z,edge[y].invz1>>INVZ_SCALE);
+			scalar u2 = FPHighPrecDiv(edge[y].u2z,edge[y].invz2>>INVZ_SCALE);
+			scalar v2 = FPHighPrecDiv(edge[y].v2z,edge[y].invz2>>INVZ_SCALE);
 								
 			scalar du = FPDiv(u2 - u1, len);
 			scalar dv = FPDiv(v2 - v1, len);
@@ -436,11 +432,11 @@ void Rasterizer::tileTextureRasterizer()
 			if (len < (1<<FP))
 				continue;
 				
-			scalar u1 = SafeFPDiv(edge[y].u1z,edge[y].invz1>>INVZ_SCALE);
-			scalar v1 = SafeFPDiv(edge[y].v1z,edge[y].invz1>>INVZ_SCALE);
-			scalar u2 = SafeFPDiv(edge[y].u2z,edge[y].invz2>>INVZ_SCALE);
-			scalar v2 = SafeFPDiv(edge[y].v2z,edge[y].invz2>>INVZ_SCALE);
-								
+			scalar u1 = FPHighPrecDiv(edge[y].u1z,edge[y].invz1>>INVZ_SCALE);
+			scalar v1 = FPHighPrecDiv(edge[y].v1z,edge[y].invz1>>INVZ_SCALE);
+			scalar u2 = FPHighPrecDiv(edge[y].u2z,edge[y].invz2>>INVZ_SCALE);
+			scalar v2 = FPHighPrecDiv(edge[y].v2z,edge[y].invz2>>INVZ_SCALE);
+			
 			scalar du = FPDiv(u2 - u1, len);
 			scalar dv = FPDiv(v2 - v1, len);
 			

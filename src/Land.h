@@ -32,7 +32,8 @@ public:
 	//! Depth must be > 1
 	Land(Game::Surface *_texture,
 	     int _flags = Rasterizer::FlagTileTexture,
-	     int _textureScale = 3,
+//	     int _textureScale = 3,
+	     int _textureScale = 4,
 	     scalar _depth = FPInt(1));
 	
 	void render(View *view);

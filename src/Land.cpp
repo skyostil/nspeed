@@ -107,9 +107,11 @@ void Land::render(View *view)
 	plane.normal.set(0,FP_ONE,0);
 	
 	scalar z0 = plane.intersectRay(view->camera.origin, dir0);
-	scalar z1 = plane.intersectRay(view->camera.origin, dir1);
+	scalar z1 = z0; 	// exploit the planar quality of the plane :)
+//	scalar z1 = plane.intersectRay(view->camera.origin, dir1);
 	scalar z2 = plane.intersectRay(view->camera.origin, dir2);
-	scalar z3 = plane.intersectRay(view->camera.origin, dir3);
+//	scalar z3 = plane.intersectRay(view->camera.origin, dir3);
+	scalar z3 = z2;
 
 	// calculate intersection in world-space
 	v0.pos = (view->camera.origin * invDepth) + (dir0 * z0);
@@ -121,7 +123,7 @@ void Land::render(View *view)
 	scalar invz1 = (1<<31) / (z1>>INVZ_SCALE);
 	scalar invz2 = (1<<31) / (z2>>INVZ_SCALE);
 	scalar invz3 = (1<<31) / (z3>>INVZ_SCALE);
-
+	
 	// prepare texture coordinates
 	v0.pos *= invz0;
 	v1.pos *= invz1;
@@ -131,6 +133,7 @@ void Land::render(View *view)
 	view->rasterizer->flags |= flags;
 	view->rasterizer->setTexture(texture);
 	
+	// draw the rectangle
 	view->rasterizer->beginPolygon();
 	view->rasterizer->setInvZ(invz0);
 	view->rasterizer->setTexCoord(v0.pos.x >> textureScale, v0.pos.z >> textureScale);
@@ -145,6 +148,6 @@ void Land::render(View *view)
 	view->rasterizer->setTexCoord(v3.pos.x >> textureScale, v3.pos.z >> textureScale);
 	view->rasterizer->addVertex(0, h);
 	view->rasterizer->endPolygon();
-	
+		
 	view->rasterizer->flags &= ~flags;
 }
