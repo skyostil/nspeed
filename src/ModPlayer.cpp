@@ -294,7 +294,9 @@ bool ModPlayer::load(const char *file)
 		{
 			fread(sample[i]->sample->data, sizeof(char), sample[i]->sample->bytes, f); 
 			for(j=0; j<sample[i]->sample->length; j++)
+			{
 				((signed char*)(sample[i]->sample->data))[j] -= 0x80;
+			}
 		}
 	}
 	restart();

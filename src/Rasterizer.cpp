@@ -170,12 +170,30 @@ void Rasterizer::addEdge(ScreenVertex *v1, ScreenVertex *v2)
 	z += FPMul(subpixFix, dz);
 	u += FPMul(subpixFix, du);
 	v += FPMul(subpixFix, dv);
-	
+
+	h = (v2->sy>>FP) - (v1->sy>>FP);
+
+#ifdef RASTERIZER_2D_CLIPPING
+	if (y1 < 0)
+	{
+		x += FPMul(dx,-v1->sy);
+		z += FPMul(dz,-v1->sy);
+		u += FPMul(du,-v1->sy);
+		v += FPMul(dv,-v1->sy);
+		y1 = 0;
+		h += y1;
+	}
+
+	if (y2 >= screen->height)
+	{
+		h -= y2 - (screen->height-1);
+	}
+#endif
+
 	Scanline *scanline = &edge[y1];
 
 //	h = ((v2->sy+FP_ONE) & FP_INTMASK) - ((v1->sy + FP_ONE) & FP_INTMASK);
 //	h = (v2->sy & FP_INTMASK) - (v1->sy & FP_INTMASK);
-	h = (v2->sy>>FP) - (v1->sy>>FP);
 //	h>>=FP;
 /*	
 	if (((v2->sx - v1->sx)>0) != (dx>0))
@@ -258,11 +276,23 @@ void Rasterizer::flatRasterizer()
 	{
 		if (edge[y].x2 > edge[y].x1)
 		{
-			Game::Pixel *p = edge[y].offset + (edge[y].x1>>FP);
 			scalar len = (edge[y].x2 - edge[y].x1);
 			
 			len>>=FP;
 			
+#ifdef RASTERIZER_2D_CLIPPING
+			if (edge[y].x1 < 0)
+			{
+				edge[y].x1 = 0;
+			}
+
+			if ((edge[y].x2>>FP) >= screen->width)
+			{
+				len -= (edge[y].x2>>FP) - (screen->width-1);
+			}
+#endif
+
+			Game::Pixel *p = edge[y].offset + (edge[y].x1>>FP);
 			while(len-->=0)
 			{
 				*p++ = color;
@@ -281,7 +311,6 @@ void Rasterizer::textureRasterizer()
 	{
 		if (edge[y].x2 > edge[y].x1)
 		{
-			Game::Pixel *p = edge[y].offset + (edge[y].x1>>FP);
 			Game::Pixel *t = texture->pixels;
 			scalar len = (edge[y].x2 - edge[y].x1);
 			
@@ -301,7 +330,22 @@ void Rasterizer::textureRasterizer()
 			v1 += FPMul(subpixFix, dv);
 			
 			len>>=FP;
-			
+
+#ifdef RASTERIZER_2D_CLIPPING
+			if (edge[y].x1 < 0)
+			{
+				u1 += FPMul(du, -edge[y].x1);
+				v1 += FPMul(dv, -edge[y].x1);
+				edge[y].x1 = 0;
+			}
+
+			if ((edge[y].x2>>FP) >= screen->width)
+			{
+				len -= (edge[y].x2>>FP) - (screen->width-1);
+			}
+#endif
+
+			Game::Pixel *p = edge[y].offset + (edge[y].x1>>FP);
 			while(len-->=0)
 			{
 				*p++ = t[((u1>>FP)&0xff) + (((v1>>FP)&0xff)<<8)];
@@ -321,7 +365,6 @@ void Rasterizer::perspectiveTextureRasterizer()
 	{
 		if (edge[y].x2 > edge[y].x1)
 		{
-			Game::Pixel *p = edge[y].offset + (edge[y].x1>>FP);
 			Game::Pixel *t = texture->pixels;
 			scalar len = (edge[y].x2 - edge[y].x1);
 			
@@ -347,6 +390,21 @@ void Rasterizer::perspectiveTextureRasterizer()
 			
 			len>>=FP;
 			
+#ifdef RASTERIZER_2D_CLIPPING
+			if (edge[y].x1 < 0)
+			{
+				u1 += FPMul(du, -edge[y].x1);
+				v1 += FPMul(dv, -edge[y].x1);
+				edge[y].x1 = 0;
+			}
+
+			if ((edge[y].x2>>FP) >= screen->width)
+			{
+				len -= (edge[y].x2>>FP) - (screen->width-1);
+			}
+#endif
+
+			Game::Pixel *p = edge[y].offset + (edge[y].x1>>FP);
 			while(len-->=0)
 			{
 				*p++ = t[((u1>>FP)&0xff) + (((v1>>FP)&0xff)<<8)];
@@ -366,7 +424,6 @@ void Rasterizer::tileTextureRasterizer()
 	{
 		if (edge[y].x2 > edge[y].x1)
 		{
-			Game::Pixel *p = edge[y].offset + (edge[y].x1>>FP);
 			unsigned char *t = (unsigned char*)texture->pixels;
 			scalar len = (edge[y].x2 - edge[y].x1);
 			
@@ -387,6 +444,21 @@ void Rasterizer::tileTextureRasterizer()
 			
 			len>>=FP;
 			
+#ifdef RASTERIZER_2D_CLIPPING
+			if (edge[y].x1 < 0)
+			{
+				u1 += FPMul(du, -edge[y].x1);
+				v1 += FPMul(dv, -edge[y].x1);
+				edge[y].x1 = 0;
+			}
+
+			if ((edge[y].x2>>FP) >= screen->width)
+			{
+				len -= (edge[y].x2>>FP) - (screen->width-1);
+			}
+#endif
+
+			Game::Pixel *p = edge[y].offset + (edge[y].x1>>FP);
 			while(len-->=0)
 			{
 				unsigned char tile = t[((u1>>FP)&0xff) + (((v1>>FP)&0xff)<<8)];

@@ -34,7 +34,7 @@ Channel::Channel(int _outputFreq):
 
 bool Channel::isActive()
 {
-	return sample;
+	return sample != 0;
 }
 
 void Channel::start(Game::SampleChunk *_sample, int _freq, int _loopStart, int _loopLength)
@@ -80,15 +80,11 @@ Mixer::Mixer(int _outputFreq, int _channelCount):
 	outputFreq(_outputFreq),
 	ticker(0)
 {
-#ifdef __VC32__
 	int ch;
 
 	channel = new Channel[channelCount];
 	for(ch=0; ch<channelCount; ch++)
 		channel[ch].setOutputFrequency(outputFreq);
-#else
-	channel = new Channel[channelCount](outputFreq);
-#endif
 }
 
 Mixer::~Mixer()
@@ -116,7 +112,7 @@ void Mixer::render(Game::SampleChunk *buffer)
 				a+=channel[ch].play();
 			}
 			
-			*data++ = a / channelCount;
+			*data++ = a / (channelCount*2);
 			
 			if (ticker)
 			{
@@ -145,7 +141,7 @@ void Mixer::render(Game::SampleChunk *buffer)
 				}
 			}
 			
-			*data++ = (a/channelCount)>>8;
+			*data++ = (a/(channelCount*2))>>8;
 			
 			if (ticker)
 			{

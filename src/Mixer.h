@@ -45,7 +45,7 @@ public:
 			a = (sample->data[pos] * volume);
 		break;
 		case 2:
-			a = (((unsigned short*)sample->data)[pos] * volume) >> 8;
+			a = (((Game::Sample16*)sample->data)[pos] * volume) >> 8;
 		break;
 		}
 		

@@ -26,6 +26,7 @@
 
 //! Number of extra fraction bits used for inverse z (for perspective correction)
 #define INVZ_SCALE		6
+#define RASTERIZER_2D_CLIPPING
 
 //! Dimensions of a texture tile.
 #define TILE_TEXTURE_BITS	5

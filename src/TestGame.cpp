@@ -58,9 +58,9 @@ public:
                 delete track;
                 delete ground;
                 delete sky;
+                delete view;
                 delete mixer;
                 delete modplayer;
-                delete view;
         }
         
         void configureVideo(Game::Surface* screen)
@@ -409,7 +409,7 @@ public:
 		for(x=0; x<screen->width; x++)
 		{
 			y = ((Game::Sample*)audioBuffer->data)[x];
-			y >>= 8;
+			y >>= 7;
 			y += screen->height/2;
 
 			if (y<0) y=0;
@@ -421,9 +421,10 @@ public:
         
         void renderVideo(Game::Surface* screen)
         {
+                screen->clear();
+#if 1
                 t = (100*framework->getTickCount() / framework->getTicksPerSecond()) << (FP-8);
 
-                screen->clear();
 		setupView();
 
 //              renderBackground(screen);
@@ -437,7 +438,7 @@ public:
                 object->render(view);
                 rasterizer->flags |= Rasterizer::FlagPerspectiveCorrection;
 //                renderObjectTest(view);
-
+#endif
 		renderAudioBuffer(screen);
         }
 

@@ -87,14 +87,14 @@ public:
 class SampleChunk
 {
 public:
-        SampleChunk(SampleFormat* _format, unsigned char* _data, int _length, int _rate);
+        SampleChunk(SampleFormat* _format, Sample8* _data, int _length, int _rate);
         SampleChunk(SampleFormat* _format, int _length, int _rate);
         virtual ~SampleChunk();
         
         //! \param sample must be in the correct format.
         void    setSample(int n, int channel, Sample sample);
 
-        unsigned char*  data;
+        Sample8*	data;
         int             length;
         int             rate;
         int             bytes;

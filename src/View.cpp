@@ -60,11 +60,11 @@ void View::addTransformedVertex(Vertex &v)
 void View::endPolygon()
 {
 	int i;
-	Vertex clippedVertex[MAX_VERTICES];
 	ScreenVertex sv;
+	Vertex clippedVertex[MAX_VERTICES];
 	
 	vertexCount = camera.clipPolygon(&vertex[0], vertexCount, &clippedVertex[0]);
-	
+
 //	printf("Clipped polygon has %d vertices.\n", vertexCount);
 	
 	rasterizer->beginPolygon();
@@ -99,8 +99,8 @@ void Camera::configure()
 {
 	scalar halfFOV = FPMul(FPDiv(fov,FPInt(2)), (PI/180));
 
-	scalar s = FPSin(halfFOV - (1<<FP)/128);
-	scalar c = FPCos(halfFOV - (1<<FP)/128);
+	scalar s = FPSin(halfFOV - 0*(1<<FP)/128);
+	scalar c = FPCos(halfFOV - 0*(1<<FP)/128);
 	
 	// left
 	clipStack[0].normal.x = c;
@@ -248,8 +248,8 @@ int Camera::clipToPlane(ClippingPlane *plane, Vertex *in, int inCount, Vertex *o
 			}
 		
 			// XXX - custom division here!
-//			scalar t = FPDiv(d1, d);
-			scalar t = ((d1<<10) / (d>>4))<<2;
+			scalar t = FPDiv(d1, d);
+//			scalar t = ((d1<<10) / (d>>4))<<2;
 			
 			if (d1>0)
 			{
