@@ -25,7 +25,7 @@ public:
 
         Game::Surface *loadImage(const char *name, Game::PixelFormat *pf = 0);
 		Game::SampleChunk *loadSample(const char *name, Game::SampleFormat *sf = 0);
-		const char *findResource(const char *name);
+		const char *findResource(const char *name, bool mustExist = false);
 
 private:
         void DynInitMenuPaneL(TInt aResourceId,CEikMenuPane* aMenuPane);

@@ -246,9 +246,8 @@ TDesC& CGameAppUi::GetFilenameDes(const char *name)
 	return iResourcePathBuf;
 }
 
-const char *CGameAppUi::findResource(const char *name)
+const char *CGameAppUi::findResource(const char *name, bool mustExist)
 {
-//	FILE *f = NULL;
 	int i = 0;
 	const char drive[] = {'c', 'd', 'e', 'z'};
 	char *s;
@@ -266,10 +265,8 @@ const char *CGameAppUi::findResource(const char *name)
 			s++;
 		}
 
-//		f = fopen(iResourcePath,"r");
-		if (stat(iResourcePath, &fileStat) == 0)
+		if (!mustExist || stat(iResourcePath, &fileStat) == 0)
 		{
-//			fclose(f);
 			return iResourcePath;
 		}
 	}

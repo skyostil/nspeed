@@ -97,8 +97,8 @@ Environment::~Environment()
         delete rasterizer;
         delete world;
 
-        delete mixer;
         delete modplayer;
+        delete mixer;
         
         delete font;
         delete bigFont;

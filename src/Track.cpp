@@ -225,7 +225,7 @@ bool Track::saveTimes(const char *name)
         TimeEntry timeEntry;
         
         sprintf(fileName, "tracks/%.64s/times.dat", name);
-        WriteTagFile timeFile(env->getFramework()->findResource(fileName));
+        WriteTagFile timeFile(env->getFramework()->findResource(fileName, false));
         
         timeEntry.time = getBestLapTime(timeEntry.name, sizeof(timeEntry.name));
         timeFile.writeTag(0, (const char*)&timeEntry, sizeof(timeEntry));
