@@ -71,6 +71,7 @@ Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surf
 
     // clear the player name
     memset(playerName, ' ', sizeof(playerName));
+    playerName[0] = 0;
 
     // load graphics
     carDot = loadImage("reddot.png");

@@ -1,0 +1,50 @@
+;
+; Installation file for N-Speed application
+;
+;Languages
+&EN
+;
+; UID is the app's UID
+;
+#{"N-Speed"},(0x06406E42),1,0,0
+;
+;Supports Series 60 v 0.9
+;This line indicates that this installation is for the Series 60 platform v0.9
+;This line must appear _exactly_ as shown below in the sis file
+;If this line is missing or incorrect, the sis file will not be able
+;to be installed on Series 60 v0.9 platforms
+(0x101F6F88), 0, 0, 0, {"Series60ProductID"}
+;
+; Files to install
+;
+"\Symbian\6.1\Series60\Epoc32\release\armi\urel\N-Speed.app"         -"!:\system\apps\N-Speed\N-Speed.app"
+"\Symbian\6.1\Series60\Epoc32\release\armi\urel\N-Speed.rsc"         -"!:\system\apps\N-Speed\N-Speed.rsc"
+"\Symbian\6.1\Series60\Epoc32\release\armi\urel\N-Speed_caption.rsc" -"!:\system\apps\N-Speed\N-Speed_caption.rsc"
+"\Symbian\6.1\Series60\Epoc32\release\armi\urel\N-Speed.aif"         -"!:\system\apps\N-Speed\N-Speed.aif"
+
+; graphics
+"..\..\data\logo.png"                   -"!:\system\apps\N-Speed\logo.png"
+"..\..\data\reddot.png"                 -"!:\system\apps\N-Speed\reddot.png"
+"..\..\data\bluedot.png"                -"!:\system\apps\N-Speed\bluedot.png"
+
+; fonts
+"..\..\data\fonts\default.png"          -"!:\system\apps\N-Speed\fonts\default.png"
+"..\..\data\fonts\big.png"              -"!:\system\apps\N-Speed\fonts\big.png"
+
+; sound & music
+"..\..\data\music\menu.mod"             -"!:\system\apps\N-Speed\music\menu.mod"
+
+; cars
+"..\..\data\cars\default\mesh.mesh"     -"!:\system\apps\N-Speed\cars\default\mesh.mesh"
+"..\..\data\cars\default\texture.png"   -"!:\system\apps\N-Speed\cars\default\texture.png"
+"..\..\data\cars\default\engine.wav"    -"!:\system\apps\N-Speed\cars\default\engine.wav"
+"..\..\data\cars\default\acceleration.dat" -"!:\system\apps\N-Speed\cars\default\acceleration.dat"
+
+; tracks
+"..\..\data\tracks\tile1.png"           -"!:\system\apps\N-Speed\tracks\tile1.png"
+"..\..\data\tracks\tile2.png"           -"!:\system\apps\N-Speed\tracks\tile2.png"
+"..\..\data\tracks\tile4.png"           -"!:\system\apps\N-Speed\tracks\tile4.png"
+"..\..\data\tracks\tile8.png"           -"!:\system\apps\N-Speed\tracks\tile8.png"
+"..\..\data\tracks\tile16.png"          -"!:\system\apps\N-Speed\tracks\tile16.png"
+"..\..\data\tracks\tile24.png"          -"!:\system\apps\N-Speed\tracks\tile24.png"
+"..\..\data\tracks\tile32.png"          -"!:\system\apps\N-Speed\tracks\tile32.png"

@@ -32,16 +32,16 @@ class Renderable;
 class World: public Object
 {
 public:
-	World(Object *parent, Environment *_env);
-	~World();
+        World(Object *parent, Environment *_env);
+        ~World();
 
-	Environment			*getEnvironment() { return env; }
-	Set<Renderable*>	&getRenderableSet() { return renderables; }
-	
-	void				render();
+        Environment                     *getEnvironment() { return env; }
+        Set<Renderable*>        &getRenderableSet() { return renderables; }
+        
+        void                            render();
 protected:
-	Environment			*env;
-	Set<Renderable*>	renderables;
+        Environment                     *env;
+        Set<Renderable*>        renderables;
 };
 
 #endif

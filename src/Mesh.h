@@ -31,50 +31,50 @@ class World;
 
 typedef struct
 {
-	short		*vertex;
-	char		vertexCount;
-	Game::Pixel	color;
-	Game::Surface	*texture;
-	Vector		normal;
-	class Mesh	*mesh;	// required for qsort
+        short           *vertex;
+        char            vertexCount;
+        Game::Pixel     color;
+        Game::Surface   *texture;
+        Vector          normal;
+        class Mesh      *mesh;  // required for qsort
 } Face;
 
 class Mesh: public Object, public Renderable
 {
 public:
-	Mesh(Object *parent, const char *fileName, Game::Surface *texture = 0, int _flags = 0);
-	Mesh(Object *parent, int _vertexCount, int _faceCount, int _flags = 0);
-	~Mesh();
-	
-	void	render(World *world);
-	Vector	getOrigin();
+        Mesh(Object *parent, const char *fileName, Game::Surface *texture = 0, int _flags = 0);
+        Mesh(Object *parent, int _vertexCount, int _faceCount, int _flags = 0);
+        ~Mesh();
+        
+        void    render(World *world);
+        Vector  getOrigin();
 
-	//! Sets flags for the Rasterizer
-	void	setFlags(int _flags);
+        //! Sets flags for the Rasterizer
+        void    setFlags(int _flags);
 
-	void	beginMesh();
-	void	setTexCoord(scalar u, scalar v);
-	int		addVertex(const Vector &pos);
-	void	beginFace(int vertexCount);
-	void	setTexture(Game::Surface *t);
-	void	setColor(Game::Pixel c);
-	void	addFaceVertex(short n);
-	void	endFace();
-	void	endMesh();
-	
-	Matrix		transformation;
-	
-	Vertex		*vertex;
-	Vertex		*transformedVertex;
-	int			vertexCount;
-	Face		*face;
-	int			faceCount;
+        void    beginMesh();
+        void    setTexCoord(scalar u, scalar v);
+        int             addVertex(const Vector &pos);
+        void    beginFace(int vertexCount);
+        void    setTexture(Game::Surface *t);
+        void    setColor(Game::Pixel c);
+        void    addFaceVertex(short n);
+        void    endFace();
+        void    endMesh();
+        
+        Matrix          transformation;
+        
+        Vertex          *vertex;
+        Vertex          *transformedVertex;
+        int                     vertexCount;
+        Face            *face;
+        int                     faceCount;
 protected:
-	static int	sortComparator(const void *_a, const void *_b);
+        static int      sortComparator(const void *_a, const void *_b);
 
-	int		currentFace;
-	int		currentVertex;
-	int		flags;
+        int             currentFace;
+        int             currentVertex;
+        int             flags;
 };
 
 #endif

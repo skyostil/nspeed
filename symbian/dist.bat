@@ -3,6 +3,6 @@ cd group
 call abld build armi
 cd ..
 cd install
-makesis game.pkg
+makesis n-speed.pkg
 cd ..
 

@@ -15,8 +15,8 @@
 #include "GameContainer.h" 
 #include "GameEng.h"
 #include "GameImageLoader.h"
-#include <Game.rsg>
-#include "game.hrh"
+#include <N-Speed.rsg>
+#include "N-Speed.hrh"
 #include "Config.h"
 
 #include <avkon.hrh>
@@ -255,7 +255,7 @@ const char *CGameAppUi::findResource(const char *name, bool mustExist)
 
 	for(i=0; i<sizeof(drive); i++)
 	{
-		sprintf(iResourcePath, "%c:\\system\\apps\\game\\%s", drive[i], name);
+		sprintf(iResourcePath, "%c:\\system\\apps\\" PROGRAM "\\%.128s", drive[i], name);
 
 		// replace forward slashes with backslashes
 		s = iResourcePath;

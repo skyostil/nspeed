@@ -9,6 +9,8 @@
 
 #include "engine/engine.h"
 
+#define PROGRAM "N-Speed"
+
 class CGameContainer;
 
 class CGameAppUi: public CAknAppUi, Game::Framework

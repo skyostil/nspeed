@@ -90,7 +90,7 @@ Mesh::Mesh(Object *parent, const char *fileName, Game::Surface *texture, int _fl
                 for(i=0; i<vertexCount; i++)
                 {
                     setTexCoord(v[i].u, v[i].v);
-                    //			addVertex(Vector(v[i].x >> 1, v[i].y >> 1, v[i].z >> 1));
+                    //                  addVertex(Vector(v[i].x >> 1, v[i].y >> 1, v[i].z >> 1));
                     addVertex(Vector(v[i].x, v[i].y, v[i].z));
                 }
 
@@ -194,7 +194,7 @@ void Mesh::render(World *world)
             for(vc=0; vc<f->vertexCount; vc++)
             {
                 v = &transformedVertex[f->vertex[vc]];
-                //			printf("%d, %d, %d\n", v->pos.x>>FP, v->pos.y>>FP, v->pos.z>>FP);
+                //                      printf("%d, %d, %d\n", v->pos.x>>FP, v->pos.y>>FP, v->pos.z>>FP);
                 world->getEnvironment()->getView()->addTransformedVertex(*v);
             }
             world->getEnvironment()->getView()->endPolygon();

@@ -42,6 +42,10 @@ Track::Track(Object *parent, Environment *_env):
         bestTotalTime(-1)
 {
     int i;
+
+    // clear the record holders' names
+    memset(bestLapName, ' ', sizeof(bestLapName));
+    memset(bestTotalName, ' ', sizeof(bestTotalName));
     bestLapName[0] = 0;
     bestTotalName[0] = 0;
 

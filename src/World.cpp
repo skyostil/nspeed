@@ -22,8 +22,8 @@
 #include "Environment.h"
 
 World::World(Object *parent, Environment *_env):
-	Object(parent),
-	env(_env)
+        Object(parent),
+        env(_env)
 {
 }
 
@@ -33,8 +33,8 @@ World::~World()
 
 void World::render()
 {
-	int i;
+        int i;
 
-	for(i=0; i<renderables.getCount(); i++)
-		renderables.getItem(i)->render(this);
+        for(i=0; i<renderables.getCount(); i++)
+                renderables.getItem(i)->render(this);
 }

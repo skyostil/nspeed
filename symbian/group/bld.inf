@@ -43,8 +43,7 @@ PRJ_MMPFILES
 #endif
 */
 
-// \code\symbian\Game\group\Game.mmp
-.\Game.mmp
+.\N-Speed.mmp
 
 PRJ_TESTMMPFILES
 // specify the .mmp files required for building any test programs here

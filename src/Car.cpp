@@ -97,7 +97,7 @@ Car::Car(World *_world, const char *name):
 
 Car::~Car()
 {
-    world->getEnvironment()->meshPool.remove(mesh);
+    hide();
     world->getEnvironment()->scheduleSampleDeletion(engineSound);
     delete texture;
 }
@@ -488,6 +488,7 @@ void Car::checkCollision(Car *other)
 {
     scalar radius = FP_ONE * 2;
     Vector dist = other->origin - origin;
+    const int collisionDampening = 2; // logarithmic
 
     // this peculiar double-test is needed because of numerical overflow
     if (FPAbs(dist.x) <= radius && FPAbs(dist.z) <= radius)
@@ -500,7 +501,7 @@ void Car::checkCollision(Car *other)
             // backtrack to avoid collision
             origin -= velocity * FPInt(2);
 
-            scalar p = relativeVelocity.dot(normal) >> 1;
+            scalar p = relativeVelocity.dot(normal) >> collisionDampening;
 
             velocity -= normal * p + relativeVelocity;
             other->velocity += normal * p + relativeVelocity;

@@ -25,47 +25,56 @@
 #include <stdlib.h>
  
 MeshSet::MeshSet():
-	meshes(MAX_MESHES, true)
+        meshes(MAX_MESHES, false)
 {
 }
 
 void MeshSet::render(class World *_world)
 {
-	int i;
+        int i;
+        int count = 0;
+        const scalar viewLimit = FPInt(4);
 
-	world = _world;
-	for(i=0; i<meshes.getCount(); i++)
-	{
-		sortList[i].self = this;
-		sortList[i].mesh = meshes.getItem(i);
-	}
+        world = _world;
+        for(i=0; i<meshes.getCount(); i++)
+        {
+            Mesh *m = meshes.getItem(i);
 
-	qsort(sortList, meshes.getCount(), sizeof(SortItem), sortComparator);
+            // don't render meshes that are too far
+            if ((m->getOrigin() - world->getEnvironment()->getView()->camera.origin).manhattanNorm() < viewLimit)
+            {
+                sortList[count].self = this;
+                sortList[count].mesh = m;
+                count++;
+            }
+        }
 
-	for(i=0; i<meshes.getCount(); i++)
-		sortList[i].mesh->render(world);
+        qsort(sortList, count, sizeof(SortItem), sortComparator);
+
+        for(i=0; i<count; i++)
+                sortList[i].mesh->render(world);
 }
 
 int MeshSet::sortComparator(const void *_a, const void *_b)
 {
-	SortItem *a = (SortItem*)_a;
-	SortItem *b = (SortItem*)_b;
-	Vector distA = a->mesh->getOrigin() - a->self->world->getEnvironment()->getView()->camera.origin;
-	Vector distB = b->mesh->getOrigin() - a->self->world->getEnvironment()->getView()->camera.origin;
-	
-	if (
-		distA.lengthSquared() >
-		distB.lengthSquared())
-		return -1;
-	return 1;
+        SortItem *a = (SortItem*)_a;
+        SortItem *b = (SortItem*)_b;
+        Vector distA = a->mesh->getOrigin() - a->self->world->getEnvironment()->getView()->camera.origin;
+        Vector distB = b->mesh->getOrigin() - a->self->world->getEnvironment()->getView()->camera.origin;
+        
+        if (
+                distA.lengthSquared() >
+                distB.lengthSquared())
+                return -1;
+        return 1;
 }
 
 int MeshSet::add(Mesh *o)
 {
-	return meshes.add(o);
+        return meshes.add(o);
 }
 
 void MeshSet::remove(Mesh *o)
 {
-	meshes.remove(o);
+        meshes.remove(o);
 }
