@@ -32,6 +32,8 @@
 "..\..\data\fonts\big.png"              -"!:\system\apps\N-Speed\fonts\big.png"
 
 ; sound & music
+"..\..\data\sound\damage.wav"           -"!:\system\apps\N-Speed\sound\damage.wav"
+"..\..\data\sound\recharge.wav"         -"!:\system\apps\N-Speed\sound\recharge.wav"
 "..\..\data\music\menu.mod.tag"         -"!:\system\apps\N-Speed\music\menu.mod.tag"
 
 ; settings
@@ -48,6 +50,7 @@
 "..\..\data\tracks\ground.png"          -"!:\system\apps\N-Speed\tracks\ground.png"
 "..\..\data\tracks\tile1.png"           -"!:\system\apps\N-Speed\tracks\tile1.png"
 "..\..\data\tracks\tile2.png"           -"!:\system\apps\N-Speed\tracks\tile2.png"
+"..\..\data\tracks\tile3.png"           -"!:\system\apps\N-Speed\tracks\tile3.png"
 "..\..\data\tracks\tile4.png"           -"!:\system\apps\N-Speed\tracks\tile4.png"
 "..\..\data\tracks\tile8.png"           -"!:\system\apps\N-Speed\tracks\tile8.png"
 "..\..\data\tracks\tile16.png"          -"!:\system\apps\N-Speed\tracks\tile16.png"

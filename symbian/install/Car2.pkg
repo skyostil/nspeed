@@ -15,7 +15,7 @@
 ;
 
 ; car #2
-"..\..\data\cars\2\mesh.mesh"        -"!:\system\apps\N-Speed\cars\2\mesh.mesh"
-"..\..\data\cars\2\texture.png"      -"!:\system\apps\N-Speed\cars\2\texture.png"
-"..\..\data\cars\2\engine.wav"       -"!:\system\apps\N-Speed\cars\2\engine.wav"
-"..\..\data\cars\2\acceleration.dat" -"!:\system\apps\N-Speed\cars\2\acceleration.dat"
+"..\..\data\cars\2\mesh.mesh"        -"!:\system\apps\N-Speed\cars\Sonic Tiger\mesh.mesh"
+"..\..\data\cars\2\texture.png"      -"!:\system\apps\N-Speed\cars\Sonic Tiger\texture.png"
+"..\..\data\cars\2\engine.wav"       -"!:\system\apps\N-Speed\cars\Sonic Tiger\engine.wav"
+"..\..\data\cars\2\acceleration.dat" -"!:\system\apps\N-Speed\cars\Sonic Tiger\acceleration.dat"

@@ -78,9 +78,9 @@ void CGameEng::ConstructL()
         // initialize audio
         Game::SampleFormat sf(16,1);
 #if defined(__WINS__)
-        iAudioBuffer = new Game::SampleChunk(&sf, 1024, 8000);
+        iAudioBuffer = new Game::SampleChunk(&sf, 1024/2, 8000);
 #else
-        iAudioBuffer = new Game::SampleChunk(&sf, 1024, 8000);
+        iAudioBuffer = new Game::SampleChunk(&sf, 1024/2, 8000);
 #endif
         iAudioBufferPtr = new TPtr8((TUint8*)iAudioBuffer->data, iAudioBuffer->bytes, iAudioBuffer->bytes);
         iStream = CMdaAudioOutputStream::NewL(*this);

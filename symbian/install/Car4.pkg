@@ -15,7 +15,7 @@
 ;
 
 ; car #4
-"..\..\data\cars\4\mesh.mesh"        -"!:\system\apps\N-Speed\cars\4\mesh.mesh"
-"..\..\data\cars\4\texture.png"      -"!:\system\apps\N-Speed\cars\4\texture.png"
-"..\..\data\cars\4\engine.wav"       -"!:\system\apps\N-Speed\cars\4\engine.wav"
-"..\..\data\cars\4\acceleration.dat" -"!:\system\apps\N-Speed\cars\4\acceleration.dat"
+"..\..\data\cars\4\mesh.mesh"        -"!:\system\apps\N-Speed\cars\Boomerang\mesh.mesh"
+"..\..\data\cars\4\texture.png"      -"!:\system\apps\N-Speed\cars\Boomerang\texture.png"
+"..\..\data\cars\4\engine.wav"       -"!:\system\apps\N-Speed\cars\Boomerang\engine.wav"
+"..\..\data\cars\4\acceleration.dat" -"!:\system\apps\N-Speed\cars\Boomerang\acceleration.dat"

@@ -16,6 +16,6 @@ makesis TestTrack.pkg
 makesis IceTrack.pkg
 makesis DesertTrack.pkg
 makesis CityTrack.pkg
-makesis KiersioeTrack.pkg
+makesis SpeedTrack.pkg
 cd ..
 

@@ -98,6 +98,7 @@ public:
     Track                   *track;
     BitmapFont              *font, *bigFont;
     Game::Surface           *carDot, *enemyCarDot;
+	Game::SampleChunk		*damageSound, *rechargeSound;
 
     Mixer                   *mixer;
     ModPlayer               *modplayer;

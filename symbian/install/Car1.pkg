@@ -15,7 +15,7 @@
 ;
 
 ; car #1
-"..\..\data\cars\1\mesh.mesh"        -"!:\system\apps\N-Speed\cars\1\mesh.mesh"
-"..\..\data\cars\1\texture.png"      -"!:\system\apps\N-Speed\cars\1\texture.png"
-"..\..\data\cars\1\engine.wav"       -"!:\system\apps\N-Speed\cars\1\engine.wav"
-"..\..\data\cars\1\acceleration.dat" -"!:\system\apps\N-Speed\cars\1\acceleration.dat"
+"..\..\data\cars\1\mesh.mesh"        -"!:\system\apps\N-Speed\cars\Blue Streak\mesh.mesh"
+"..\..\data\cars\1\texture.png"      -"!:\system\apps\N-Speed\cars\Blue Streak\texture.png"
+"..\..\data\cars\1\engine.wav"       -"!:\system\apps\N-Speed\cars\Blue Streak\engine.wav"
+"..\..\data\cars\1\acceleration.dat" -"!:\system\apps\N-Speed\cars\Blue Streak\acceleration.dat"

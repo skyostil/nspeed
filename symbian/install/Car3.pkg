@@ -15,7 +15,7 @@
 ;
 
 ; car #3
-"..\..\data\cars\3\mesh.mesh"        -"!:\system\apps\N-Speed\cars\3\mesh.mesh"
-"..\..\data\cars\3\texture.png"      -"!:\system\apps\N-Speed\cars\3\texture.png"
-"..\..\data\cars\3\engine.wav"       -"!:\system\apps\N-Speed\cars\3\engine.wav"
-"..\..\data\cars\3\acceleration.dat" -"!:\system\apps\N-Speed\cars\3\acceleration.dat"
+"..\..\data\cars\3\mesh.mesh"        -"!:\system\apps\N-Speed\cars\Cowabunga\mesh.mesh"
+"..\..\data\cars\3\texture.png"      -"!:\system\apps\N-Speed\cars\Cowabunga\texture.png"
+"..\..\data\cars\3\engine.wav"       -"!:\system\apps\N-Speed\cars\Cowabunga\engine.wav"
+"..\..\data\cars\3\acceleration.dat" -"!:\system\apps\N-Speed\cars\Cowabunga\acceleration.dat"

@@ -40,6 +40,8 @@ Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surf
         modplayer(0),
         menu(0),
         aiCount(3),
+		damageSound(0),
+		rechargeSound(0),
         sfxVolume(16), musicVolume(16),
         musicChangeScheduled(false),
         stopSfxScheduled(false),
@@ -85,8 +87,11 @@ Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surf
 
 void Environment::initializeSound(Game::SampleChunk *sample)
 {
-    mixer = new Mixer(sample->rate, 8);
+    mixer = new Mixer(sample->rate, 6);
     modplayer = new ModPlayer(mixer);
+
+	damageSound = framework->loadSample(framework->findResource("sound/damage.wav"));
+	rechargeSound = framework->loadSample(framework->findResource("sound/recharge.wav"));
 
     setVolumes();
 }
@@ -128,6 +133,9 @@ Environment::~Environment()
 
     delete carDot;
     delete enemyCarDot;
+
+	delete damageSound;
+	delete rechargeSound;
 }
 
 Game::Surface *Environment::loadImage(const char *name)

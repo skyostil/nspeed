@@ -323,6 +323,7 @@ void Car::update(Track *track)
 void Car::updateTileEffects(Track *track)
 {
     unsigned char tile = track->getCell(getOrigin());
+	Environment *env = world->getEnvironment();
 
     takingDamage = false;
 
@@ -333,6 +334,13 @@ void Car::updateTileEffects(Track *track)
     }
     else if (track->tileGivesEnergy(tile))
     {
+		if (carNumber == 0)
+		{
+			if (env->getSfxChannel() && env->rechargeSound)
+			{
+				env->getSfxChannel()->playSample(env->rechargeSound, 11025);
+			}
+		}
         energy += 32768;
         if (energy > FPInt(100))
             energy = FPInt(100);
@@ -346,6 +354,14 @@ void Car::updateTileEffects(Track *track)
     }
     else if (track->tileIsDamaging(tile))
     {
+		if (carNumber == 0)
+		{
+			if (env->getSfxChannel() && env->damageSound)
+			{
+				env->getSfxChannel()->playSample(env->damageSound, 8192);
+			}
+		}
+
         if (!aiEnabled)
         {
             energy -= 6000;
@@ -353,7 +369,7 @@ void Car::updateTileEffects(Track *track)
                 energy = 0;
             takingDamage = true;
         }
-        acceleration -= (velocity * (speed>>3));
+        acceleration -= (velocity * (speed>>2));
     }
     else if (track->tileIsTurbo(tile))
     {
@@ -383,9 +399,9 @@ void Car::updateSound()
     int freq;
 
     if (thrust)
-        freq = (FPSqrt(speed) << 2) + 16000;
+        freq = (FPSqrt(speed) >> 2) + 2000;
     else
-        freq = (FPSqrt(speed) << 2) + 8000;
+        freq = (FPSqrt(speed) >> 2) + 1000;
 
     if (world->getEnvironment()->mixer)
         world->getEnvironment()->getEngineSoundChannel()->setFrequency(freq);

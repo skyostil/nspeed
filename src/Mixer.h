@@ -39,6 +39,12 @@ public:
                 if (!sample)
                         return 0;
                 
+                if (loopLength)
+                        if (pos>=loopStart+loopLength)
+                        {
+                            pos-=loopLength;
+                        }
+                
                 if (pos >= sample->length)
 				{
                     sample = 0;
@@ -63,12 +69,6 @@ public:
                         counter -= 0xffff;
                         pos++;
                 }
-                
-                if (loopLength)
-                        if (pos>=loopStart+loopLength)
-                        {
-                                pos-=loopLength;
-                        }
                 
                 return a;
         }

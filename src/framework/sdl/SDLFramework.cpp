@@ -395,6 +395,7 @@ Game::SampleChunk *SDLFramework::loadSample(const char *name, Game::SampleFormat
                         {
                             Game::Sample8 s;
                             fread(&s, sizeof(s), 1, f);
+							s+=0x80;
                             sample->setSample(n,ch,sample->format.makeSample(s<<8));
                         }
                         break;
@@ -402,6 +403,7 @@ Game::SampleChunk *SDLFramework::loadSample(const char *name, Game::SampleFormat
                         {
                             Game::Sample16 s;
                             fread(&s, sizeof(s), 1, f);
+							s+=0x8000;
                             sample->setSample(n,ch,sample->format.makeSample(s));
                         }
                         break;
