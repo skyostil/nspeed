@@ -23,7 +23,7 @@
 
 #include "FixedPointMath.h"
 #include "FixedPointVector.h"
-#include "Object.h"
+#include "Mesh.h"
 #include "World.h"
 
 class Track;
@@ -65,7 +65,7 @@ private:
 	bool	thrust, brake;
 	int		steering, steeringWheelPos, thrustPos;
 	
-	Object	*object;
+	Mesh	*mesh;
 	World	*world;
 };
 

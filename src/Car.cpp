@@ -19,7 +19,7 @@
  ***************************************************************************/
 
 #include "Car.h"
-#include "models/CarModel.h"
+//#include "models/CarModel.h"
 #include "Track.h"
 #include "Environment.h"
 #include <stdio.h>
@@ -37,8 +37,9 @@ Car::Car(World *_world, const char *name):
 	thrustPos(0),
 	world(_world)
 {
-	object = new CarModel(FPInt(1)>>8, world->getFramework()->loadImage(world->getFramework()->findResource("car.png"), &world->getScreen()->format));
-	world->getEnvironment()->objectPool.add(object);
+//	mesh = new CarModel(FPInt(1)>>8, world->getFramework()->loadImage(world->getFramework()->findResource("car.png"), &world->getScreen()->format));
+	mesh = new Mesh(0, 0);
+	world->getEnvironment()->meshPool.add(mesh);
 
 	// build an acceleration profile
 	accProfile[0].acc = 10;
@@ -57,7 +58,7 @@ Car::Car(World *_world, const char *name):
 
 Car::~Car()
 {
-	world->getEnvironment()->objectPool.remove(object);
+	world->getEnvironment()->meshPool.remove(mesh);
 }
 
 #define DAMPEN(x,amount) if (x) x += (x>(amount))?(-(amount)):(amount)
@@ -246,9 +247,9 @@ void Car::update(Track *track)
 	Vector rollAxis(FPCos(angle),0,FPSin(angle));
 	Matrix translation = Matrix::makeTranslation(origin + Vector(0, thrustPos<<(FP-12), 0));
 
-	object->transformation = Matrix::makeRotation(verticalAxis, angle + (steeringWheelPos<<(FP-8)));
-	object->transformation *= Matrix::makeRotation(rollAxis, -(steeringWheelPos<<(FP-8)));
-	object->transformation *= translation;
+	mesh->transformation = Matrix::makeRotation(verticalAxis, angle + (steeringWheelPos<<(FP-8)));
+	mesh->transformation *= Matrix::makeRotation(rollAxis, -(steeringWheelPos<<(FP-8)));
+	mesh->transformation *= translation;
 }
 
 scalar Car::getAcceleration(scalar speed)
@@ -291,11 +292,6 @@ void Car::setSteering(int _steering)
 
 void Car::render(World *world)
 {
-/*
-	world->getView()->rasterizer->flags &= ~Rasterizer::FlagPerspectiveCorrection;
-	object->render(world);
-	world->getView()->rasterizer->flags |= Rasterizer::FlagPerspectiveCorrection;
-*/
 	int x, y, i;
 	scalar s = 0;
 

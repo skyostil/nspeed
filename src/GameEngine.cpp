@@ -95,7 +95,7 @@ void GameEngine::configureVideo(Game::Surface* screen)
 
 	// create the world
 	world = new World(framework, screen, rasterizer, view, env);
-	world->getRenderableSet().add(&env->objectPool);
+	world->getRenderableSet().add(&env->meshPool);
 }
 
 void GameEngine::configureAudio(Game::SampleChunk* sample)
@@ -160,7 +160,7 @@ void GameEngine::setState(State newState)
 		env->carPool.clear();
 
 		world->getRenderableSet().remove(env->track);
-		world->getRenderableSet().remove(&env->objectPool);
+		world->getRenderableSet().remove(&env->meshPool);
 	break;
 	}
 
@@ -174,7 +174,7 @@ void GameEngine::setState(State newState)
 			env->modplayer->load(framework->findResource("dallas.mod"));
 
 		world->getRenderableSet().add(env->track);
-		world->getRenderableSet().add(&env->objectPool);
+		world->getRenderableSet().add(&env->meshPool);
 	break;
 	}
 	state = newState;

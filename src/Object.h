@@ -32,14 +32,14 @@ typedef struct
 	Game::Pixel	color;
 	Game::Surface	*texture;
 	Vector		normal;
-	class Object	*object;	// required for qsort
+	class Mesh	*mesh;	// required for qsort
 } Face;
 
-class Object: public Renderable
+class Mesh: public Renderable
 {
 public:
-	Object(int _vertexCount, int _faceCount, int _flags = 0);
-	~Object();
+	Mesh(int _vertexCount, int _faceCount, int _flags = 0);
+	~Mesh();
 	
 	void	render(World *world);
 	Vector	getOrigin();
@@ -72,28 +72,28 @@ protected:
 	int		flags;
 };
 
-#define MAX_OBJECTS	32
+#define MAX_MESHES	32
 
-class ObjectSet: public Renderable
+class MeshSet: public Renderable
 {
 public:
-	ObjectSet();
-	void	render(class World *world);
-	int		add(Object *o);
-	void	remove(Object *o);
+	MeshSet();
+	void	render(World *world);
+	int		add(Mesh *o);
+	void	remove(Mesh *o);
 
 protected:
 	static int	sortComparator(const void *_a, const void *_b);
 
 	typedef struct
 	{
-		class ObjectSet	*self;
-		Object			*object;
+		class MeshSet	*self;
+		Mesh			*mesh;
 	} SortItem;
 		
 	World	*world;
-	SortItem sortList[MAX_OBJECTS];
-	Set<Object*> objects;
+	SortItem sortList[MAX_MESHES];
+	Set<Mesh*> meshes;
 };
 
 

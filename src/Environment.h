@@ -23,7 +23,7 @@
 
 #include "engine/Engine.h"
 #include "Set.h"
-#include "Object.h"
+#include "Mesh.h"
 
 class Track;
 class BitmapFont;
@@ -47,7 +47,7 @@ public:
 	Mixer		*mixer;
 	ModPlayer	*modplayer;
 
-	ObjectSet			objectPool;
+	MeshSet				meshPool;
 	Set<Game::Surface*>	texturePool;
 	Set<Car*>			carPool;
 };
