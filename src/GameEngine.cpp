@@ -45,6 +45,7 @@
 #define KEY_BRAKE	EStdKeyDownArrow
 #define KEY_DOWN	EStdKeyDownArrow
 #define KEY_EXIT	EStdKeyDevice0
+#define KEY_ROTATE	EStdKeyDevice1
 #else
 #include <SDL/SDL.h>
 #define KEY_LEFT	SDLK_LEFT
@@ -54,68 +55,50 @@
 #define KEY_BRAKE	'z'
 #define KEY_DOWN	SDLK_DOWN
 #define KEY_EXIT	SDLK_ESCAPE
+#define KEY_ROTATE	'r'
 #endif
 
 GameEngine::GameEngine(Game::Framework* _framework):
 	Object(0),
 	Game::Engine(_framework),
 	framework(_framework),
-	world(0),
 	env(0),
-	view(0),
-	rasterizer(0),
 	time(0),
 	lastTime(0),
-	state(IdleState)
+	state(IdleState),
+	fpsCountStart(0),
+	frameCount(0),
+	rotateCamera(false)
 {
-//	env = new Environment(this);
 	debugMessage[0] = 0;
 }
 
 GameEngine::~GameEngine()
 {
-	delete world;
-	delete view;
-	delete rasterizer;
-//	delete env;
 }
 
 void GameEngine::configureVideo(Game::Surface* screen)
 {
 	Game::Surface *img;
 
-	// init the screen
-	rasterizer = new Rasterizer(screen);
-	view = new View(rasterizer);
-	
-	env = new Environment(this, framework, screen, view);
-
-	// setup the environment
-	img = framework->loadImage(framework->findResource("fonts/returnofganon.png"), &screen->format);
-	env->texturePool.add(img);
-	env->font = new BitmapFont(img);
-	env->track = new Track(this, env);
-
-	// create the world
-	world = new World(this, env);
-	world->getRenderableSet().add(&env->meshPool);
+	env = new Environment(this, framework, screen);
 }
 
 void GameEngine::configureAudio(Game::SampleChunk* sample)
 {
-	env->mixer = new Mixer(sample->rate, 8);
-	env->modplayer = new ModPlayer(env->mixer);
+	env->initializeSound(sample);
 }
 
 void GameEngine::lookAtCarFromBehind(Car *car)
 {
-	scalar x = FPMul(FPCos(car->getAngle()), FPInt(3)>>2);
-	scalar z = FPMul(FPSin(car->getAngle()), FPInt(3)>>2);
-	scalar y = FPInt(4)>>3;
+	scalar angle = rotateCamera?FPMod(car->getAngle() + (time>>1), 2*PI):car->getAngle();
+	scalar x = FPMul(FPCos(angle), FPInt(3)>>1);
+	scalar z = FPMul(FPSin(angle), FPInt(3)>>1);
+	scalar y = FPInt(2)>>2;
 
-	view->camera.target = car->getOrigin() + Vector(x,0,z);
-	view->camera.origin = car->getOrigin() + Vector(-x>>1,y,-z>>1);
-	view->camera.update();
+	env->getView()->camera.target = car->getOrigin() + Vector(x,0,z);
+	env->getView()->camera.origin = car->getOrigin() + Vector(-x>>1,y,-z>>1);
+	env->getView()->camera.update();
 }
 
 void GameEngine::renderVideo(Game::Surface* screen)
@@ -128,9 +111,29 @@ void GameEngine::renderVideo(Game::Surface* screen)
 	switch(state)
 	{
 	case RaceState:
-		lookAtCarFromBehind(env->carPool.getItem(0));
-		world->render();
-		env->carPool.getItem(0)->render(world);
+	{
+		Car *playerCar = env->carPool.getItem(0);
+		
+		// render the world
+		lookAtCarFromBehind(playerCar);
+		env->getWorld()->render();
+		
+		// render the map & OSD
+		int mapX = env->getScreen()->width - env->track->getMap()->width - 2;
+		int mapY = env->getScreen()->height - env->track->getMap()->height - 2;
+		env->getScreen()->renderTransparentSurface(env->track->getMap(), mapX, mapY);
+		
+		char speedText[16];
+		int speedX = 4;
+		int speedY = env->getScreen()->height - env->bigFont->getHeight() - 2;
+		scalar speed = playerCar->getSpeed();
+		
+		if (speed <= (32<<2))
+			speed = 0;
+		
+		sprintf(speedText, "%3d kph", speed >> 2);
+		env->bigFont->renderText(env->getScreen(), speedText, speedX, speedY);
+	}
 	break;
 	}
 
@@ -162,8 +165,8 @@ void GameEngine::setState(State newState)
 			delete env->carPool.getItem(i);
 		env->carPool.clear();
 
-		world->getRenderableSet().remove(env->track);
-		world->getRenderableSet().remove(&env->meshPool);
+		env->getWorld()->getRenderableSet().remove(env->track);
+		env->getWorld()->getRenderableSet().remove(&env->meshPool);
 	break;
 	}
 
@@ -171,7 +174,7 @@ void GameEngine::setState(State newState)
 	{
 	case RaceState:
 		env->track->load(framework->findResource("track.trk"));
-		env->carPool.add(new Car(world, "car.car"));
+		env->carPool.add(new Car(env->getWorld(), "default"));
 
 		if (env->modplayer)
 		{
@@ -179,8 +182,8 @@ void GameEngine::setState(State newState)
 			env->modplayer->play();
 		}
 
-		world->getRenderableSet().add(env->track);
-		world->getRenderableSet().add(&env->meshPool);
+		env->getWorld()->getRenderableSet().add(env->track);
+		env->getWorld()->getRenderableSet().add(&env->meshPool);
 	break;
 	}
 	state = newState;
@@ -229,6 +232,9 @@ void GameEngine::handleRaceEvent(Game::Event* event)
 			case KEY_RIGHT:
 				car->setSteering(1);
 			break;
+			case KEY_ROTATE:
+				rotateCamera = !rotateCamera;
+			break;
 			}
 		}
 		break;
@@ -267,11 +273,18 @@ void GameEngine::step()
 		return;
 	}
 	
-	sprintf(debugMessage, "Heyaah %d, %d, %d", framework->getTickCount() / framework->getTicksPerSecond(), time - lastTime, (time-lastTime)/timestep);
-
-	if ((time - lastTime) > timestep)
+	if (framework->getTickCount() - fpsCountStart > framework->getTicksPerSecond() / 4)
 	{
-		while((time - lastTime) > timestep)
+		sprintf(debugMessage, "%d fps", frameCount*4);
+		fpsCountStart = framework->getTickCount();
+		frameCount = 0;
+	}
+	else
+		frameCount++;
+	
+	if ((time - lastTime) >= timestep)
+	{
+		while((time - lastTime) >= timestep)
 		{
 			atomicStep();
 			lastTime+=timestep;

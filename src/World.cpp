@@ -21,13 +21,8 @@
 #include "World.h"
 #include "Environment.h"
 
-//World::World(Object *parent, Game::Framework *_framework, Game::Surface *_screen, Rasterizer *_rasterizer, View *_view, Environment *_env):
 World::World(Object *parent, Environment *_env):
 	Object(parent),
-//	framework(_framework),
-//	screen(_screen),
-//	rasterizer(_rasterizer),
-//	view(_view),
 	env(_env)
 {
 }

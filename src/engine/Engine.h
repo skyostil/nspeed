@@ -80,11 +80,17 @@ public:
         Pixel                   getPixel(int x, int y);
         //! \param pixel must be in the correct format.
         void                    setPixel(int x, int y, Pixel color);
+		
+		void					renderTransparentSurface(const Surface *s, int x, int y, Pixel colorMask = -1);
 
         Pixel                   *pixels;
         int                     width, height, bytes, pitch;
         bool                    autoDelete;
         PixelFormat             format;
+		
+private:
+	template<typename PixelType>
+	void renderTransparentSurfaceTemplate(const Surface *s, int x, int y, Pixel colorMask);
 };
 
 class SampleFormat
@@ -112,7 +118,7 @@ public:
         //! \param sample must be in the correct format.
         void    setSample(int n, int channel, Sample sample);
 
-        Sample8*	data;
+        Sample8*		data;
         int             length;
         int             rate;
         int             bytes;

@@ -29,8 +29,8 @@ public:
 	virtual ~Object();
 	
 private:
-	void			addChild(Object *c);
-	void			removeChild(Object *c);
+	virtual void	addChild(Object *c);
+	virtual void	removeChild(Object *c);
 
 	Object			*parent;
 	Set<Object*>	children;

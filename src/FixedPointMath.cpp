@@ -146,3 +146,19 @@ scalar FPArcCos(scalar f)
 	return result;
 }
 
+scalar FPArcTan2(scalar a, scalar b)
+{
+	if (a == 0)
+	{
+		if (b == 0)
+			return 0;
+		else
+			return FPSgn(b)*(PI/2);
+	}
+
+	if (a > 0)
+		return FPArcTan(FPDiv(b,a));
+	else
+		return FPSgn(b) * (PI - FPArcTan(FPAbs(FPDiv(b,a))));
+}
+

@@ -39,10 +39,13 @@ Car::Car(World *_world, const char *name):
 	thrustPos(0),
 	world(_world)
 {
-//	mesh = new CarModel(FPInt(1)>>8, world->getFramework()->loadImage(world->getFramework()->findResource("car.png"), &world->getScreen()->format));
-//	mesh = new Mesh(0, 0);
-	texture = world->getEnvironment()->loadImage("car.png");
-	mesh = new Mesh(world, world->getEnvironment()->getFramework()->findResource("car.mesh"), texture);
+	char meshName[128], textureName[128];
+	
+	snprintf(meshName, sizeof(meshName), "cars/%s.mesh", name);
+	snprintf(textureName, sizeof(textureName), "cars/%s.png", name);
+
+	texture = world->getEnvironment()->loadImage(textureName);
+	mesh = new Mesh(this, world->getEnvironment()->getFramework()->findResource(meshName), texture);
 	world->getEnvironment()->meshPool.add(mesh);
 
 	// build an acceleration profile
@@ -215,7 +218,7 @@ void Car::update(Track *track)
 	break;
 	}
 
-	if (thrust && thrustPos < 32)
+	if (thrust && thrustPos < 8)
 		thrustPos++;
 	else if (!thrust && thrustPos > 0)
 		thrustPos--;
@@ -250,7 +253,7 @@ void Car::update(Track *track)
 	// update the model position
 	Vector verticalAxis(0,FP_ONE,0);
 	Vector rollAxis(FPCos(angle),0,FPSin(angle));
-	Matrix translation = Matrix::makeTranslation(origin + Vector(0, thrustPos<<(FP-12), 0));
+	Matrix translation = Matrix::makeTranslation(origin + Vector(0, thrustPos<<(FP-10), 0));
 
 	mesh->transformation = Matrix::makeRotation(verticalAxis, angle + (steeringWheelPos<<(FP-8)));
 	mesh->transformation *= Matrix::makeRotation(rollAxis, -(steeringWheelPos<<(FP-8)));
@@ -293,28 +296,4 @@ void Car::setBrake(bool _brake)
 void Car::setSteering(int _steering)
 {
 	steering = _steering;
-}
-
-void Car::render(World *world)
-{
-	int x, y, i;
-	scalar s = 0;
-
-	for(x=0; x<world->getEnvironment()->getScreen()->width; x++)
-	{
-		for(i=0; i<5; i++)
-			s += getAcceleration(s);
-
-		y = s>>8;
-		if (y > 0 && y < world->getEnvironment()->getScreen()->height)
-		{
-			if (s <= speed)
-			{
-				while(--y > 0)
-					world->getEnvironment()->getScreen()->setPixel(x, world->getEnvironment()->getScreen()->height - y, 0xf000);
-			}
-			else
-				world->getEnvironment()->getScreen()->setPixel(x, world->getEnvironment()->getScreen()->height - y, -1);
-		}
-	}
 }

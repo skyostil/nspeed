@@ -53,11 +53,10 @@ private:
 
 	Game::Framework	*framework;
 	State			state;
-	Rasterizer      *rasterizer;
-	View            *view;
-	World			*world;
 	Environment		*env;
-	scalar			time, lastTime;
+	scalar			time, lastTime, fpsCountStart;
+	unsigned int	frameCount;
+	bool			rotateCamera;
 
 	char			debugMessage[256];
 };

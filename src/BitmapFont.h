@@ -35,6 +35,8 @@ public:
 	void	load(Game::Framework *framework, const char *name);
 	void	unload();
 	
+	unsigned int getHeight() { return texture?texture->height:0; }
+	
 private:
 	typedef struct
 	{

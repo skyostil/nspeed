@@ -207,3 +207,81 @@ void Surface::setPixel(int x, int y, Pixel color)
         }
 }
 
+// sorry, no blitting on msvc 6
+#if (defined(_MSC_VER) && _MSC_VER >= 1300) || !defined(_MSC_VER)
+template<typename PixelType>
+void Surface::renderTransparentSurfaceTemplate(const Surface *s, int x, int y, Pixel colorMask)
+{
+	int px, py;
+	int w = s->width;
+	int h = s->height;
+	
+	PixelType *src = ((PixelType*)s->pixels);
+	PixelType *dest = ((PixelType*)pixels) +  y*width + x;
+
+	// clip the rectangle	
+	if (y < 0)
+	{
+		src -= y*s->width;
+		dest -= y*width;
+		h += y;
+		y = 0;
+	}
+	
+	if (y + h > height - 1)
+	{
+		h = height - y;
+	}
+	
+	if (x < 0)
+	{
+		src -= x;
+		dest -= x;
+		w += x;
+		x = 0;
+	}
+	
+	if (x + w > width - 1)
+	{
+		w = width - x;
+	}
+	
+	if (w > 0 && h > 0)
+	{
+		for(py=0; py<h; py++)
+		{
+			for(px=0; px<w; px++)
+			{
+				if (*src)
+				{
+					*dest = (*src) & colorMask;
+				}
+				src++;
+				dest++;
+			}
+			src += s->width - w;
+			dest += width - w;
+		}
+	}
+}
+
+void Surface::renderTransparentSurface(const Surface *s, int x, int y, Game::Pixel colorMask)
+{
+	switch(format.bytesPerPixel)
+	{
+	case 1:
+		renderTransparentSurfaceTemplate<Pixel8>(s, x, y, colorMask);
+	break;
+	case 2:
+		renderTransparentSurfaceTemplate<Pixel16>(s, x, y, colorMask);
+	break;
+	case 4:
+		renderTransparentSurfaceTemplate<Pixel32>(s, x, y, colorMask);
+	break;
+	}
+}
+#else
+void Surface::renderTransparentSurface(const Surface *s, int x, int y, Game::Pixel colorMask = -1);
+{
+}
+#endif

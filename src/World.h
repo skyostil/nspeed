@@ -29,37 +29,18 @@
 class Environment;
 class Renderable;
 
-/*
-class Environment;
-class View;
-class Rasterizer;
-class Framework;
-*/
 class World: public Object
 {
 public:
-//	World(Object *parent, Game::Framework *_framework, Game::Surface *_screen, Rasterizer *_rasterizer, View *_view, Environment *_env);
 	World(Object *parent, Environment *_env);
 	~World();
 
-/*	
-	Game::Surface	*getScreen() { return screen; }
-	Game::Framework	*getFramework() { return framework; }
-	Rasterizer		*getRasterizer() { return rasterizer; }
-	View			*getView() { return view; }
-*/	
-	Environment		*getEnvironment() { return env; }
-	Set<Renderable*> &getRenderableSet() { return renderables; }
+	Environment			*getEnvironment() { return env; }
+	Set<Renderable*>	&getRenderableSet() { return renderables; }
 	
-	void	render();
+	void				render();
 protected:
-/*
-	Game::Surface	*screen;
-	Game::Framework	*framework;
-	Rasterizer		*rasterizer;
-	View			*view;
-*/	
-	Environment		*env;
+	Environment			*env;
 	Set<Renderable*>	renderables;
 };
 

@@ -25,25 +25,61 @@
 #include "ModPlayer.h"
 #include "Car.h"
 
-Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen, View *_view):
+//Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen, View *_view):
+Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen):
 	Object(parent),
 	framework(_framework),
 	screen(_screen),
-//	rasterizer(_rasterizer),
-	view(_view),
+	rasterizer(0),
+	view(0),
 	track(0),
 	font(0),
 	mixer(0),
-	modplayer(0)
+	modplayer(0),
+	texturePool(0, true)
 {
+	Game::Surface *img;
+	
+	// init the screen
+	rasterizer = new Rasterizer(screen);
+	view = new View(rasterizer);
+	
+	// load the fonts
+	img = loadImage("fonts/default.png");
+	texturePool.add(img);
+	font = new BitmapFont(img);
+
+	img = loadImage("fonts/big.png");
+	texturePool.add(img);
+	bigFont = new BitmapFont(img);
+		
+	// create the world
+	world = new World(this, this);
+	world->getRenderableSet().add(&meshPool);
+
+	// create the track
+	track = new Track(this, this);
+}
+
+void Environment::initializeSound(Game::SampleChunk *sample)
+{
+	mixer = new Mixer(sample->rate, 8);
+	modplayer = new ModPlayer(mixer);
 }
 
 Environment::~Environment()
 {
-	delete track;
-	delete font;
+	delete view;
+	delete rasterizer;
+	delete world;
+
 	delete mixer;
 	delete modplayer;
+	
+	delete font;
+	delete bigFont;
+	
+	delete track;
 }
 
 Game::Surface *Environment::loadImage(const char *name)

@@ -40,6 +40,7 @@ Track::Track(Object *parent, Environment *_env):
 	groundTexture(0),
 	skyTexture(0),
 	land(0),
+	map(0),
 	ground(0)
 {
 	int i;
@@ -92,8 +93,11 @@ bool Track::load(const char *name)
 	groundTexture = env->loadImage("ground.png");
 	skyTexture = env->loadImage("sky.png");
 	ground = new Land(groundTexture, skyTexture, Rasterizer::FlagPerspectiveCorrection, 2 /* textureScale */, FPInt(6));
-
+	
 	fclose(f);
+	
+	initializeMap();
+	
 	return true;
 }
 
@@ -121,6 +125,9 @@ void Track::unload()
 
 	delete groundTexture;
 	groundTexture = 0;
+
+	delete map;
+	map = 0;
 }
 
 void Track::render(World *world)
@@ -135,25 +142,34 @@ void Track::render(World *world)
 		env->getView()->rasterizer->setTextureTileList(textureTileList);
 		land->render(world);
 	}
+}
 
-	int x, y, scale = 6;
-
+void Track::initializeMap(int scale)
+{
+	int x, y;
+	
+	map = new Game::Surface(&env->getScreen()->format, texture->width/scale, texture->height/scale);
+	
+	Game::PixelFormat &format = env->getScreen()->format;
+	Game::Pixel road = format.makePixel(255, 255, 255);
+	Game::Pixel edge = format.makePixel(16, 16, 16);
+	
 	for(y=0; y<texture->height; y+=scale)
 	for(x=0; x<texture->width; x+=scale)
 	{
-		int px = env->getScreen()->width - 1 - texture->width/scale + x/scale;
-		int py = env->getScreen()->height - 1 - texture->height/scale + y/scale;
+		int px = x/scale;
+		int py = y/scale;
 		if (texture->getPixel((x+128)&0xff,(y+128)&0xff))
-			env->getScreen()->setPixel(px, py, -1);
+			map->setPixel(px, py, road);
 		else if (
 			texture->getPixel((x+128)&0xff,(y+128+scale)&0xff) ||
 			texture->getPixel((x+128)&0xff,(y+128-scale)&0xff) ||
 			texture->getPixel((x+128+scale)&0xff,(y+128)&0xff) ||
 			texture->getPixel((x+128-scale)&0xff,(y+128)&0xff)
 			)
-			env->getScreen()->setPixel(px, py, 0);
+			map->setPixel(px, py, edge);
 	}
-
+/*
 	int i;
 
 	for(i=0; i<env->carPool.getCount(); i++)
@@ -175,7 +191,7 @@ void Track::render(World *world)
 		env->getScreen()->setPixel(x+1, y, 0);
 		env->getScreen()->setPixel(x, y+1, 0);
 	}
-
+*/
 }
 
 

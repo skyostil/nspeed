@@ -29,7 +29,7 @@
 
 class Track;
 
-class Car: public Renderable, public Object
+class Car: public Object
 {
 public:
 	Car(World *_world, const char *name);
@@ -39,8 +39,7 @@ public:
 	void setThrust(bool _thrust);
 	void setBrake(bool _brake);
 	void setSteering(int _steering);
-	void render(World *world);
-
+	
 	int getSteering() { return steering; }
 	scalar getSpeed() { return speed; }
 	

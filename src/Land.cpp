@@ -81,7 +81,7 @@ void Land::render(World *world)
 	view->camera.project(&center, &dummy0, &horizon, &dummy1, &dummy2, &dummy3);
 
 	// add magic number to ensure we don't see too far
-	horizon+=13*FP_ONE;
+	horizon+=11*FP_ONE;
 	
 	// clip the horizon
 	if (horizon < 0)
@@ -141,20 +141,47 @@ void Land::render(World *world)
 	{
 		Vector v = view->camera.target - view->camera.origin;
 		scalar angle;
-		scalar skyWidth = FPInt(64);
+		scalar skyWidth = FPDiv(FPInt(256),PI);
 		scalar skyHeight = FPInt(64);
-
-		if (v.z)
+		
+//		if (v.z)
 		{
 			if (FPAbs(v.z) > FPAbs(v.x))
-				angle = FPArcTan(FPDiv(v.x, v.z));
+			{
+//				angle = FPArcTan(FPDiv(v.x, v.z));
+				angle = FPArcTan2(v.z, v.x);
+//				printf("Z ");
+			}
 			else
-				angle = 2*PI - FPArcTan(FPDiv(v.z, v.x));
+			{
+//				angle = PI/2 - FPArcTan(FPDiv(v.z, v.x));
+				angle = -FPArcTan2(v.x, v.z);
+//				printf("X ");
+			}
 		}
+//		else
+//			angle = 2*PI;
+			
+/*
+		v.normalize();
+		Vector reference(FP_ONE, 0, FP_ONE);
+		
+		if (v.cross(reference).z > 0)
+			angle = FPArcCos(v.dot(reference));
 		else
-			angle = 2*PI;
+			angle = FPArcCos(v.dot(-reference));
+*/
+//		angle = FPMod(angle, PI);
 
-		scalar x = FPMul(angle, -skyWidth) - skyWidth*4;
+//		printf("%f\n", (double)angle/(PI));
+		
+		int i = 36 * (((double)angle/(PI))+1.0);
+		
+		while(i--)
+			printf("*");
+		printf("\n");
+
+		scalar x = FPMul(angle, -skyWidth) + skyWidth*4;
 
 		scalar u0 = x;
 		scalar v0 = FPInt(0);

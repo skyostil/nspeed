@@ -43,9 +43,11 @@ public:
 	
 	//! Returns approximate the 2D normal (x,z) of the track at the given position
 	Vector		getNormal(const Vector &pos) const;
-
+	
+	Game::Surface	*getMap() { return map; }
 protected:
 	void		project(const Vector &pos, unsigned char &x, unsigned char &y) const;
+	void		initializeMap(int scale = 6);
 
 	inline Game::Pixel8 lookup(unsigned char x, unsigned char y) const
 	{
@@ -55,8 +57,7 @@ protected:
 	Land			*land, *ground;
 	Game::Surface	*texture, *groundTexture, *skyTexture;
 	Game::Surface   *textureTileList[256];
-//	Game::Surface	*screen;
-//	Game::Framework	*framework;
+	Game::Surface	*map;
 	Environment		*env;
 };
 

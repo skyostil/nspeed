@@ -36,6 +36,7 @@ scalar FPTan(scalar f);
 scalar FPArcTan(scalar f);
 scalar FPArcSin(scalar f);
 scalar FPArcCos(scalar f);
+scalar FPArcTan2(scalar a, scalar b);
 
 inline scalar FPInt(int i)
 {
@@ -65,21 +66,23 @@ inline scalar FPDiv(scalar a, scalar b)
 
 inline scalar FPHighPrecDiv(scalar a, scalar b)
 {
+		// hack: this seems to do the trick
+        return ((a<<8) / (b>>4))<<4;
+
+#if 0
         // don't crash on zero division
         if (b < (1<<6) && b > -(1<<6))
         {
                 return 0x80000000;
         }
-//      return ((a<<6) / (b>>6))<<4;
-//      return ((((long long)(a))<<9) / (b>>3))<<4;
+#endif
+
 // sorry, no 64 bit division on msvc 6
 #if (defined(_MSC_VER) && _MSC_VER < 1300)
         return FPDiv(a,b);
 #else
         return (scalar)((((scalar64)(a))<<FP) / (b));
 #endif
-//      return ((a<<7) / (b>>5))<<4;
-//      return (a / b)<<FP;
 }
 
 inline scalar FPSqrt(scalar a)
@@ -108,6 +111,11 @@ inline scalar FPMod(scalar a, scalar m)
 inline scalar FPAbs(scalar a)
 {
 	return (a<0)?-a:a;
+}
+
+inline scalar FPSgn(scalar a)
+{
+	return (a>0)?1:-1;
 }
 
 #endif

@@ -81,24 +81,24 @@ public:
 	Set(int _size = 0, bool _autoDelete = false):
 	  size(_size),
 	  autoDelete(_autoDelete),
-	  count(0)
+	  count(0),
+	  item(0)
 	{
-		item = 0;
-		
 		grow(size);
 	}
 
 	Set(Set<T> &s):
-	  size(s.size),
+	  size(0),
 	  autoDelete(0),
-	  count(s.count)
+	  count(0),
+	  item(0)
 	{
-		int i,
-		item = 0;
-		grow(size);
+		grow(s.count);
 
-		for(i=0; i<size; i++)
-			add(s.getItem(i));
+		int i;
+		for(i=0; i<s.count; i++)
+			item[i] = s.item[i];
+		count = s.count;
 	}
 	  
 	void grow(int items)

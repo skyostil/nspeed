@@ -38,7 +38,8 @@ class Rasterizer;
 class Environment: public Object
 {
 public:
-	Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen, View *_view);
+//	Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen, View *_view);
+	Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen);
 	~Environment();
 
 	//! Loads an image. Don't forget to delete it!
@@ -46,24 +47,30 @@ public:
 	
 	Game::Surface	*getScreen() { return screen; }
 	Game::Framework	*getFramework() { return framework; }
-//	Rasterizer		*getRasterizer() { return rasterizer; }
+	Rasterizer		*getRasterizer() { return rasterizer; }
 	View			*getView() { return view; }
+	World			*getWorld() { return world; }
 	
-	Track		*track;
-	BitmapFont	*font;
+	void			initializeSound(Game::SampleChunk *sample);
+	
+	Track				*track;
+	BitmapFont			*font, *bigFont;
 
-	Mixer		*mixer;
-	ModPlayer	*modplayer;
+	Mixer				*mixer;
+	ModPlayer			*modplayer;
 
 	MeshSet				meshPool;
 	Set<Game::Surface*>	texturePool;
 	Set<Car*>			carPool;
 	
 private:
+	Game::Surface		*fontImage;
+
 	Game::Surface		*screen;
 	Game::Framework		*framework;
-//	Rasterizer			*rasterizer;
+	Rasterizer			*rasterizer;
 	View				*view;
+	World				*world;
 };
 
 #endif
