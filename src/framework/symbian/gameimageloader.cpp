@@ -39,7 +39,9 @@ Game::Surface *CGameImageLoader::LoadImageL(const TDesC &aFilename, Game::PixelF
    // if error, leave with correct error code
    if( loader->iSurface == NULL ) {
        // instance will be destroyed by the cleanupstack
-       User::Leave(loader->iErrorCode);
+       //User::Leave(loader->iErrorCode);
+       CleanupStack::PopAndDestroy();
+       return NULL;
    }
 
    // get a local copy of the instance's created surface
@@ -167,7 +169,7 @@ void CGameImageLoader::CreateSurface()
 		return;
 	}
 
-	for(y=0; y<imagesize.iWidth; y++)
+	for(y=0; y<imagesize.iHeight; y++)
 	for(x=0; x<imagesize.iWidth; x++)
 	{
 		point.iX = x;

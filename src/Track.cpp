@@ -20,6 +20,8 @@
 
 #include "Config.h"
 #include "Track.h"
+#include "Car.h"
+#include "Environment.h"
 
 #ifdef EPOC
 #include <ezlib.h>
@@ -137,8 +139,8 @@ void Track::render(World *world)
 	for(y=0; y<texture->height; y+=scale)
 	for(x=0; x<texture->width; x+=scale)
 	{
-		int px = world->getScreen()->width - texture->width/scale + x/scale;
-		int py = world->getScreen()->height - texture->height/scale + y/scale;
+		int px = world->getScreen()->width - 1 - texture->width/scale + x/scale;
+		int py = world->getScreen()->height - 1 - texture->height/scale + y/scale;
 		if (texture->getPixel((x+128)&0xff,(y+128)&0xff))
 			world->getScreen()->setPixel(px, py, -1);
 		else if (
@@ -149,10 +151,33 @@ void Track::render(World *world)
 			)
 			world->getScreen()->setPixel(px, py, 0);
 	}
+
+	int i;
+
+	for(i=0; i<world->getEnvironment()->carPool.getCount(); i++)
+	{
+		Car *car = world->getEnvironment()->carPool.getItem(i);
+		unsigned char mx, my;
+
+		project(car->getOrigin(), mx, my);
+
+		mx-=128;
+		my-=128;
+
+		x = world->getScreen()->width - 1 - texture->width/scale + (mx)/scale;
+		y = world->getScreen()->height - 1 - texture->height/scale + (my)/scale;
+
+		world->getScreen()->setPixel(x, y, 0xff00);
+		world->getScreen()->setPixel(x-1, y, 0);
+		world->getScreen()->setPixel(x, y-1, 0);
+		world->getScreen()->setPixel(x+1, y, 0);
+		world->getScreen()->setPixel(x, y+1, 0);
+	}
+
 }
 
 
-int Track::getCell(Vector &pos)
+int Track::getCell(const Vector &pos) const
 {
 	unsigned char x, y;
 	
@@ -161,7 +186,7 @@ int Track::getCell(Vector &pos)
 	return lookup(x,y);
 }
 
-void Track::setCell(Vector &pos)
+void Track::setCell(const Vector &pos)
 {
 	unsigned char x, y;
 
@@ -170,7 +195,7 @@ void Track::setCell(Vector &pos)
 	((Game::Pixel8*)(texture->pixels))[x + (y<<8)] = 1;
 }
 
-Vector &Track::getNormal(Vector &pos)
+Vector &Track::getNormal(const Vector &pos) const
 {
 	const int size = 4; // sample square size / 2
 	unsigned char cx, cy;
@@ -197,7 +222,7 @@ Vector &Track::getNormal(Vector &pos)
 	return normal.normalize();
 }
 
-void Track::project(Vector &pos, unsigned char &x, unsigned char &y)
+void Track::project(const Vector &pos, unsigned char &x, unsigned char &y) const
 {
 	x = (pos.x << 3) >> FP;
 	y = (pos.z << 3) >> FP;

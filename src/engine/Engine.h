@@ -14,7 +14,23 @@ typedef signed short    Sample16;
 typedef signed char     Sample8;
 typedef Sample16        Sample;         // default format
 
-typedef unsigned long	Size;
+#ifdef _MSC_VER
+typedef unsigned __int64 UInt64;
+#else
+typedef unsigned long long UInt64;
+#endif
+typedef unsigned int	UInt32;
+typedef unsigned short	UInt16;
+typedef unsigned char	UInt8;
+
+#ifdef _MSC_VER
+typedef signed __int64 Int64;
+#else
+typedef signed long long Int64;
+#endif
+typedef signed int		Int32;
+typedef signed short	Int16;
+typedef signed char		Int8;
 
 class PixelFormat
 {
@@ -34,9 +50,9 @@ public:
         
         inline void     makeRGB(Pixel p, Pixel8 *r, Pixel8 *g, Pixel8 *b)
         {
-                *r = ((p&rmask)>>rshift)<<(8-rsize);
-                *g = ((p&gmask)>>gshift)<<(8-gsize);
-                *b = ((p&bmask)>>bshift)<<(8-bsize);
+                *r = (Pixel8)(((p&rmask)>>rshift)<<(8-rsize));
+                *g = (Pixel8)(((p&gmask)>>gshift)<<(8-gsize));
+                *b = (Pixel8)(((p&bmask)>>bshift)<<(8-bsize));
         }
         
                 
@@ -66,7 +82,7 @@ public:
         void                    setPixel(int x, int y, Pixel color);
 
         Pixel                   *pixels;
-        int                     width, height, bytes;
+        int                     width, height, bytes, pitch;
         bool                    autoDelete;
         PixelFormat             format;
 };
@@ -79,7 +95,7 @@ public:
         //! Convert from the default sample format to this format.
         inline Sample makeSample(Sample sample)
         {
-                return sample>>(sizeof(Sample)*8-bits);
+                return (Sample)(sample>>(sizeof(Sample)*8-bits));
         }
 
         int                     bits, bytesPerSample;

@@ -18,9 +18,10 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "Engine.h"
+#include "GameEngine.h"
 
-#include <SDL.h>
+#include <stdio.h>
+#include "Config.h"
 #include "FixedPointMath.h"
 #include "FixedPointVector.h"
 #include "FixedPointMatrix.h"
@@ -35,7 +36,25 @@
 #include "BitmapFont.h"
 #include "Environment.h"
 
-Engine::Engine(Game::Framework* _framework):
+#ifdef EPOC
+#include <e32keys.h>
+#define KEY_LEFT	EStdKeyLeftArrow
+#define KEY_RIGHT	EStdKeyRightArrow
+#define KEY_UP		EStdKeyUpArrow
+#define KEY_THRUST	'3'
+#define KEY_DOWN	EStdKeyDownArrow
+#define KEY_EXIT	EStdKeyDevice0
+#else
+#include <SDL.h>
+#define KEY_LEFT	SDLK_LEFT
+#define KEY_RIGHT	SDLK_RIGHT
+#define KEY_UP		SDLK_UP
+#define KEY_THRUST	SDLK_A
+#define KEY_DOWN	SDLK_DOWN
+#define KEY_EXIT	SDLK_ESCAPE
+#endif
+
+GameEngine::GameEngine(Game::Framework* _framework):
 	Game::Engine(_framework),
 	framework(_framework),
 	world(0),
@@ -47,9 +66,10 @@ Engine::Engine(Game::Framework* _framework):
 	state(IdleState)
 {
 	env = new Environment();
+	debugMessage[0] = 0;
 }
 
-Engine::~Engine()
+GameEngine::~GameEngine()
 {
 	delete world;
 	delete view;
@@ -57,7 +77,7 @@ Engine::~Engine()
 	delete env;
 }
 
-void Engine::configureVideo(Game::Surface* screen)
+void GameEngine::configureVideo(Game::Surface* screen)
 {
 	Game::Surface *img;
 
@@ -76,14 +96,13 @@ void Engine::configureVideo(Game::Surface* screen)
 	world->getRenderableSet().add(&env->objectPool);
 }
 
-void Engine::configureAudio(Game::SampleChunk* sample)
+void GameEngine::configureAudio(Game::SampleChunk* sample)
 {
 	env->mixer = new Mixer(sample->rate, 6);
 	env->modplayer = new ModPlayer(env->mixer);
-	setState(RaceState);
 }
 
-void Engine::lookAtCarFromBehind(Car *car)
+void GameEngine::lookAtCarFromBehind(Car *car)
 {
 	scalar x = FPMul(FPCos(car->getAngle()), FPInt(1));
 	scalar z = FPMul(FPSin(car->getAngle()), FPInt(1));
@@ -94,8 +113,11 @@ void Engine::lookAtCarFromBehind(Car *car)
 	view->camera.update();
 }
 
-void Engine::renderVideo(Game::Surface* screen)
+void GameEngine::renderVideo(Game::Surface* screen)
 {
+	if (state != RaceState)
+		setState(RaceState);
+
 	step();
 
 	switch(state)
@@ -103,16 +125,19 @@ void Engine::renderVideo(Game::Surface* screen)
 	case RaceState:
 		lookAtCarFromBehind(env->carPool.getItem(0));
 		world->render();
+		env->carPool.getItem(0)->render(world);
 	break;
 	}
+
+	env->font->renderText(screen, debugMessage, 1, 1);
 }
 
-void Engine::renderAudio(Game::SampleChunk* sample)
+void GameEngine::renderAudio(Game::SampleChunk* sample)
 {
 	env->mixer->render(sample);
 }
 
-void Engine::setState(State newState)
+void GameEngine::setState(State newState)
 {
 	int i;
 
@@ -137,8 +162,6 @@ void Engine::setState(State newState)
 	break;
 	}
 
-	state = newState;
-
 	switch(newState)
 	{
 	case RaceState:
@@ -152,9 +175,10 @@ void Engine::setState(State newState)
 		world->getRenderableSet().add(&env->objectPool);
 	break;
 	}
+	state = newState;
 }
 
-void Engine::handleEvent(Game::Event* event)
+void GameEngine::handleEvent(Game::Event* event)
 {
 	switch(state)
 	{
@@ -168,7 +192,7 @@ void Engine::handleEvent(Game::Event* event)
 	}
 }
 
-void Engine::handleRaceEvent(Game::Event* event)
+void GameEngine::handleRaceEvent(Game::Event* event)
 {
 	Car *car = env->carPool.getItem(0);
 
@@ -183,7 +207,7 @@ void Engine::handleRaceEvent(Game::Event* event)
 			case KEY_EXIT:
 				framework->exit();
 			break;
-			case KEY_UP:
+			case KEY_THRUST:
 				car->setThrust(true);
 				car->setBrake(false);
 			break;
@@ -204,7 +228,7 @@ void Engine::handleRaceEvent(Game::Event* event)
 		{
 			switch(event->key.code)
 			{
-			case KEY_UP:
+			case KEY_THRUST:
 				car->setThrust(false);
 			break;
 			case KEY_DOWN:
@@ -223,15 +247,23 @@ void Engine::handleRaceEvent(Game::Event* event)
 	}
 }
 
-void Engine::step()
+void GameEngine::step()
 {
-	const int timestep = 256;
+	const int timestep = 512;
 
-	time = (100*framework->getTickCount() / framework->getTicksPerSecond()) << (FP-8);
-	
-	if (time - lastTime > timestep)
+	time = (256*framework->getTickCount() / framework->getTicksPerSecond()) << (FP-8);
+
+	if (lastTime == 0)
 	{
-		while(time - lastTime > timestep)
+		lastTime = time;
+		return;
+	}
+	
+	sprintf(debugMessage, "%d, %d", time - lastTime, (time-lastTime)/timestep);
+
+	if ((time - lastTime) > timestep)
+	{
+		while((time - lastTime) > timestep)
 		{
 			atomicStep();
 			lastTime+=timestep;
@@ -240,7 +272,7 @@ void Engine::step()
 	}
 }
 
-void Engine::atomicStep()
+void GameEngine::atomicStep()
 {
 	int i;
 
@@ -254,7 +286,7 @@ extern "C"
 
 Game::Engine* CreateEngine(Game::Framework* framework)
 {
-        return new Engine(framework);
+        return new GameEngine(framework);
 }
 
 }

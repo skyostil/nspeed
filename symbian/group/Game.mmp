@@ -27,7 +27,6 @@ SOURCE  framework\symbian\GameImageLoader.cpp
 SOURCE  engine\Engine.cpp
 SOURCE  engine\Audio.cpp
 SOURCE  engine\Video.cpp
-SOURCE  TestGame.cpp
 SOURCE  FixedPointMath.cpp
 SOURCE  FixedPointMatrix.cpp
 SOURCE  FixedPointVector.cpp
@@ -39,6 +38,10 @@ SOURCE  Mixer.cpp
 SOURCE  ModPlayer.cpp
 SOURCE  Track.cpp
 SOURCE  Car.cpp
+SOURCE  Object.cpp
+SOURCE  GameEngine.cpp
+SOURCE  BitmapFont.cpp
+SOURCE  Environment.cpp
 
 RESOURCE ..\symbian\data\Game.rss
 RESOURCE ..\symbian\data\Game_caption.rss

@@ -161,7 +161,9 @@ ModPlayer::~ModPlayer()
 
 bool ModPlayer::load(const char *file)
 {
-#pragma pack(1)
+#ifdef _MSC_VER
+#pragma pack(push, 1)
+#endif
 	typedef struct
 	{
 		unsigned char	name[22];
@@ -179,7 +181,9 @@ bool ModPlayer::load(const char *file)
 		unsigned char	byte2;
 		unsigned char	byte3;
 	} PACKED Note;
-#pragma pack(0)
+#ifdef _MSC_VER
+#pragma pack(pop)
+#endif
 
 	FILE *f = fopen(file,"rb");
 	char modType[4];

@@ -10,6 +10,17 @@
 
 typedef signed int scalar;
 
+#ifdef _MSC_VER
+#if (_MSC_VER < 1300)
+// sorry, no 64 bit ints on msvc 6
+typedef signed long scalar64;
+#else
+typedef signed __int64 scalar64;
+#endif
+#else
+typedef signed long long scalar64;
+#endif
+
 const scalar PI = 205887;
 const scalar PI_OVER_2 = (PI/2);
 const scalar E = 178145;
@@ -61,7 +72,12 @@ inline scalar FPHighPrecDiv(scalar a, scalar b)
         }
 //      return ((a<<6) / (b>>6))<<4;
 //      return ((((long long)(a))<<9) / (b>>3))<<4;
-        return ((((long long)(a))<<FP) / (b));
+// sorry, no 64 bit division on msvc 6
+#if (defined(_MSC_VER) && _MSC_VER < 1300)
+        return FPDiv(a,b);
+#else
+        return (scalar)((((scalar64)(a))<<FP) / (b));
+#endif
 //      return ((a<<7) / (b>>5))<<4;
 //      return (a / b)<<FP;
 }

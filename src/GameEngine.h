@@ -22,23 +22,10 @@
 #define ENGINE_H
 
 #include "engine/Engine.h"
+#include "Config.h"
 #include "Car.h"
 
-#ifdef EPOC
-#define KEY_LEFT	EStdKeyLeftArrow
-#define KEY_RIGHT	EStdKeyRightArrow
-#define KEY_UP		EStdKeyUpArrow
-#define KEY_DOWN	EStdKeyDownArrow
-#define KEY_EXIT	EStdKeyDevice0
-#else
-#define KEY_LEFT	SDLK_LEFT
-#define KEY_RIGHT	SDLK_RIGHT
-#define KEY_UP		SDLK_UP
-#define KEY_DOWN	SDLK_DOWN
-#define KEY_EXIT	SDLK_ESCAPE
-#endif
-
-class Engine: public Game::Engine
+class GameEngine: public Game::Engine
 {
 public:
 	enum State
@@ -47,8 +34,8 @@ public:
 		RaceState
 	};
 
-	Engine(Game::Framework* _framework);
-	~Engine();
+	GameEngine(Game::Framework* _framework);
+	~GameEngine();
 
 	void configureVideo(Game::Surface* screen);
 	void configureAudio(Game::SampleChunk* sample);
@@ -70,6 +57,8 @@ private:
 	World			*world;
 	Environment		*env;
 	scalar			time, lastTime;
+
+	char			debugMessage[256];
 };
 
 #endif

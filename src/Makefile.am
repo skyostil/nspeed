@@ -1,5 +1,5 @@
 bin_PROGRAMS = fixedpoint3d
-fixedpoint3d_SOURCES = TestGame.cpp FixedPointMath.cpp FixedPointMatrix.cpp FixedPointVector.cpp Rasterizer.cpp View.cpp World.cpp Land.cpp Mixer.cpp ModPlayer.cpp Track.cpp Track.h Car.cpp BitmapFont.cpp Object.cpp
+fixedpoint3d_SOURCES = TestGame.cpp FixedPointMath.cpp FixedPointMatrix.cpp FixedPointVector.cpp Rasterizer.cpp View.cpp World.cpp Land.cpp Mixer.cpp ModPlayer.cpp Track.cpp Track.h Car.cpp BitmapFont.cpp Object.cpp GameEngine.cpp
 
 # set the include path found by configure
 INCLUDES = $(all_includes) -I../../unix

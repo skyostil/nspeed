@@ -29,32 +29,32 @@ public:
 	Matrix(Matrix *b);
 	Matrix();
 
-	scalar	cell(int row, int column);
+	scalar	cell(int row, int column) const;
 	void	setCell(int i, scalar v);
-	Vector	getTranslation();
+	Vector	getTranslation() const;
 
-	Matrix	operator*(Matrix &b);
-	Vector	operator*(Vector &v);
+	Matrix	operator*(const Matrix &b);
+	Vector	operator*(const Vector &v);
 	Matrix	operator*(scalar s);
-	scalar	operator[](unsigned i);
-	Matrix	operator*=(Matrix &b);
+	scalar	operator[](unsigned i) const;
+	Matrix	operator*=(const Matrix &b);
 
-	void	setColumn(int column, Vector &v);
-	Vector	getColumn(int column);
-	void	setRow(int row, Vector &v);
-	Vector	getRow(int row);
+	void	setColumn(int column, const Vector &v);
+	Vector	getColumn(int column) const;
+	void	setRow(int row, const Vector &v);
+	Vector	getRow(int row) const;
 
 	Matrix	inverse3x3();
 	Matrix	inverse();
 	Matrix	transpose3x3();
-	Vector	mul3x3(Vector &v);
+	Vector	mul3x3(const Vector &v);
 
 	Matrix makeIdentity();
-	static Matrix makeTranslation(Vector &direction);
-	static Matrix makeRotation(Vector &axis, scalar angle);
-	static Matrix makeRotation(Vector &origin, Vector &axis, scalar angle);
-	static Matrix makeScaling(Vector &scale);
-	static Matrix makeLookAt(Vector &zdirection, scalar angle);
+	static Matrix makeTranslation(const Vector &direction);
+	static Matrix makeRotation(const Vector &axis, scalar angle);
+	static Matrix makeRotation(const Vector &origin, const Vector &axis, scalar angle);
+	static Matrix makeScaling(const Vector &scale);
+	static Matrix makeLookAt(const Vector &zdirection, scalar angle);
 protected:
 	scalar	m[4*4];
 };

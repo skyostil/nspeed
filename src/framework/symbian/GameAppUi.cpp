@@ -45,6 +45,8 @@ void CGameAppUi::ConstructL()
         iAppContainer->ConstructL();
         AddToStackL(iAppContainer);
 
+        CAknAppUi::SetKeyBlockMode(ENoKeyBlock);
+
         iAppContainer->StartDrawingL();
 }
 

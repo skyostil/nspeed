@@ -50,9 +50,6 @@ CGameEng::~CGameEng()
 
 void CGameEng::ConstructL()
 {
-        // contruct the timer
-        CTimer::ConstructL();
-
         // Create the DSA object
         iDirectScreenAccess = CDirectScreenAccess::NewL(iClient, iScreenDevice, iWindow, *this);
 
@@ -66,26 +63,6 @@ void CGameEng::ConstructL()
         // for emulator, always use offscreen bitmap
         iUseFrameBuffer = EFalse;
 #endif
-    
-        if(iUseFrameBuffer)        
-        {
-                // fetch screen buffer address
-                TScreenInfoV01 screenInfo;
-                TPckg<TScreenInfoV01> sInfo(screenInfo);
-                UserSvr::ScreenInfo(sInfo);
-
-                if (screenInfo.iScreenAddressValid)
-                {
-                        iScreenAddr = (TUint8*)screenInfo.iScreenAddress;
-                        User::LeaveIfNull(iScreenAddr);
-
-                        // skip the palette data in the beginning of frame buffer (16 entries in 12bit mode)
-                        iScreenAddr += 16 * 2;
-                }
-
-                // initialise the raw redraw event (used when drawing directly to frame buffer)
-                iRedraw.Set(TRawEvent::ERedraw);
-        }
 
         // 12 bits per pixel
         Game::PixelFormat pf(12);
@@ -108,6 +85,29 @@ void CGameEng::ConstructL()
         iAudioBufferPtr = new TPtr8((TUint8*)iAudioBuffer->data, iAudioBuffer->bytes, iAudioBuffer->bytes);
         iStream = CMdaAudioOutputStream::NewL(*this);
         iStream->Open(&iSettings);
+
+        if(iUseFrameBuffer)        
+        {
+                // fetch screen buffer address
+                TScreenInfoV01 screenInfo;
+                TPckg<TScreenInfoV01> sInfo(screenInfo);
+                UserSvr::ScreenInfo(sInfo);
+
+                if (screenInfo.iScreenAddressValid)
+                {
+                        iScreenAddr = (TUint8*)screenInfo.iScreenAddress;
+                        User::LeaveIfNull(iScreenAddr);
+
+                        // skip the palette data in the beginning of frame buffer (16 entries in 12bit mode)
+                        iScreenAddr += 16 * 2;
+                }
+
+                // initialise the raw redraw event (used when drawing directly to frame buffer)
+                iRedraw.Set(TRawEvent::ERedraw);
+        }
+
+        // contruct the timer
+        CTimer::ConstructL();
 }
 
 void CGameEng::StartDrawingL()

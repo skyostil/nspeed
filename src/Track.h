@@ -37,20 +37,21 @@ public:
 	void		unload();
 	void		render(World *world);
 	
-	int		getCell(Vector &pos);
-	void		setCell(Vector &pos);
+	int			getCell(const Vector &pos) const;
+	void		setCell(const Vector &pos);
 	
 	//! Returns approximate the 2D normal (x,z) of the track at the given position
-	Vector		&getNormal(Vector &pos);
+	Vector		&getNormal(const Vector &pos) const;
 
 protected:
-	void		project(Vector &pos, unsigned char &x, unsigned char &y);
-	inline Game::Pixel8 lookup(unsigned char x, unsigned char y)
+	void		project(const Vector &pos, unsigned char &x, unsigned char &y) const;
+
+	inline Game::Pixel8 lookup(unsigned char x, unsigned char y) const
 	{
 		return ((Game::Pixel8*)(texture->pixels))[x + (y<<8)];
 	}
 
-	Land		*land, *ground;
+	Land			*land, *ground;
 	Game::Surface	*texture, *groundTexture, *skyTexture;
 	Game::Surface   *textureTileList[256];
 	Game::Surface	*screen;

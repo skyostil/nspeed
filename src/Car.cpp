@@ -41,24 +41,23 @@ Car::Car(World *_world, const char *name):
 	world->getEnvironment()->objectPool.add(object);
 
 	// build an acceleration profile
-	accProfile[0].acc = 60;
-	accProfile[0].angleAcc = 250;
+	accProfile[0].acc = 10;
+	accProfile[0].angleAcc = 80;
 	accProfile[0].threshold = 3000;
-	accProfile[1].acc = 30;
-	accProfile[1].angleAcc = 200;
+	accProfile[1].acc = 6;
+	accProfile[1].angleAcc = 70;
 	accProfile[1].threshold = 4000;
-	accProfile[2].acc = 10;
-	accProfile[2].angleAcc = 150;
-	accProfile[2].threshold = 8000;
-	accProfile[3].acc = 3;
-	accProfile[3].angleAcc = 100;
+	accProfile[2].acc = 2;
+	accProfile[2].angleAcc = 60;
+	accProfile[2].threshold = 5000;
+	accProfile[3].acc = 1;
+	accProfile[3].angleAcc = 50;
 	accProfile[3].threshold = 0x7fffffff;
 }
 
 Car::~Car()
 {
 	world->getEnvironment()->objectPool.remove(object);
-	delete object;
 }
 
 #define DAMPEN(x,amount) if (x) x += (x>(amount))?(-(amount)):(amount)
@@ -78,6 +77,7 @@ void Car::update(Track *track)
 	{
 		Vector normal = track->getNormal(origin);
 		Vector vel = velocity;
+		int backtrackLimit = 8;
 
 		vel.normalize();
 
@@ -86,12 +86,12 @@ void Car::update(Track *track)
 		// if we were going too slow, use the normal as the new velocity
 		if (speed < 256)
 		{
-			velocity = normal * -1000;
+			velocity = normal * -512;
 //			printf("Crash %6d, %6d\n", normal.x, normal.z);
 		}
 		
 		// backtrack to avoid collision
-		while(track->getCell(origin)==0)
+		while(track->getCell(origin)==0 && --backtrackLimit)
 			origin -= velocity;
 /*		
 		// rotate the normal 90 degress
@@ -121,10 +121,10 @@ void Car::update(Track *track)
 		if (normal.dot(velocity) < 0)
 			acceleration = normal * FPMul(normal.dot(velocity), FPInt(-2));
 		else
-			acceleration = normal * 1024;
+			acceleration = normal * 512;
 
 		if (acceleration.lengthSquared() < 128)
-			acceleration += normal * 2048;
+			acceleration += normal * 256;
 //		printf("%d\n", acceleration.lengthSquared());
 //		printf("%d\n", normal.dot(velocity));
 		
@@ -144,7 +144,7 @@ void Car::update(Track *track)
 
 		{
 	//		scalar acc = speed >> 5;
-			if (speed > 2000)
+			if (speed > 1000)
 			{
 				Vector vel = velocity;
 	//			Vector dir(FPCos(angle), 0, FPSin(angle));
@@ -198,18 +198,18 @@ void Car::update(Track *track)
 	switch(steering)
 	{
 	case -1:
-		if (steeringWheelPos > -8) steeringWheelPos--;
+		if (steeringWheelPos > -32) steeringWheelPos--;
 	break;
 	case 0:
 		if (steeringWheelPos > 0) steeringWheelPos--;
 		else if (steeringWheelPos < 0) steeringWheelPos++;
 	break;
 	case 1:
-		if (steeringWheelPos < 8) steeringWheelPos++;
+		if (steeringWheelPos < 32) steeringWheelPos++;
 	break;
 	}
 
-	if (thrust && thrustPos < 8)
+	if (thrust && thrustPos < 32)
 		thrustPos++;
 	else if (!thrust && thrustPos > 0)
 		thrustPos--;
@@ -219,7 +219,7 @@ void Car::update(Track *track)
 //	angleSpeed += (steeringWheelPos) * getAngleAcceleration();
 
 	if (speed > 200 || speed < -200)
-		angle += steeringWheelPos * getAngleAcceleration(speed);
+		angle += (steeringWheelPos>>2) * getAngleAcceleration(speed);
 
 //	printf("Acc: %6d, %6d\n", acceleration.x, acceleration.z);
 		
@@ -244,10 +244,10 @@ void Car::update(Track *track)
 	// update the model position
 	Vector verticalAxis(0,FP_ONE,0);
 	Vector rollAxis(FPCos(angle),0,FPSin(angle));
-	Matrix translation = Matrix::makeTranslation(origin + Vector(0, thrustPos<<(FP-10), 0));
+	Matrix translation = Matrix::makeTranslation(origin + Vector(0, thrustPos<<(FP-12), 0));
 
-	object->transformation = Matrix::makeRotation(verticalAxis, angle + (steeringWheelPos<<(FP-6)));
-	object->transformation *= Matrix::makeRotation(rollAxis, -(steeringWheelPos<<(FP-6)));
+	object->transformation = Matrix::makeRotation(verticalAxis, angle + (steeringWheelPos<<(FP-8)));
+	object->transformation *= Matrix::makeRotation(rollAxis, -(steeringWheelPos<<(FP-8)));
 	object->transformation *= translation;
 }
 
@@ -295,7 +295,7 @@ void Car::render(World *world)
 	world->getView()->rasterizer->flags &= ~Rasterizer::FlagPerspectiveCorrection;
 	object->render(world);
 	world->getView()->rasterizer->flags |= Rasterizer::FlagPerspectiveCorrection;
-
+*/
 	int x, y, i;
 	scalar s = 0;
 
@@ -316,5 +316,4 @@ void Car::render(World *world)
 				world->getScreen()->setPixel(x, world->getScreen()->height - y, -1);
 		}
 	}
-*/
 }

@@ -37,7 +37,7 @@ Matrix::Matrix()
 	makeIdentity();
 }
 
-scalar Matrix::cell(int row, int column)
+scalar Matrix::cell(int row, int column) const
 {
 	return m[M_CELL(column,row)];
 }
@@ -51,18 +51,18 @@ Matrix Matrix::makeIdentity()
 	return *this;
 }
 
-scalar Matrix::operator[](unsigned i)
+scalar Matrix::operator[](unsigned i) const
 {
 	return m[i];
 }
 
-Matrix Matrix::operator*=(Matrix &b)
+Matrix Matrix::operator*=(const Matrix &b)
 {
 	(*this) = (*this) * b;
 	return *this;
 }
 
-Vector Matrix::getTranslation()
+Vector Matrix::getTranslation() const
 {
 	return Vector(
 		m[M_CELL(3,0)],
@@ -81,7 +81,7 @@ Matrix Matrix::transpose3x3()
 	return n;
 }
 
-Matrix Matrix::operator*(Matrix &b)
+Matrix Matrix::operator*(const Matrix &b)
 {
 	int i,j;
 	Matrix n;
@@ -98,7 +98,7 @@ Matrix Matrix::operator*(Matrix &b)
 	return n;
 }
 
-Vector Matrix::mul3x3(Vector &v)
+Vector Matrix::mul3x3(const Vector &v)
 {
 	return Vector(
 		FPMul(v.x,m[M_CELL(0,0)]) + FPMul(v.y,m[M_CELL(1,0)]) + FPMul(v.z,m[M_CELL(2,0)]),
@@ -106,7 +106,7 @@ Vector Matrix::mul3x3(Vector &v)
 		FPMul(v.x,m[M_CELL(0,2)]) + FPMul(v.y,m[M_CELL(1,2)]) + FPMul(v.z,m[M_CELL(2,2)]));
 }
 
-Vector Matrix::operator*(Vector &v)
+Vector Matrix::operator*(const Vector &v)
 {
 	return Vector(
 		FPMul(v.x,m[M_CELL(0,0)]) + FPMul(v.y,m[M_CELL(1,0)]) + FPMul(v.z,m[M_CELL(2,0)]) + m[M_CELL(3,0)],
@@ -125,14 +125,14 @@ Matrix Matrix::operator*(scalar s)
 	return n;
 }
 
-void Matrix::setColumn(int column, Vector &v)
+void Matrix::setColumn(int column, const Vector &v)
 {
 	m[M_CELL(column,0)]=v.x;
 	m[M_CELL(column,1)]=v.y;
 	m[M_CELL(column,2)]=v.z;
 }
 
-Vector Matrix::getColumn(int column)
+Vector Matrix::getColumn(int column) const
 {
 	return Vector(
 		m[M_CELL(column,0)],
@@ -140,29 +140,30 @@ Vector Matrix::getColumn(int column)
 		m[M_CELL(column,2)]);
 }
 
-void Matrix::setRow(int row, Vector &v)
+void Matrix::setRow(int row, const Vector &v)
 {
 	m[M_CELL(0,row)]=v.x;
 	m[M_CELL(1,row)]=v.y;
 	m[M_CELL(2,row)]=v.z;
 }
 
-Vector Matrix::getRow(int row)
+Vector Matrix::getRow(int row) const
 {
-	return class Vector(m[(row<<2)+0],m[(row<<2)+1],m[(row<<2)+2]);
+	return Vector(m[(row<<2)+0],m[(row<<2)+1],m[(row<<2)+2]);
 }
 
-Matrix Matrix::makeTranslation(Vector &direction)
+Matrix Matrix::makeTranslation(const Vector &direction)
 {
 	Matrix	n;
 	n.setColumn(3, direction);
 	return n;
 }
 
-Matrix Matrix::makeRotation(Vector &axis, scalar angle)
+Matrix Matrix::makeRotation(const Vector &_axis, scalar angle)
 {
 	scalar	s, c, t;
 	Matrix	n;
+	Vector	axis(_axis);
 
 	axis.normalize();
 	s = FPSin(angle);
@@ -189,7 +190,7 @@ Matrix Matrix::makeRotation(Vector &axis, scalar angle)
 	return n;
 }
 
-Matrix Matrix::makeRotation(Vector &origin, Vector &axis, scalar angle)
+Matrix Matrix::makeRotation(const Vector &origin, const Vector &axis, scalar angle)
 {
 	Vector o = -origin;
 	Matrix trans1 = Matrix::makeTranslation(o);
@@ -274,7 +275,7 @@ Matrix Matrix::inverse()
 }
 #endif
 
-Matrix Matrix::makeScaling(Vector &scale)
+Matrix Matrix::makeScaling(const Vector &scale)
 {
 	Matrix	n;
 	n.m[M_CELL(0,0)] = scale.x;
@@ -288,7 +289,7 @@ void Matrix::setCell(int i, scalar v)
 	m[i] = v;
 }
 
-Matrix Matrix::makeLookAt(Vector &zdirection, scalar angle)
+Matrix Matrix::makeLookAt(const Vector &zdirection, scalar angle)
 {
 	Matrix	n;
 	Vector	px, py, pz;

@@ -85,6 +85,9 @@ void BitmapFont::clear()
 		delete[] glyph;
 }
 
+
+// sorry, no fonts on msvc 6
+#if (defined(_MSC_VER) && _MSC_VER >= 1300) || !defined(_MSC_VER)
 template<typename Pixel>
 void BitmapFont::renderGlyph(Game::Surface *screen, Glyph *g, int x, int y, Game::Pixel colorMask)
 {
@@ -169,4 +172,9 @@ void BitmapFont::renderText(Game::Surface *screen, const char *text, int x, int 
 		text++;
 	}
 }
+#else
+void BitmapFont::renderText(Game::Surface *screen, const char *text, int x, int y, Game::Pixel colorMask)
+{
+}
+#endif
 

@@ -23,6 +23,7 @@
 #include "BitmapFont.h"
 #include "Mixer.h"
 #include "ModPlayer.h"
+#include "Car.h"
 
 Environment::Environment():
 	track(0),
