@@ -32,5 +32,6 @@
 "..\..\data\dallas.mod"			-"!:\system\apps\Game\dallas.mod"
 "..\..\data\cars\default.mesh"          -"!:\system\apps\Game\cars\default.mesh"
 "..\..\data\cars\default.png"           -"!:\system\apps\Game\cars\default.png"
-"..\..\data\track.trk"			-"!:\system\apps\Game\track.trk"
+"..\..\data\cars\default-engine.wav"    -"!:\system\apps\Game\cars\default-engine.wav"
+"..\..\data\track3.trk"                 -"!:\system\apps\Game\track3.trk"
 

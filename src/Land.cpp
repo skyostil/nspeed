@@ -215,8 +215,8 @@ void Land::render(World *world)
 			(view->rasterizer->screen->format.rmask & (view->rasterizer->screen->format.rmask>>1)) +
 			(view->rasterizer->screen->format.gmask & (view->rasterizer->screen->format.gmask>>1)) +
 			(view->rasterizer->screen->format.bmask & (view->rasterizer->screen->format.bmask>>1));
-		const int scale = 2;
-		int c = 16 << scale;
+		const int scale = 3;
+		int c = 8 << scale;
 
 		p+=(horizon>>FP) * view->rasterizer->screen->width;
 

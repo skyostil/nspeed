@@ -24,7 +24,8 @@ public:
         unsigned int getTicksPerSecond();
 
         Game::Surface *loadImage(const char *name, Game::PixelFormat *pf = 0);
-	const char *findResource(const char *name);
+		Game::SampleChunk *loadSample(const char *name, Game::SampleFormat *sf = 0);
+		const char *findResource(const char *name);
 
 private:
         void DynInitMenuPaneL(TInt aResourceId,CEikMenuPane* aMenuPane);

@@ -17,6 +17,7 @@
 #include "GameImageLoader.h"
 #include <Game.rsg>
 #include "game.hrh"
+#include "Config.h"
 
 #include <avkon.hrh>
 #include <reent.h>
@@ -154,6 +155,79 @@ unsigned int CGameAppUi::getTicksPerSecond()
 Game::Surface *CGameAppUi::loadImage(const char *name, Game::PixelFormat *pf)
 {
 	return CGameImageLoader::LoadImageL(GetFilenameDes(name),pf);
+}
+
+Game::SampleChunk *CGameAppUi::loadSample(const char *name, Game::SampleFormat *sf)
+{
+#ifdef _MSC_VER
+#pragma pack(push, 1)
+#endif
+	typedef struct
+	{
+		unsigned int chunkID;
+		unsigned int chunkSize;
+		unsigned int format;
+		unsigned int subChunk1ID;
+		unsigned int subChunk1Size;
+		unsigned short audioFormat;
+		unsigned short numChannels;
+		unsigned int sampleRate;
+		unsigned int byteRate;
+		unsigned short blockAlign;
+		unsigned short bitsPerSample;
+		unsigned int subChunk2ID;
+		unsigned int subChunk2Size;
+	} PACKED WaveHeader;
+#ifdef _MSC_VER
+#pragma pack(pop)
+#endif
+
+	FILE *f = fopen(name, "rb");
+	Game::SampleChunk *sample = 0;
+	
+	if (f)
+	{
+		WaveHeader header;
+		
+		fread(&header, sizeof(WaveHeader), 1, f);
+		
+		if (header.audioFormat == 1)
+		{
+			Game::SampleFormat wavsf(header.bitsPerSample, header.numChannels);
+			int samples = header.subChunk2Size / (header.numChannels * (header.bitsPerSample/8));
+			int n, ch;
+			
+			if (sf)
+				sample = new Game::SampleChunk(sf, samples, header.sampleRate);
+			else
+				sample = new Game::SampleChunk(&wavsf, samples, header.sampleRate);
+			
+			for(n=0; n<samples; n++)
+			for(ch=0; ch<header.numChannels; ch++)
+			{
+				switch(header.bitsPerSample)
+				{
+				case 8:
+				{
+					Game::Sample8 s;
+					fread(&s, sizeof(s), 1, f);
+					sample->setSample(n,ch,sample->format.makeSample(s<<8));
+				}
+				break;
+				case 16:
+				{
+					Game::Sample16 s;
+					fread(&s, sizeof(s), 1, f);
+					sample->setSample(n,ch,sample->format.makeSample(s));
+				}
+				break;
+				}
+			}
+		}
+		
+		fclose(f);
+	}
+	return sample;
 }
 
 TDesC& CGameAppUi::GetFilenameDes(const char *name)

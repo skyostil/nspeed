@@ -71,7 +71,10 @@ Car::Car(World *_world, const char *name):
 	accProfile[3].threshold = 0x7fffffff;
 
 	if (world->getEnvironment()->mixer && engineSound)
-		world->getEnvironment()->mixer->playSample(engineSound, 10000, true, sfxChannel);
+	{
+		world->getEnvironment()->mixer->playSample(engineSound, 1, true, sfxChannel);
+		world->getEnvironment()->mixer->getChannel(sfxChannel)->setVolume(32);
+	}
 }
 
 Car::~Car()
