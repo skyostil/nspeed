@@ -24,40 +24,41 @@
 #include "engine/Engine.h"
 #include "View.h"
 #include "Set.h"
+#include "Object.h"
 
-#define MAX_RENDERABLES	32
+class Environment;
+class Renderable;
 
-class Renderable
-{
-public:
-	virtual ~Renderable() {};
-	virtual void render(class World *world) = 0;
-};
-
+/*
 class Environment;
 class View;
 class Rasterizer;
 class Framework;
-
-class World
+*/
+class World: public Object
 {
 public:
-	World(Game::Framework *_framework, Game::Surface *_screen, Rasterizer *_rasterizer, View *_view, Environment *_env);
+//	World(Object *parent, Game::Framework *_framework, Game::Surface *_screen, Rasterizer *_rasterizer, View *_view, Environment *_env);
+	World(Object *parent, Environment *_env);
 	~World();
-	
+
+/*	
 	Game::Surface	*getScreen() { return screen; }
 	Game::Framework	*getFramework() { return framework; }
 	Rasterizer		*getRasterizer() { return rasterizer; }
 	View			*getView() { return view; }
+*/	
 	Environment		*getEnvironment() { return env; }
 	Set<Renderable*> &getRenderableSet() { return renderables; }
 	
 	void	render();
 protected:
+/*
 	Game::Surface	*screen;
 	Game::Framework	*framework;
 	Rasterizer		*rasterizer;
 	View			*view;
+*/	
 	Environment		*env;
 	Set<Renderable*>	renderables;
 };

@@ -17,84 +17,23 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-
 #ifndef OBJECT_H
 #define OBJECT_H
 
-#include "engine/Engine.h"
-#include "FixedPointMatrix.h"
-#include "World.h"
+#include "Set.h"
 
-typedef struct
-{
-	short		*vertex;
-	char		vertexCount;
-	Game::Pixel	color;
-	Game::Surface	*texture;
-	Vector		normal;
-	class Mesh	*mesh;	// required for qsort
-} Face;
-
-class Mesh: public Renderable
+class Object
 {
 public:
-	Mesh(int _vertexCount, int _faceCount, int _flags = 0);
-	~Mesh();
+	Object(Object *_parent);
+	virtual ~Object();
 	
-	void	render(World *world);
-	Vector	getOrigin();
+private:
+	void			addChild(Object *c);
+	void			removeChild(Object *c);
 
-	//! Sets flags for the Rasterizer
-	void	setFlags(int _flags);
-
-	void	beginMesh();
-	void	setTexCoord(scalar u, scalar v);
-	int		addVertex(Vector &pos);
-	void	beginFace(int vertexCount);
-	void	setTexture(Game::Surface *t);
-	void	setColor(Game::Pixel c);
-	void	addFaceVertex(short n);
-	void	endFace();
-	void	endMesh();
-	
-	Matrix		transformation;
-	
-	Vertex		*vertex;
-	Vertex		*transformedVertex;
-	int			vertexCount;
-	Face		*face;
-	int			faceCount;
-protected:
-	static int	sortComparator(const void *_a, const void *_b);
-
-	int		currentFace;
-	int		currentVertex;
-	int		flags;
+	Object			*parent;
+	Set<Object*>	children;
 };
-
-#define MAX_MESHES	32
-
-class MeshSet: public Renderable
-{
-public:
-	MeshSet();
-	void	render(World *world);
-	int		add(Mesh *o);
-	void	remove(Mesh *o);
-
-protected:
-	static int	sortComparator(const void *_a, const void *_b);
-
-	typedef struct
-	{
-		class MeshSet	*self;
-		Mesh			*mesh;
-	} SortItem;
-		
-	World	*world;
-	SortItem sortList[MAX_MESHES];
-	Set<Mesh*> meshes;
-};
-
 
 #endif

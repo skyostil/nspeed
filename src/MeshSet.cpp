@@ -18,52 +18,54 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef ENVIRONMENT_H
-#define ENVIRONMENT_H
-
-#include "engine/Engine.h"
-#include "Set.h"
-#include "Object.h"
 #include "MeshSet.h"
-
-class Track;
-class BitmapFont;
-class Mixer;
-class ModPlayer;
-class Car;
-class View;
-class Rasterizer;
-
-//! This class contains all the global game related data
-class Environment: public Object
+#include "Mesh.h"
+#include "World.h"
+#include "Environment.h"
+#include <stdlib.h>
+ 
+MeshSet::MeshSet():
+	meshes(MAX_MESHES, true)
 {
-public:
-	Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen, View *_view);
-	~Environment();
+}
 
-	//! Loads an image. Don't forget to delete it!
-	Game::Surface	*loadImage(const char *name);
+void MeshSet::render(class World *_world)
+{
+	int i;
+
+	world = _world;
+	for(i=0; i<meshes.getCount(); i++)
+	{
+		sortList[i].self = this;
+		sortList[i].mesh = meshes.getItem(i);
+	}
+
+	qsort(sortList, meshes.getCount(), sizeof(SortItem), sortComparator);
+
+	for(i=0; i<meshes.getCount(); i++)
+		sortList[i].mesh->render(world);
+}
+
+int MeshSet::sortComparator(const void *_a, const void *_b)
+{
+	SortItem *a = (SortItem*)_a;
+	SortItem *b = (SortItem*)_b;
+	Vector distA = a->mesh->getOrigin() - a->self->world->getEnvironment()->getView()->camera.origin;
+	Vector distB = b->mesh->getOrigin() - a->self->world->getEnvironment()->getView()->camera.origin;
 	
-	Game::Surface	*getScreen() { return screen; }
-	Game::Framework	*getFramework() { return framework; }
-//	Rasterizer		*getRasterizer() { return rasterizer; }
-	View			*getView() { return view; }
-	
-	Track		*track;
-	BitmapFont	*font;
+	if (
+		distA.lengthSquared() >
+		distB.lengthSquared())
+		return -1;
+	return 1;
+}
 
-	Mixer		*mixer;
-	ModPlayer	*modplayer;
+int MeshSet::add(Mesh *o)
+{
+	return meshes.add(o);
+}
 
-	MeshSet				meshPool;
-	Set<Game::Surface*>	texturePool;
-	Set<Car*>			carPool;
-	
-private:
-	Game::Surface		*screen;
-	Game::Framework		*framework;
-//	Rasterizer			*rasterizer;
-	View				*view;
-};
-
-#endif
+void MeshSet::remove(Mesh *o)
+{
+	meshes.remove(o);
+}

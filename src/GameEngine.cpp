@@ -57,6 +57,7 @@
 #endif
 
 GameEngine::GameEngine(Game::Framework* _framework):
+	Object(0),
 	Game::Engine(_framework),
 	framework(_framework),
 	world(0),
@@ -67,7 +68,7 @@ GameEngine::GameEngine(Game::Framework* _framework):
 	lastTime(0),
 	state(IdleState)
 {
-	env = new Environment();
+//	env = new Environment(this);
 	debugMessage[0] = 0;
 }
 
@@ -76,7 +77,7 @@ GameEngine::~GameEngine()
 	delete world;
 	delete view;
 	delete rasterizer;
-	delete env;
+//	delete env;
 }
 
 void GameEngine::configureVideo(Game::Surface* screen)
@@ -86,15 +87,17 @@ void GameEngine::configureVideo(Game::Surface* screen)
 	// init the screen
 	rasterizer = new Rasterizer(screen);
 	view = new View(rasterizer);
+	
+	env = new Environment(this, framework, screen, view);
 
 	// setup the environment
 	img = framework->loadImage(framework->findResource("fonts/returnofganon-grad.png"), &screen->format);
 	env->texturePool.add(img);
 	env->font = new BitmapFont(img);
-	env->track = new Track(framework, rasterizer->screen);
+	env->track = new Track(this, env);
 
 	// create the world
-	world = new World(framework, screen, rasterizer, view, env);
+	world = new World(this, env);
 	world->getRenderableSet().add(&env->meshPool);
 }
 
@@ -276,10 +279,10 @@ void GameEngine::step()
 
 void GameEngine::atomicStep()
 {
-	int i;
+	Set<Car*>::Iterator i;
 
-	for(i=0; i<env->carPool.getCount(); i++)
-		env->carPool.getItem(i)->update(env->track);
+	for(i=env->carPool.begin(); i!=env->carPool.end(); i++)
+		(*i)->update(env->track);
 }
 
 // bootstrap

@@ -31,9 +31,11 @@
 
 #include <stdio.h>
 
-Track::Track(Game::Framework *_framework, Game::Surface *_screen):
-	framework(_framework),
-	screen(_screen),
+Track::Track(Object *parent, Environment *_env):
+	Object(parent),
+	env(_env),
+//	framework(_framework),
+//	screen(_screen),
 	texture(0),
 	groundTexture(0),
 	skyTexture(0),
@@ -84,11 +86,11 @@ bool Track::load(const char *name)
 	}
 	delete[] cdata;
 
-	textureTileList[1] = framework->loadImage(framework->findResource("test.png"), &screen->format);
-	textureTileList[2] = framework->loadImage(framework->findResource("test2.png"), &screen->format);
+	textureTileList[1] = env->loadImage("test.png");
+	textureTileList[2] = env->loadImage("test2.png");
 
-	groundTexture = framework->loadImage(framework->findResource("ground.png"), &screen->format);
-	skyTexture = framework->loadImage(framework->findResource("sky.png"), &screen->format);
+	groundTexture = env->loadImage("ground.png");
+	skyTexture = env->loadImage("sky.png");
 	ground = new Land(groundTexture, skyTexture, Rasterizer::FlagPerspectiveCorrection, 2 /* textureScale */, FPInt(6));
 
 	fclose(f);
@@ -130,7 +132,7 @@ void Track::render(World *world)
 
 	if (land)
 	{
-		world->getView()->rasterizer->setTextureTileList(textureTileList);
+		env->getView()->rasterizer->setTextureTileList(textureTileList);
 		land->render(world);
 	}
 
@@ -139,24 +141,24 @@ void Track::render(World *world)
 	for(y=0; y<texture->height; y+=scale)
 	for(x=0; x<texture->width; x+=scale)
 	{
-		int px = world->getScreen()->width - 1 - texture->width/scale + x/scale;
-		int py = world->getScreen()->height - 1 - texture->height/scale + y/scale;
+		int px = env->getScreen()->width - 1 - texture->width/scale + x/scale;
+		int py = env->getScreen()->height - 1 - texture->height/scale + y/scale;
 		if (texture->getPixel((x+128)&0xff,(y+128)&0xff))
-			world->getScreen()->setPixel(px, py, -1);
+			env->getScreen()->setPixel(px, py, -1);
 		else if (
 			texture->getPixel((x+128)&0xff,(y+128+scale)&0xff) ||
 			texture->getPixel((x+128)&0xff,(y+128-scale)&0xff) ||
 			texture->getPixel((x+128+scale)&0xff,(y+128)&0xff) ||
 			texture->getPixel((x+128-scale)&0xff,(y+128)&0xff)
 			)
-			world->getScreen()->setPixel(px, py, 0);
+			env->getScreen()->setPixel(px, py, 0);
 	}
 
 	int i;
 
-	for(i=0; i<world->getEnvironment()->carPool.getCount(); i++)
+	for(i=0; i<env->carPool.getCount(); i++)
 	{
-		Car *car = world->getEnvironment()->carPool.getItem(i);
+		Car *car = env->carPool.getItem(i);
 		unsigned char mx, my;
 
 		project(car->getOrigin(), mx, my);
@@ -164,14 +166,14 @@ void Track::render(World *world)
 		mx-=128;
 		my-=128;
 
-		x = world->getScreen()->width - 1 - texture->width/scale + (mx)/scale;
-		y = world->getScreen()->height - 1 - texture->height/scale + (my)/scale;
+		x = env->getScreen()->width - 1 - texture->width/scale + (mx)/scale;
+		y = env->getScreen()->height - 1 - texture->height/scale + (my)/scale;
 
-		world->getScreen()->setPixel(x, y, 0xff00);
-		world->getScreen()->setPixel(x-1, y, 0);
-		world->getScreen()->setPixel(x, y-1, 0);
-		world->getScreen()->setPixel(x+1, y, 0);
-		world->getScreen()->setPixel(x, y+1, 0);
+		env->getScreen()->setPixel(x, y, 0xff00);
+		env->getScreen()->setPixel(x-1, y, 0);
+		env->getScreen()->setPixel(x, y-1, 0);
+		env->getScreen()->setPixel(x+1, y, 0);
+		env->getScreen()->setPixel(x, y+1, 0);
 	}
 
 }

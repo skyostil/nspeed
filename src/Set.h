@@ -27,16 +27,93 @@ template<typename T>
 class Set
 {
 public:
-	Set(int _size, bool _autoDelete = false):
+	class Iterator
+	{
+	public:
+		Iterator(): set(0), index(0)
+		{
+		}
+
+		Iterator(const Set<T> *_set):	set(_set), index(0)
+		{
+		}
+				
+		T operator*() const
+		{
+			return set->getItem(index);
+		}
+
+		void operator++()
+		{
+			index++;
+		}
+
+		void operator++(int)
+		{
+			index++;
+		}
+		
+		void operator--()
+		{
+			index--;
+		}
+				
+		bool operator==(int _index) const
+		{
+			return index == _index;
+		}
+
+		bool operator!=(int _index) const
+		{
+			return index != _index;
+		}
+				
+		void operator=(int _index) const
+		{
+			index = _index;
+		}
+				
+	private:
+		int index;
+		const Set<T> *set;
+	};
+
+	Set(int _size = 0, bool _autoDelete = false):
 	  size(_size),
 	  autoDelete(_autoDelete),
 	  count(0)
 	{
+		item = 0;
+		
+		grow(size);
+	}
+	
+	void grow(int items)
+	{
 		int i;
-		item = new T[size];
-
-		for(i=0; i<size; i++)
-			item[i] = 0;
+		
+		if (items < 1)
+			items = 1;
+	
+		if (items < size)
+			return;
+	
+		T *newItem = new T[items];
+		
+		if (item)
+		{
+			for(i=0; i<size; i++)
+				newItem[i] = item[i];
+			for(; i<items; i++)
+				newItem[i] = 0;
+			delete[] item;
+		} else
+		{
+			for(i=0; i<items; i++)
+				newItem[i] = 0;
+		}
+		size = items;
+		item = newItem;
 	}
 
 	virtual ~Set()
@@ -49,11 +126,26 @@ public:
 		}
 		delete[] item;
 	}
-
+	
+	inline const Iterator &begin() const
+	{
+		return Iterator(this);
+	}
+	
+	inline int end() const
+	{
+		return count;
+	}
+	
 	int add(T t)
 	{
 		if (count < size-1)
 		{
+			item[count] = t;
+			return count++;
+		} else
+		{
+			grow(size * 2);
 			item[count] = t;
 			return count++;
 		}
@@ -79,7 +171,7 @@ public:
 			}
 	}
 
-	inline T getItem(int i)
+	inline T getItem(int i) const
 	{
 #if 0
 		if (i>=0 && i<size-1)
@@ -90,7 +182,7 @@ public:
 #endif
 	}
 
-	inline int getCount()
+	inline int getCount() const
 	{
 		return count;
 	}

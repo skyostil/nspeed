@@ -24,8 +24,9 @@
 #include "engine/Engine.h"
 #include "Config.h"
 #include "Car.h"
+#include "Object.h"
 
-class GameEngine: public Game::Engine
+class GameEngine: public Game::Engine, public Object
 {
 public:
 	enum State

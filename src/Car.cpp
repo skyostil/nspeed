@@ -19,12 +19,13 @@
  ***************************************************************************/
 
 #include "Car.h"
-//#include "models/CarModel.h"
 #include "Track.h"
 #include "Environment.h"
+#include "World.h"
 #include <stdio.h>
 
 Car::Car(World *_world, const char *name):
+	Object(_world),
 	angle(0),
 	speed(0),
 	angleSpeed(0),
@@ -38,7 +39,8 @@ Car::Car(World *_world, const char *name):
 	world(_world)
 {
 //	mesh = new CarModel(FPInt(1)>>8, world->getFramework()->loadImage(world->getFramework()->findResource("car.png"), &world->getScreen()->format));
-	mesh = new Mesh(0, 0);
+//	mesh = new Mesh(0, 0);
+	mesh = new Mesh(world, world->getEnvironment()->getFramework()->findResource("car.mesh"));
 	world->getEnvironment()->meshPool.add(mesh);
 
 	// build an acceleration profile
@@ -238,8 +240,8 @@ void Car::update(Track *track)
 		angle += 2*PI;
 		
 //	DAMPEN(speed, brake?32:4);
-	DAMPEN(velocity.x, brake?32:4);
-	DAMPEN(velocity.z, brake?32:4);
+	DAMPEN(velocity.x, brake?16:4);
+	DAMPEN(velocity.z, brake?16:4);
 	DAMPEN(angleSpeed, 1);
 
 	// update the model position
@@ -295,21 +297,21 @@ void Car::render(World *world)
 	int x, y, i;
 	scalar s = 0;
 
-	for(x=0; x<world->getScreen()->width; x++)
+	for(x=0; x<world->getEnvironment()->getScreen()->width; x++)
 	{
 		for(i=0; i<5; i++)
 			s += getAcceleration(s);
 
 		y = s>>8;
-		if (y > 0 && y < world->getScreen()->height)
+		if (y > 0 && y < world->getEnvironment()->getScreen()->height)
 		{
 			if (s <= speed)
 			{
 				while(--y > 0)
-					world->getScreen()->setPixel(x, world->getScreen()->height - y, 0xf000);
+					world->getEnvironment()->getScreen()->setPixel(x, world->getEnvironment()->getScreen()->height - y, 0xf000);
 			}
 			else
-				world->getScreen()->setPixel(x, world->getScreen()->height - y, -1);
+				world->getEnvironment()->getScreen()->setPixel(x, world->getEnvironment()->getScreen()->height - y, -1);
 		}
 	}
 }

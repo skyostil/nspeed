@@ -25,10 +25,11 @@
 #include "FixedPointVector.h"
 #include "Mesh.h"
 #include "World.h"
+#include "Object.h"
 
 class Track;
 
-class Car: public Renderable
+class Car: public Renderable, public Object
 {
 public:
 	Car(World *_world, const char *name);

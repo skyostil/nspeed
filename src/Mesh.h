@@ -18,12 +18,16 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef OBJECT_H
-#define OBJECT_H
+#ifndef MESH_H
+#define MESH_H
 
 #include "engine/Engine.h"
 #include "FixedPointMatrix.h"
-#include "World.h"
+#include "Object.h"
+#include "Renderable.h"
+#include "View.h"
+
+class World;
 
 typedef struct
 {
@@ -35,11 +39,11 @@ typedef struct
 	class Mesh	*mesh;	// required for qsort
 } Face;
 
-class Mesh: public Renderable
+class Mesh: public Object, public Renderable
 {
 public:
-	Mesh(const char *fileName, Game::Surface *texture = 0, int _flags = 0);
-	Mesh(int _vertexCount, int _faceCount, int _flags = 0);
+	Mesh(Object *parent, const char *fileName, Game::Surface *texture = 0, int _flags = 0);
+	Mesh(Object *parent, int _vertexCount, int _faceCount, int _flags = 0);
 	~Mesh();
 	
 	void	render(World *world);
@@ -72,30 +76,5 @@ protected:
 	int		currentVertex;
 	int		flags;
 };
-
-#define MAX_MESHES	32
-
-class MeshSet: public Renderable
-{
-public:
-	MeshSet();
-	void	render(World *world);
-	int		add(Mesh *o);
-	void	remove(Mesh *o);
-
-protected:
-	static int	sortComparator(const void *_a, const void *_b);
-
-	typedef struct
-	{
-		class MeshSet	*self;
-		Mesh			*mesh;
-	} SortItem;
-		
-	World	*world;
-	SortItem sortList[MAX_MESHES];
-	Set<Mesh*> meshes;
-};
-
 
 #endif

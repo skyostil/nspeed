@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include "Land.h"
+#include "Environment.h"
 #include <math.h>
 #include <stdio.h>
  
@@ -37,7 +38,7 @@ Land::Land(Game::Surface *_texture,
 
 void Land::render(World *world)
 {
-	View *view = world->getView();
+	View *view = world->getEnvironment()->getView();
 	
 #if 0  // we used to draw a textured quad
 	Vector center = view->camera.origin;

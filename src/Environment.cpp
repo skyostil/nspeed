@@ -25,13 +25,16 @@
 #include "ModPlayer.h"
 #include "Car.h"
 
-Environment::Environment():
+Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen, View *_view):
+	Object(parent),
+	framework(_framework),
+	screen(_screen),
+//	rasterizer(_rasterizer),
+	view(_view),
 	track(0),
 	font(0),
 	mixer(0),
-	modplayer(0),
-	texturePool(MAX_TEXTURES, true),
-	carPool(MAX_CARS, true)
+	modplayer(0)
 {
 }
 
@@ -41,5 +44,12 @@ Environment::~Environment()
 	delete font;
 	delete mixer;
 	delete modplayer;
+}
+
+Game::Surface *Environment::loadImage(const char *name)
+{
+	Game::Surface *img = framework->loadImage(framework->findResource(name), &screen->format);
+	
+	return img;
 }
 

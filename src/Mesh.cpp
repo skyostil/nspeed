@@ -19,9 +19,13 @@
  ***************************************************************************/
 #include "Mesh.h"
 #include "TagFile.h"
+#include "World.h"
+#include "Environment.h"
+#include "Config.h"
 #include <stdlib.h> // for qsort
  
-Mesh::Mesh(int _vertexCount, int _faceCount, int _flags):
+Mesh::Mesh(Object *parent, int _vertexCount, int _faceCount, int _flags):
+	Object(parent),
 	vertexCount(_vertexCount),
 	faceCount(_faceCount),
 	currentFace(0),
@@ -34,18 +38,25 @@ Mesh::Mesh(int _vertexCount, int _faceCount, int _flags):
 	face = new Face[faceCount];
 }
 
+#ifdef _MSC_VER
+#pragma pack(push, 1)
+#endif
 typedef struct
 {
 	int	x, y, z;
 	int u, v;
-} SerializedVertex;
+} PACKED SerializedVertex;
 
 typedef struct
 {
 	short a, b, c;
-} SerializedTriangle;
+} PACKED SerializedTriangle;
+#ifdef _MSC_VER
+#pragma pack(pop)
+#endif
 
-Mesh::Mesh(const char *fileName, Game::Surface *texture, int _flags):
+Mesh::Mesh(Object *parent, const char *fileName, Game::Surface *texture, int _flags):
+	Object(parent),
 	vertexCount(0),
 	faceCount(0),
 	currentFace(0),
@@ -61,12 +72,14 @@ Mesh::Mesh(const char *fileName, Game::Surface *texture, int _flags):
 
 	beginMesh();
 	
-	switch(file.readTag())
+	while(1) switch(file.readTag())
 	{
 	case 0: // list of vertices
 	{
 		vertexCount = file.getDataSize() / sizeof(SerializedVertex);
 		SerializedVertex *v = new SerializedVertex[vertexCount];
+		
+		printf("%d vertices (%d bytes)\n", vertexCount, file.getDataSize());
 		
 		vertex = new Vertex[vertexCount];
 		transformedVertex = new Vertex[vertexCount];
@@ -86,7 +99,9 @@ Mesh::Mesh(const char *fileName, Game::Surface *texture, int _flags):
 	{
 		faceCount = file.getDataSize() / sizeof(SerializedTriangle);		
 		SerializedTriangle *t = new SerializedTriangle[faceCount];
-		
+
+		printf("%d faces\n", faceCount);
+				
 		face = new Face[faceCount];
 		
 		file.readData((unsigned char*)t, sizeof(SerializedTriangle)*faceCount);
@@ -144,12 +159,15 @@ void Mesh::render(World *world)
 	Vertex *v = &vertex[0];
 	Vertex *vt = &transformedVertex[0];
 	
+	if (!v)
+		return;
+	
 	vc = vertexCount;
 	while(vc--)
 	{
 		*vt = *v;
 		vt->pos = transformation * vt->pos;
-		vt->pos = world->getView()->camera.transform(vt->pos);
+		vt->pos = world->getEnvironment()->getView()->camera.transform(vt->pos);
 		
 		vt++;
 		v++;
@@ -157,7 +175,7 @@ void Mesh::render(World *world)
 	
 	qsort(face, faceCount, sizeof(Face), sortComparator);
 
-	world->getView()->rasterizer->flags = flags;
+	world->getEnvironment()->getView()->rasterizer->flags = flags;
 	
 	fc = faceCount;
 	while(fc--)
@@ -165,20 +183,20 @@ void Mesh::render(World *world)
 		Vector normal = transformation.mul3x3(f->normal);
 		Vector *eye = &transformedVertex[f->vertex[0]].pos;
 		
-		normal = world->getView()->camera.transformDirection(normal);
+		normal = world->getEnvironment()->getView()->camera.transformDirection(normal);
 		
 		if (normal.dot(*eye) < 0)
 		{
-			world->getView()->beginPolygon();
-			world->getView()->rasterizer->setTexture(f->texture);
-			world->getView()->rasterizer->setColor(f->color);
+			world->getEnvironment()->getView()->beginPolygon();
+			world->getEnvironment()->getView()->rasterizer->setTexture(f->texture);
+			world->getEnvironment()->getView()->rasterizer->setColor(f->color);
 			for(vc=0; vc<f->vertexCount; vc++)
 			{
 				v = &transformedVertex[f->vertex[vc]];
 	//			printf("%d, %d, %d\n", v->pos.x>>FP, v->pos.y>>FP, v->pos.z>>FP);
-				world->getView()->addTransformedVertex(*v);
+				world->getEnvironment()->getView()->addTransformedVertex(*v);
 			}
-			world->getView()->endPolygon();
+			world->getEnvironment()->getView()->endPolygon();
 		}
 		f++;
 	}
@@ -256,50 +274,4 @@ void Mesh::endMesh()
 Vector Mesh::getOrigin()
 {
 	return transformation.getColumn(3);
-}
-
-MeshSet::MeshSet():
-	meshes(MAX_MESHES, true)
-{
-}
-
-void MeshSet::render(class World *_world)
-{
-	int i;
-
-	world = _world;
-	for(i=0; i<meshes.getCount(); i++)
-	{
-		sortList[i].self = this;
-		sortList[i].mesh = meshes.getItem(i);
-	}
-
-	qsort(sortList, meshes.getCount(), sizeof(SortItem), sortComparator);
-
-	for(i=0; i<meshes.getCount(); i++)
-		sortList[i].mesh->render(world);
-}
-
-int MeshSet::sortComparator(const void *_a, const void *_b)
-{
-	SortItem *a = (SortItem*)_a;
-	SortItem *b = (SortItem*)_b;
-	Vector distA = a->mesh->getOrigin() - a->self->world->getView()->camera.origin;
-	Vector distB = b->mesh->getOrigin() - a->self->world->getView()->camera.origin;
-	
-	if (
-		distA.lengthSquared() >
-		distB.lengthSquared())
-		return -1;
-	return 1;
-}
-
-int MeshSet::add(Mesh *o)
-{
-	return meshes.add(o);
-}
-
-void MeshSet::remove(Mesh *o)
-{
-	meshes.remove(o);
 }

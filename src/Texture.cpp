@@ -17,53 +17,5 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+#include "Texture.h"
 
-#ifndef ENVIRONMENT_H
-#define ENVIRONMENT_H
-
-#include "engine/Engine.h"
-#include "Set.h"
-#include "Object.h"
-#include "MeshSet.h"
-
-class Track;
-class BitmapFont;
-class Mixer;
-class ModPlayer;
-class Car;
-class View;
-class Rasterizer;
-
-//! This class contains all the global game related data
-class Environment: public Object
-{
-public:
-	Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen, View *_view);
-	~Environment();
-
-	//! Loads an image. Don't forget to delete it!
-	Game::Surface	*loadImage(const char *name);
-	
-	Game::Surface	*getScreen() { return screen; }
-	Game::Framework	*getFramework() { return framework; }
-//	Rasterizer		*getRasterizer() { return rasterizer; }
-	View			*getView() { return view; }
-	
-	Track		*track;
-	BitmapFont	*font;
-
-	Mixer		*mixer;
-	ModPlayer	*modplayer;
-
-	MeshSet				meshPool;
-	Set<Game::Surface*>	texturePool;
-	Set<Car*>			carPool;
-	
-private:
-	Game::Surface		*screen;
-	Game::Framework		*framework;
-//	Rasterizer			*rasterizer;
-	View				*view;
-};
-
-#endif

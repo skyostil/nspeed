@@ -25,6 +25,7 @@
 #include "Rasterizer.h"
 #include "View.h"
 #include "World.h"
+#include "Renderable.h"
 #include "FixedPointMath.h"
 
 class Land: public Renderable

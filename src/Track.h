@@ -24,13 +24,14 @@
 #include "engine/Engine.h"
 #include "Land.h"
 #include "FixedPointVector.h"
+#include "Renderable.h"
 
 class View;
 
-class Track: public Renderable
+class Track: public Renderable, public Object
 {
 public:
-	Track(Game::Framework *_framework, Game::Surface *_screen);
+	Track(Object *parent, Environment *_env);
 	~Track();
 
 	bool		load(const char *name);
@@ -54,8 +55,9 @@ protected:
 	Land			*land, *ground;
 	Game::Surface	*texture, *groundTexture, *skyTexture;
 	Game::Surface   *textureTileList[256];
-	Game::Surface	*screen;
-	Game::Framework	*framework;
+//	Game::Surface	*screen;
+//	Game::Framework	*framework;
+	Environment		*env;
 };
 
 #endif

@@ -25,9 +25,12 @@ class WriteTagFile:
 
 	def writeTag(self, id, data, flags=0):
 		origsize = len(data)
+		cdata = zlib.compress(data, 9)
 		
-		if flags & FLAG_COMPRESSED:
-			data = zlib.compress(data, 9)
+#		if flags & FLAG_COMPRESSED:
+		if len(cdata) < origsize:
+			data = cdata
+			flags |= FLAG_COMPRESSED
 			
 		header = self.getHeader(id, data, flags)
 		self.file.write(struct.pack("l", header))
@@ -40,7 +43,40 @@ class WriteTagFile:
 		
 		self.file.write(data)
 
+class ReadTagFile:
+	def __init__(self, name):
+		self.file = open(name, "rb")
+		
+	def readTag(self):
+		header = self.file.read(4)
+		if not header:
+			return -1
+		
+		(header,) = struct.unpack("l", header)
+		
+		self.tag_flags = (header>>28);
+		self.tag_id = (header>>24) & 0xf;
+		self.tag_size = header & 0x00ffffff;
+		
+		print "flags:", self.tag_flags
+		print "id:", self.tag_id
+		print "size:", self.tag_size
+		
+		if self.tag_flags & FLAG_COMPRESSED:
+			self.tag_uncompressed_size = struct.unpack("l", self.file.read(4))
+	
+	def getData(self):
+		data = self.file.read(self.tag_size)
+		if self.tag_flags & FLAG_COMPRESSED:
+			return zlib.decompress(data)
+		return data
+		
 if __name__=="__main__":
 	f = WriteTagFile("test.tag")
-	f.writeTag(0, "abcd\0", FLAG_COMPRESSED)
-	f.writeTag(0, "abcd\0", FLAG_COMPRESSED)
+	f.writeTag(0, "abcd\0")
+	f.writeTag(1, "abcdefgh\0")
+
+	f = ReadTagFile("test.tag")
+	while f.readTag() != -1:
+		print f.getData()
+			
