@@ -426,7 +426,7 @@ void Car::prepareForRace(int position)
         if (world->getEnvironment()->mixer && engineSound && position == 0)
         {
                 world->getEnvironment()->mixer->playSample(engineSound, 1, true, sfxChannel);
-                world->getEnvironment()->mixer->getChannel(sfxChannel)->setVolume(63);
+                world->getEnvironment()->mixer->getChannel(sfxChannel)->setVolume(16);
         }
         
         update(world->getEnvironment()->track);
