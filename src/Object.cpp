@@ -29,9 +29,11 @@ Object::Object(Object *_parent):
 Object::~Object()
 {
 	Set<Object*>::Iterator i;
+	Set<Object*> copyChildren(children);
 	
-	for(i=children.begin(); i!=children.end(); i++)
+	for(i=copyChildren.begin(); i!=copyChildren.end(); i++)
 		delete *i;
+	copyChildren.clear();
 		
 	if (parent)
 		parent->removeChild(this);

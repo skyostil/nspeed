@@ -151,7 +151,7 @@ ModPlayer::ModPlayer(Mixer *_mixer):
 	int i;
 	for(i=0; i<sizeof(sample)/sizeof(sample[0]); i++)
 		sample[i] = 0;
-	restart();
+	play();
 }
 
 ModPlayer::~ModPlayer()
@@ -291,7 +291,6 @@ bool ModPlayer::load(const char *file)
 			fread(sample[i]->sample->data, sizeof(char), sample[i]->sample->bytes, f); 
 		}
 	}
-	restart();
 	fclose(f);
 
 	return true;
@@ -330,7 +329,7 @@ void ModPlayer::unload()
 	delete[] order;
 }
 
-void ModPlayer::restart()
+void ModPlayer::play()
 {
 	currentOrder = 0;
 	currentTick = 0;

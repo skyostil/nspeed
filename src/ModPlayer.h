@@ -38,7 +38,7 @@ public:
 
 	bool	load(const char *file);
 	void	unload();
-	void	restart();
+	void	play();
 	
 	Mixer	*mixer;
 

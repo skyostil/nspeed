@@ -91,7 +91,7 @@ void GameEngine::configureVideo(Game::Surface* screen)
 	env = new Environment(this, framework, screen, view);
 
 	// setup the environment
-	img = framework->loadImage(framework->findResource("fonts/returnofganon-grad.png"), &screen->format);
+	img = framework->loadImage(framework->findResource("fonts/returnofganon.png"), &screen->format);
 	env->texturePool.add(img);
 	env->font = new BitmapFont(img);
 	env->track = new Track(this, env);
@@ -103,14 +103,14 @@ void GameEngine::configureVideo(Game::Surface* screen)
 
 void GameEngine::configureAudio(Game::SampleChunk* sample)
 {
-	env->mixer = new Mixer(sample->rate, 6);
+	env->mixer = new Mixer(sample->rate, 8);
 	env->modplayer = new ModPlayer(env->mixer);
 }
 
 void GameEngine::lookAtCarFromBehind(Car *car)
 {
-	scalar x = FPMul(FPCos(car->getAngle()), FPInt(3)>>1);
-	scalar z = FPMul(FPSin(car->getAngle()), FPInt(3)>>1);
+	scalar x = FPMul(FPCos(car->getAngle()), FPInt(3)>>2);
+	scalar z = FPMul(FPSin(car->getAngle()), FPInt(3)>>2);
 	scalar y = FPInt(4)>>3;
 
 	view->camera.target = car->getOrigin() + Vector(x,0,z);
@@ -174,7 +174,10 @@ void GameEngine::setState(State newState)
 		env->carPool.add(new Car(world, "car.car"));
 
 		if (env->modplayer)
+		{
 			env->modplayer->load(framework->findResource("dallas.mod"));
+			env->modplayer->play();
+		}
 
 		world->getRenderableSet().add(env->track);
 		world->getRenderableSet().add(&env->meshPool);

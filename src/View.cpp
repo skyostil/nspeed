@@ -82,7 +82,7 @@ Camera::Camera(Rasterizer *_rasterizer):
 	clipStackCount(0),
 	origin(FPInt(1),FPInt(0),FPInt(1)),
 	target(FPInt(0),FPInt(0),FPInt(0)),
-	fov(FPInt(60))
+	fov(FPInt(70))
 {
 	aspectRatio = FPDiv(FPInt(rasterizer->screen->height), FPInt(rasterizer->screen->width));
 //	aspectRatio = FPDiv(FPInt(3), FPInt(4));

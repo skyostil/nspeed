@@ -254,7 +254,7 @@ void CGameEng::MaoscOpenComplete(TInt aError)
                         iEngine->configureAudio(iAudioBuffer);
 
                         // Note that MaxVolume() is different in the emulator and the real device!
-                        iStream->SetVolume(iStream->MaxVolume() / 2);
+                        iStream->SetVolume(iStream->MaxVolume());
                         iStream->SetPriority(EPriorityNormal, EMdaPriorityPreferenceNone);
                         GetAudioData();
                 }

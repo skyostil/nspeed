@@ -39,6 +39,7 @@ private: //Data
     CGameContainer* iAppContainer; 
     Game::Engine*   iEngine;
     TInt            iTimerFreq;
+	unsigned int	iTimerBase;
     TBuf<512>       iResourcePathBuf;
     char            iResourcePath[256];
 };

@@ -30,6 +30,7 @@ SOURCE  engine\Video.cpp
 SOURCE  FixedPointMath.cpp
 SOURCE  FixedPointMatrix.cpp
 SOURCE  FixedPointVector.cpp
+SOURCE  TagFile.cpp
 SOURCE  View.cpp
 SOURCE  Rasterizer.cpp
 SOURCE  World.cpp
@@ -42,6 +43,8 @@ SOURCE  Object.cpp
 SOURCE  GameEngine.cpp
 SOURCE  BitmapFont.cpp
 SOURCE  Environment.cpp
+SOURCE  Mesh.cpp
+SOURCE  MeshSet.cpp
 
 RESOURCE ..\symbian\data\Game.rss
 RESOURCE ..\symbian\data\Game_caption.rss

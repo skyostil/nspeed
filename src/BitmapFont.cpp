@@ -39,6 +39,9 @@ void BitmapFont::build(Game::Surface *t)
 	int i, x = 0, maxWidth = 0;
 	
 	clear();
+
+	if (!t)
+		return;
 	
 	glyph = new Glyph[maxGlyph-minGlyph];
 	
@@ -82,7 +85,10 @@ void BitmapFont::build(Game::Surface *t)
 void BitmapFont::clear()
 {
 	if (glyph)
+	{
 		delete[] glyph;
+		glyph = 0;
+	}
 }
 
 
@@ -146,7 +152,7 @@ void BitmapFont::renderGlyph(Game::Surface *screen, Glyph *g, int x, int y, Game
 
 void BitmapFont::renderText(Game::Surface *screen, const char *text, int x, int y, Game::Pixel colorMask)
 {
-	while(*text)
+	while(glyph && *text)
 	{
 		if (*text >= minGlyph && *text <= maxGlyph)
 		{

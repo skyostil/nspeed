@@ -37,6 +37,7 @@ void CGameAppUi::ConstructL()
         TInt period;
         User::LeaveIfError(HAL::Get(HALData::ESystemTickPeriod, period));
         iTimerFreq = 1000000 / period;
+		iTimerBase = User::TickCount();
 
         iEngine = Game::CreateEngine(this);
 
@@ -142,7 +143,7 @@ void CGameAppUi::exit()
 
 unsigned int CGameAppUi::getTickCount()
 {
-        return User::TickCount();
+        return User::TickCount() - iTimerBase;
 }
 
 unsigned int CGameAppUi::getTicksPerSecond()
@@ -175,10 +176,20 @@ const char *CGameAppUi::findResource(const char *name)
 	FILE *f = NULL;
 	int i = 0;
 	const char drive[] = {'c', 'd', 'e', 'z'};
+	char *s;
 
 	for(i=0; i<sizeof(drive); i++)
 	{
 		sprintf(iResourcePath, "%c:\\system\\apps\\game\\%s", drive[i], name);
+
+		// replace forward slashes with backslashes
+		s = iResourcePath;
+		while(*s)
+		{
+			if (*s == '/') *s = '\\';
+			s++;
+		}
+
 		f = fopen(iResourcePath,"r");
 
 		if (f)

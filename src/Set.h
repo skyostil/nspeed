@@ -87,7 +87,20 @@ public:
 		
 		grow(size);
 	}
-	
+
+	Set(Set<T> &s):
+	  size(s.size),
+	  autoDelete(0),
+	  count(s.count)
+	{
+		int i,
+		item = 0;
+		grow(size);
+
+		for(i=0; i<size; i++)
+			add(s.getItem(i));
+	}
+	  
 	void grow(int items)
 	{
 		int i;
