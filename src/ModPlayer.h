@@ -39,6 +39,7 @@ public:
         bool    load(const char *file);
         void    unload();
         void    play();
+        void    stop();
         
         Mixer   *mixer;
 
@@ -113,6 +114,7 @@ protected:
         signed char     currentTick;
         signed char     currentRow;
         signed char     patternDelay;
+        bool            playing;
         
 private:
         void    tick();

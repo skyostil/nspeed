@@ -49,6 +49,14 @@ public:
         int getGateIndex() { return gateIndex; }
         void setGateIndex(int i) { gateIndex = i; }
         int getLapCount() { return lapCount; }
+
+         // the times are in milliseconds
+        int getLapTime() const;
+        int getBestLapTime() const;
+        int getRaceTime() const;
+
+        bool hasFinished() const;
+        bool isTakingDamage() const;
         
         //! in the range [0, 100]
         int getEnergy() { return energy>>FP; }
@@ -58,6 +66,7 @@ public:
         void setOrigin(const Vector &o);
         
         void prepareForRace(int position);
+        void startRace();
         
         scalar  getAcceleration(scalar speed) const;
         scalar  getAngleAcceleration(scalar speed) const;
@@ -70,6 +79,7 @@ private:
         void    updateTileEffects(Track *track);
         void    checkCollision(Car *other);
         void    explode();
+        int     getTime() const;
 
         Vector  origin, velocity, acceleration;
         scalar  angle, angleSpeed, speed; // note: the speed is squared!
@@ -92,7 +102,9 @@ private:
         Game::SampleChunk       *engineSound;
         int                             sfxChannel, gateIndex, lapCount, carNumber;
         scalar                  energy;
-        bool                    aiEnabled;
+        bool                    aiEnabled, takingDamage;
+
+        int                     bestLapTime, lapStart, raceStart, raceTime;
 };
 
 #endif

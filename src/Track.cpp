@@ -128,6 +128,7 @@ bool Track::load(const char *name, int mapScale, bool loadOnlyMetadata)
         break;
         case 2: // ai path
         {
+                scalar halfTile = FP_ONE >> 4;
                 aiPathLength = file.getDataSize() / sizeof(AiPathNode);
                 aiPath = new LineSegment[aiPathLength];
                 AiPathNode *aiPathNodes = new AiPathNode[aiPathLength];
@@ -139,6 +140,7 @@ bool Track::load(const char *name, int mapScale, bool loadOnlyMetadata)
                 for (i=1; i<aiPathLength+1; i++)
                 {
                         nextNode = unproject(aiPathNodes[i%aiPathLength].x, aiPathNodes[i%aiPathLength].y);
+                        nextNode += Vector(halfTile, 0, halfTile);
                         aiPath[i-1].set(currNode, nextNode);
                         currNode = nextNode;
                 }

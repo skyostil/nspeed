@@ -124,7 +124,7 @@ void Mixer::render(Game::SampleChunk *buffer)
                         
 //                      *data++ = a / (channelCount*2);
 //                      *data++ = a / (1);
-                        *data++ = a;
+                        *data++ = a >> 3;
                         
                         if (ticker)
                         {
@@ -187,6 +187,10 @@ void Mixer::installTicker(Ticker *t, int hz)
 {
         ticker = t;
         tickerCounter = 0;
-        tickerInterval = outputFreq / hz;
+
+        if (t && hz)
+        {
+            tickerInterval = outputFreq / hz;
+        }
 }
 

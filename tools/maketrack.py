@@ -18,8 +18,8 @@ gateStart = 64
 gateEnd = 71
 
 aiPath = [(0,0)] * 32
-aiStart = 96
-aiEnd = 127
+aiStart = 94
+aiEnd = 128
 aiLen = 0
 tileLimit = 63
 

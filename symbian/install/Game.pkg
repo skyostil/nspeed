@@ -49,4 +49,5 @@
 "..\..\data\tracks\test\track.trk"      -"!:\system\apps\Game\tracks\test\track.trk"
 "..\..\data\tracks\test\ground.png"     -"!:\system\apps\Game\tracks\test\ground.png"
 "..\..\data\tracks\test\sky.png"        -"!:\system\apps\Game\tracks\test\sky.png"
+"..\..\data\tracks\test\music.mod"      -"!:\system\apps\Game\tracks\test\music.mod"
 

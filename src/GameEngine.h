@@ -37,9 +37,11 @@ public:
                 MainMenuState,
                 ChooseCarState,
                 ChooseTrackState,
+                RaceLoadingState,
                 RaceIntroState,
                 RaceCountDownState,
                 RaceMenuState,
+                RaceOutroState,
                 RaceState,
                 QuitState
         };
@@ -58,7 +60,7 @@ private:
         void                    handleMenuAction(Menu::Action action);
         void                    lookAtCarFromBehind(Car *car);
         void                    rotateAroundCar(Car *car);
-        void                    rotateAroundPosition(const Vector &pos);
+        void                    rotateAroundPosition(const Vector &pos, int scale = FPInt(3));
         void                    handleRaceEvent(Game::Event* event);
         void                    step();
         void                    atomicStep();
@@ -67,10 +69,12 @@ private:
         void                    renderTitle(Game::Surface *s, const char *title);
         void                    preventWarping();
         void                    renderRotatingQuad(View *view, Game::Surface *texture);
-        void                    renderEnergyBar(Game::Surface *screen, scalar energy, int y) const;
+        void                    renderEnergyBar(Game::Surface *screen, int energy, int x, int y, int h) const;
+        void                    renderStatic(Game::Surface *screen);
+        void                    renderDamage(Game::Surface *screen);
 
         Game::Framework *framework;
-        State                   state;
+        State                   state, oldState;
         Environment             *env;
         scalar                  time, lastTime, fpsCountStart;
         unsigned int			frameCount;
@@ -79,7 +83,7 @@ private:
         // main menu
         MenuItem                menuItemPractice;
         MenuItem                menuItemQuit;
-        Game::Surface   *logo;
+        Game::Surface           *logo;
         
         // choose car menu
         Set<Car*>               allCars;
@@ -88,7 +92,7 @@ private:
         Set<Track*>				allTracks;
         
         // race
-        int						raceCountDown;
+        int						raceCountDown, stateChangeTime;
                 
         // race menu
         MenuItem        menuItemRestart;
@@ -98,6 +102,7 @@ private:
         
         char			debugMessage[256];
         char			selectedCar[64], selectedTrack[64];
+        char            playerName[64];
 };
 
 #endif

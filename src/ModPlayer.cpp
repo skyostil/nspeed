@@ -40,6 +40,7 @@ static const unsigned short periodTable[][36] =
                 428,404,381,360,339,320,302,285,269,254,240,226, // C-2 to B-2
                 214,202,190,180,170,160,151,143,135,127,120,113, // C-3 to B-3
         },
+#if 0
         {
         // Tuning 1
                 850,802,757,715,674,637,601,567,535,505,477,450, // same as above
@@ -130,6 +131,7 @@ static const unsigned short periodTable[][36] =
                 431,407,384,363,342,323,305,288,272,256,242,228,
                 216,203,192,181,171,161,152,144,136,128,121,114,
         }
+#endif
 };
 
 static const unsigned char sineTable[] =
@@ -146,7 +148,8 @@ ModPlayer::ModPlayer(Mixer *_mixer):
         songSpeed(7),
         channel(0),
         note(0),
-        order(0)
+        order(0),
+        playing(false)
 {
         int i;
         for(i=0; i<sizeof(sample)/sizeof(sample[0]); i++)
@@ -231,6 +234,8 @@ bool ModPlayer::load(const char *file)
                 
 //              if (header.fineTune > 7)
 //                      header.fineTune -= 16;
+                // XXX - disable finetune
+                header.fineTune = 0;
                 
                 if (header.length > 1)
                 {
@@ -319,6 +324,9 @@ ModPlayer::ModSample::~ModSample()
 void ModPlayer::unload()
 {
         int i;
+
+        stop();
+
         for(i=0; i<sizeof(sample)/sizeof(sample[0]); i++)
         {
                 delete sample[i];
@@ -331,10 +339,15 @@ void ModPlayer::unload()
 
 void ModPlayer::play()
 {
+        if (playing)
+            return;
+
         currentOrder = 0;
         currentTick = 0;
         currentRow = 0;
         patternDelay = 0;
+
+        playing = true;
         
         if (sample && note && channel && order && songLength)
                 mixer->installTicker(this, 2 * 125 / 5);
@@ -348,6 +361,9 @@ void ModPlayer::tick()
         int co = currentOrder;
 
 //      printf("%d/%d %2d:%02d\n", currentTick, songSpeed, order[currentOrder], currentRow);
+
+        if (!playing)
+            return;
         
         for(ch=0; ch<channels; ch++)
 //      ch=0;
@@ -616,7 +632,7 @@ void ModPlayer::playNote(int ch, ModNote *n)
                 if (n->effectParameter < 0x1f)
                         songSpeed = n->effectParameter;
                 else
-                        mixer->installTicker(this, 2 * n->effectParameter / 5);
+                        mixer->installTicker(this, 7 * n->effectParameter / 16);
         break;
         case 0xe:
         {
@@ -713,3 +729,16 @@ ModPlayer::ModChannel::ModChannel():
 {
 }
 
+void ModPlayer::stop()
+{
+        int i;
+
+        mixer->installTicker(NULL, 0);
+
+        playing = false;
+
+        for(i=0; i<channels; i++)
+        {
+                mixer->getChannel(i)->stop();
+        }
+}

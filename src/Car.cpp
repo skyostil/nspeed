@@ -33,6 +33,7 @@ Car::Car(World *_world, const char *name):
         angleSpeed(0),
         velocity(0,0,0),
         origin(0,0,0),
+        takingDamage(false),
         thrust(false),
         brake(false),
         steering(0),
@@ -44,6 +45,10 @@ Car::Car(World *_world, const char *name):
         aiEnabled(false),
         carNumber(-1),
 		energy(100),
+        bestLapTime(-1),
+        raceStart(0),
+        lapStart(0),
+        raceTime(-1),
         world(_world)
 {
         char fileName[256];
@@ -343,9 +348,12 @@ void Car::update(Track *track)
 void Car::updateTileEffects(Track *track)
 {
 	unsigned char tile = track->getCell(getOrigin());
+
+    takingDamage = false;
 	
 	if (tile == 0)
 	{
+        takingDamage = true;
 		energy = 0;
 	}
 	else if (track->tileGivesEnergy(tile))
@@ -363,9 +371,13 @@ void Car::updateTileEffects(Track *track)
 	}
 	else if (track->tileIsDamaging(tile))
 	{
-		energy -= 8192;
-		if (energy < 0)
-			energy = 0;
+        if (!aiEnabled)
+        {
+		    energy -= 6000;
+		    if (energy < 0)
+			    energy = 0;
+            takingDamage = true;
+        }
         acceleration -= (velocity * (speed>>3));
 	}
 	else if (track->tileIsTurbo(tile))
@@ -412,7 +424,24 @@ void Car::updateGate()
         if (nextGate && nextGate->isInside(getOrigin()))
         {
                 if (nextGateIndex < gateIndex)
+                {
+                        int t = getTime();
+
+                        if (t - lapStart < bestLapTime)
+                        {
+                            bestLapTime = t - lapStart;
+                        }
+
+                        lapStart = t;
                         lapCount++;
+
+                        // we finished the race
+                        if (lapCount >= world->getEnvironment()->track->getLapCount())
+                        {
+                            raceTime = t - raceStart;
+                            setAiState(true);
+                        }
+                }
                 gateIndex = nextGateIndex;
         }
 }
@@ -499,6 +528,11 @@ void Car::prepareForRace(int position)
         carNumber = position;
 		energy = FPInt(100);
 
+        bestLapTime = -1;
+        raceTime = -1;
+        lapStart = 0;
+        raceStart = 0;
+
         setAiState(position > 0);
         
         setOrigin(world->getEnvironment()->track->getStartingPosition(position));
@@ -510,6 +544,18 @@ void Car::prepareForRace(int position)
         }
         
         update(world->getEnvironment()->track);
+}
+
+int Car::getTime() const
+{
+        return 1000 * world->getEnvironment()->getFramework()->getTickCount() / world->getEnvironment()->getFramework()->getTicksPerSecond();
+}
+
+void Car::startRace()
+{
+        bestLapTime = -1;
+        raceTime = -1;
+        lapStart = raceStart = getTime();
 }
 
 void Car::updateAi()
@@ -585,4 +631,31 @@ void Car::explode()
 	origin.y = 0;
 }
 
+bool Car::hasFinished() const
+{
+    return raceTime != -1;
+}
+
+int Car::getLapTime() const
+{
+    return getTime() - lapStart;
+}
+
+int Car::getBestLapTime() const
+{
+    return bestLapTime;
+}
+
+int Car::getRaceTime() const
+{
+    if (hasFinished())
+        return raceTime;
+    else
+        return getTime() - raceStart;
+}
+
+bool Car::isTakingDamage() const
+{
+    return takingDamage;
+}
 

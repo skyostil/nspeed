@@ -57,7 +57,7 @@ class Track: public Renderable, public Object
 public:
         enum TileRanges
         {
-                AIPathStart = 96,
+                AIPathStart = 94,
                 AIPathEnd = 128,
                 BorderStart = 32,
                 BorderEnd = 63,
@@ -92,11 +92,13 @@ public:
         bool            tileIsDirt(unsigned char tile) const;
         bool            tileIsTurbo(unsigned char tile) const;
         
-        int                     getLapCount() const { return 5; }
+        int             getLapCount() const { return 5; }
         
         // these times are in milliseconds
-        int                     getBestLapTime(char *name, unsigned int nameSize);
-        int                     getBestTotalTime(char *name, unsigned int nameSize);
+        int             getBestLapTime(char *name, unsigned int nameSize);
+        int             getBestTotalTime(char *name, unsigned int nameSize);
+        void            setBestLapTime(int t, const char *name);
+        void            setBestTotalTime(int t, const char *name);
         
         //! Returns approximate the 2D normal (x,z) of the track at the given position
         Vector          getNormal(const Vector &pos) const;
@@ -108,9 +110,6 @@ public:
 protected:
         //! Project a world-vector to a pixel
         void            project(const Vector &pos, unsigned char &x, unsigned char &y) const;
-        
-        void            setBestLapTime(int t, const char *name);
-        void            setBestTotalTime(int t, const char *name);
         
         //! Project a pixel to a world vector
         Vector          unproject(unsigned char x, unsigned char y) const;
