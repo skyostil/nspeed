@@ -33,6 +33,7 @@ public:
 	enum State
 	{
 		IdleState,
+		LoadingState,
 		MainMenuState,
 		ChooseCarState,
 		ChooseTrackState,
@@ -57,13 +58,15 @@ private:
 	void			handleMenuAction(Menu::Action action);
 	void			lookAtCarFromBehind(Car *car);
 	void 			rotateAroundCar(Car *car);
-	void 			rotateAroundGoal(Track *track);
+	void 			rotateAroundPosition(const Vector &pos);
 	void			handleRaceEvent(Game::Event* event);
 	void			step();
 	void			atomicStep();
 	void			fillMenuWithDirectories(Menu *menu, const char *path);
 	void			copySelectedMenuItem(Menu *menu, char *out, unsigned int outSize);
 	void			renderTitle(Game::Surface *s, const char *title);
+	void			preventWarping();
+	void			renderRotatingQuad(View *view, Game::Surface *texture);
 
 	Game::Framework	*framework;
 	State			state;
@@ -78,10 +81,11 @@ private:
 	Game::Surface	*logo;
 	
 	// choose car menu
-	Car				*demoCar;
+	Set<Car*>		allCars;
 
 	// choose track menu
-	Track			*demoTrack;
+//	Track			*demoTrack;
+	Set<Game::Surface*>	allTracks;
 	
 	// race
 	int				raceCountDown;

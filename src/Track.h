@@ -59,12 +59,23 @@ public:
 	{
 		EdgeStart = 2, // XXX fixme
 		EdgeEnd = 2,
+		AIPathStart = 96,
+		AIPathEnd = 128,
+		BorderStart = 32,
+		BorderEnd = 63,
+		BounceStart = 24,
+		BounceEnd = 32,
+		RechargeStart = 16,
+		RechargeEnd = 24,
+		TurboStart = 8,
+		TurboEnd = 16,
 	};
 
 	Track(Object *parent, Environment *_env);
 	~Track();
 
 	bool		load(const char *name, int mapScale = 6);
+	bool		saveTimes(const char *name);
 	void		unload();
 	void		render(World *world);
 	
@@ -75,8 +86,15 @@ public:
 	scalar		getStartingAngle() const;
 	bool		getNearestPointOnAiPath(const Vector &pos, Vector &out) const;
 	bool		shouldAiAvoidTile(unsigned char tile) const;
+	bool		tileIsDamaging(unsigned char tile) const;
+	bool		tileGivesEnergy(unsigned char tile) const;
+	bool		tileBounces(unsigned char tile) const;
 	
 	int			getLapCount() const { return 5; }
+	
+	// these times are in milliseconds
+	int			getBestLapTime(char *name, unsigned int nameSize);
+	int			getBestTotalTime(char *name, unsigned int nameSize);
 	
 	//! Returns approximate the 2D normal (x,z) of the track at the given position
 	Vector		getNormal(const Vector &pos) const;
@@ -88,6 +106,9 @@ public:
 protected:
 	//! Project a world-vector to a pixel
 	void		project(const Vector &pos, unsigned char &x, unsigned char &y) const;
+	
+	void		setBestLapTime(int t, const char *name);
+	void		setBestTotalTime(int t, const char *name);
 	
 	//! Project a pixel to a world vector
 	Vector		unproject(unsigned char x, unsigned char y) const;
@@ -107,6 +128,9 @@ protected:
 	LineSegment		gate[4];
 	LineSegment		*aiPath;
 	unsigned int	aiPathLength;
+	
+	int				bestLapTime, bestTotalTime;
+	char			bestLapName[16], bestTotalName[16], playerName[16];
 };
 
 #endif

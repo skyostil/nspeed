@@ -62,7 +62,11 @@ public:
 	void addItem(MenuItem *item);
 	void render(World *world);
 	Action handleEvent(Game::Event* event);
+	
 	MenuItem *getSelection() const;
+	MenuItem *getItem(unsigned int index) const;
+	int getItemCount() const;
+	int getSelectionIndex() const;
 	
 	void setTopClipping(int _clipMinY);
 	void setTopLevelMenu(bool topLevel);

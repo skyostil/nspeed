@@ -376,3 +376,21 @@ int Menu::getSelectionRectangleError() const
 	return dist;
 }
 
+MenuItem *Menu::getItem(unsigned int index) const
+{
+	if (index <= items.getCount() - 1)
+		return items.getItem(index);
+	return NULL;
+}
+
+int Menu::getItemCount() const
+{
+	return items.getCount();
+}
+
+int Menu::getSelectionIndex() const
+{
+	return selected;
+}
+
+

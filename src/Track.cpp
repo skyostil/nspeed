@@ -25,6 +25,7 @@
 #include "TagFile.h"
 
 #include <stdio.h>
+#include <string.h>
 
 Track::Track(Object *parent, Environment *_env):
 	Object(parent),
@@ -36,9 +37,13 @@ Track::Track(Object *parent, Environment *_env):
 	map(0),
 	ground(0),
 	aiPath(0),
-	aiPathLength(0)
+	aiPathLength(0),
+	bestLapTime(-1),
+	bestTotalTime(-1)
 {
 	int i;
+	bestLapName[0] = 0;
+	bestTotalName[0] = 0;
 
 	for(i=0; i<sizeof(textureTileList)/sizeof(textureTileList[0]); i++)
 	{
@@ -68,6 +73,12 @@ typedef struct
 {
 	unsigned short x, y;
 } PACKED AiPathNode;
+
+typedef struct
+{
+	char name[16];
+	int time;
+} PACKED TimeEntry;
 
 #ifdef _MSC_VER
 #pragma pack(pop)
@@ -174,9 +185,42 @@ bool Track::load(const char *name, int mapScale)
 		
 		initializeMap(mapScale);
 		
-		return true;
+		// load best times
+		sprintf(fileName, "tracks/%s/times.dat", name);
+		TagFile timeFile(env->getFramework()->findResource(fileName));
+		TimeEntry timeEntry;
+
+		while(1) switch(timeFile.readTag())
+		{
+		case 0: // best lap
+			timeFile.readData((unsigned char*)&timeEntry, sizeof(timeEntry));
+			setBestLapTime(timeEntry.time, timeEntry.name);
+		break;
+		case 1: // best total
+			timeFile.readData((unsigned char*)&timeEntry, sizeof(timeEntry));
+			setBestTotalTime(timeEntry.time, timeEntry.name);
+		break;
+		default:
+			return true;
+		}
 	}
 	}
+}
+
+bool Track::saveTimes(const char *name)
+{
+	char fileName[256];
+	TimeEntry timeEntry;
+	
+	sprintf(fileName, "tracks/%s/times.dat", name);
+	WriteTagFile timeFile(env->getFramework()->findResource(fileName));
+	
+	timeEntry.time = getBestLapTime(timeEntry.name, sizeof(timeEntry.name));
+	timeFile.writeTag(0, (const char*)&timeEntry, sizeof(timeEntry));
+	timeEntry.time = getBestTotalTime(timeEntry.name, sizeof(timeEntry.name));
+	timeFile.writeTag(1, (const char*)&timeEntry, sizeof(timeEntry));
+	
+	return true;
 }
 
 void Track::unload()
@@ -469,5 +513,51 @@ bool Track::shouldAiAvoidTile(unsigned char tile) const
 	if (tile == 0 || (tile >= Track::EdgeStart && tile >= Track::EdgeEnd))
 		return true;
 	return false;
+}
+
+bool Track::tileIsDamaging(unsigned char tile) const
+{
+	if (tile == 0 || (tile >= Track::EdgeStart && tile >= Track::EdgeEnd))
+		return true;
+	return false;
+}
+
+bool Track::tileGivesEnergy(unsigned char tile) const
+{
+	if (tile == 0 || (tile >= Track::RechargeStart && tile >= Track::RechargeEnd))
+		return true;
+	return false;
+}
+
+bool Track::tileBounces(unsigned char tile) const
+{
+	if (tile == 0 || (tile >= Track::BounceStart && tile >= Track::BounceEnd))
+		return true;
+	return false;
+}
+
+
+int Track::getBestLapTime(char *name, unsigned int nameSize)
+{
+	strncpy(name, bestLapName, nameSize);
+	return bestLapTime;
+}
+
+int Track::getBestTotalTime(char *name, unsigned int nameSize)
+{
+	strncpy(name, bestTotalName, nameSize);
+	return bestTotalTime;
+}
+
+void Track::setBestLapTime(int t, const char *name)
+{
+	strncpy(bestLapName, name, sizeof(bestLapName));
+	bestLapTime = t;
+}
+
+void Track::setBestTotalTime(int t, const char *name)
+{
+	strncpy(bestTotalName, name, sizeof(bestTotalName));
+	bestTotalTime = t;
 }
 

@@ -52,8 +52,6 @@ GameEngine::GameEngine(Game::Framework* _framework):
         lastTime(0),
         state(IdleState),
         fpsCountStart(0),
-		demoCar(0),
-		demoTrack(0),
         frameCount(0),
         raceCountDown(0),
         rotateCamera(false),
@@ -65,6 +63,8 @@ GameEngine::GameEngine(Game::Framework* _framework):
         debugMessage[0] = 0;
         selectedCar[0] = 0;
         selectedTrack[0] = 0;
+		allCars.setAutoDelete(true);
+		allTracks.setAutoDelete(true);
 }
 
 GameEngine::~GameEngine()
@@ -85,7 +85,7 @@ void GameEngine::configureAudio(Game::SampleChunk* sample)
 
 void GameEngine::lookAtCarFromBehind(Car *car)
 {
-        scalar angle = rotateCamera?FPMod(car->getAngle() + (time>>1), 2*PI):car->getAngle();
+        scalar angle = rotateCamera?FPMod((time>>1), 2*PI):car->getAngle();
         scalar x = FPMul(FPCos(angle), FPInt(3)>>3);
         scalar z = FPMul(FPSin(angle), FPInt(3)>>3);
 //      scalar y = FPInt(2)>>2;
@@ -108,16 +108,16 @@ void GameEngine::rotateAroundCar(Car *car)
         env->getView()->camera.update();
 }
 
-void GameEngine::rotateAroundGoal(Track *track)
+void GameEngine::rotateAroundPosition(const Vector &pos)
 {
         scalar angle = FPMod((time>>1), 2*PI);
         scalar angle2 = FPMod((time), 2*PI);
-        scalar x = FPMul(FPCos(angle), FPInt(3)>>3);
-        scalar z = FPMul(FPSin(angle), FPInt(3)>>3);
+        scalar x = FPMul(FPCos(angle), FPInt(3));
+        scalar z = FPMul(FPSin(angle), FPInt(3));
         scalar y = FPMul(FPSin(angle2), FPInt(3)>>2) + FPInt(3)>>3;
 
-        env->getView()->camera.target = track->getStartingPosition(0);
-        env->getView()->camera.origin = track->getStartingPosition(0) + Vector(x,y,z);
+        env->getView()->camera.target = pos;
+        env->getView()->camera.origin = pos + Vector(x,y,z);
         env->getView()->camera.update();
 }
 
@@ -127,7 +127,9 @@ void GameEngine::renderVideo(Game::Surface* screen)
         World *world = env->getWorld();
 
         if (state == IdleState)
-                setState(MainMenuState);
+		{
+        		setState(LoadingState);
+		}
 
         step();
         handleMenuAction(env->getMenu()->getAction());
@@ -143,40 +145,50 @@ void GameEngine::renderVideo(Game::Surface* screen)
         case ChooseCarState:
                 screen->clear(0);
 
-                if (demoCar)
+                if (allCars.getCount())
                 {
                         scalar speed = 0;
                         int x, y, d;
-                        Game::Pixel8 r = 128, g = 128, b = 128;
+						Car *car = allCars.getItem(menu->getSelectionIndex());
+						Game::Pixel16 pixel;
                         
-                        for(x=16; x<screen->width-16; x++)
+                        for(x=4; x<screen->width-4; x++)
                         {
-                                y = screen->height/2 - ((speed>>7) - (menu->getSelectionRectangleError()<<3));
-                                
-                                if (x&1) r++;
+                                y = screen->height/3 - ((speed>>8) - (menu->getSelectionRectangleError()<<3));
                                 
                                 if (y > 0)
                                 {
-                                        for(d=0 ;y < screen->height/2; y++, d+=3)
+				                        int r = 0, g = 0, b = 0;
+										
+										if (x % 8 == 0)
+										{
+											r = 63;
+										}
+										
+                                        for(d=screen->height/3 ;d > y; d--)
                                         {
-                                                int gr = r - d;
-                                                int gg = g - d;
-                                                int gb = b - d;
+												r+=4;
                                                 
-                                                if (gr<0) gr=0;
-                                                if (gg<0) gg=0;
-                                                if (gb<0) gb=0;
-                                                
-                                                Game::Pixel16 pixel = screen->format.makePixel(gr,gg,gb);
-                                                screen->setPixel(x, y, pixel);
+                                                if (r>255) r=255;
+                                                if (g>255) g=255;
+                                                if (b>255) b=255;
+												
+												if (d % 8 == 0)
+												{
+													int rr = r + 63;
+	                                                pixel = screen->format.makePixel(rr<255?rr:255,g,b);
+												}
+												else
+	                                                pixel = screen->format.makePixel(r,g,b);
+                                                screen->setPixel(x, d, pixel);
                                         }
                                 }
-//                              printf("%d\n", speed);
-                                speed += demoCar->getAcceleration(speed);
-                                speed += demoCar->getAcceleration(speed);
+
+								for(d=0; d<3; d++)
+                                	speed += car->getAcceleration(speed);
                         }
                 
-                        rotateAroundCar(demoCar);
+                        rotateAroundCar(car);
                         world->render();
                 }
                                 
@@ -186,14 +198,16 @@ void GameEngine::renderVideo(Game::Surface* screen)
         case ChooseTrackState:
                 screen->clear(0);
                 
-                if (demoTrack)
+                if (allTracks.getCount())
                 {
-                        rotateAroundGoal(demoTrack);
-                        demoTrack->render(world);
+                        rotateAroundPosition(Vector(0,0,0));
                 
-                        Game::Surface *m = demoTrack->getMap();
+                        Game::Surface *m = allTracks.getItem(menu->getSelectionIndex());
                         if (m)
-                                screen->renderTransparentSurface(m, screen->width/2 - m->width/2 + (menu->getSelectionRectangleError()<<2), screen->height/3 - m->height/2);
+						{
+//                                screen->renderTransparentSurface(m, screen->width/2 - m->width/2 + (menu->getSelectionRectangleError()<<2), screen->height/3 - m->height/2);
+								renderRotatingQuad(env->getView(), m);
+						}
                 }
                 renderTitle(screen, "Choose Track");
                 menu->render(world);
@@ -258,7 +272,7 @@ void GameEngine::renderVideo(Game::Surface* screen)
         break;
         }
 
-        env->font->renderText(screen, debugMessage, 1, 1);
+//        env->font->renderText(screen, debugMessage, 1, 1);
 }
 
 void GameEngine::renderAudio(Game::SampleChunk* sample)
@@ -285,13 +299,9 @@ void GameEngine::setState(State newState)
                 logo = 0;
         break;
         case ChooseCarState:
-                delete demoCar;
-                demoCar = 0;
                 renderableSet->remove(&env->meshPool);
         break;
         case ChooseTrackState:
-                delete demoTrack;
-                demoTrack = 0;
         break;
         case RaceState:
         break;
@@ -301,6 +311,45 @@ void GameEngine::setState(State newState)
         state = newState;
         switch(newState)
         {
+        case LoadingState:
+			// load all cars
+			menu->clear();
+			fillMenuWithDirectories(menu, framework->findResource("cars"));
+			
+			allCars.clear();
+			for(i=0; i<menu->getItemCount(); i++)
+			{
+				Car *car = new Car(env->getWorld(), menu->getItem(i)->getText()); 
+				if (car)
+					allCars.add(car);
+			}
+
+			// load all track maps
+			menu->clear();
+			fillMenuWithDirectories(menu, framework->findResource("tracks"));
+			
+			allTracks.clear();
+			for(i=0; i<menu->getItemCount(); i++)
+			{
+				Track *track = new Track(this, env);
+				
+				if (track)
+				{
+					Game::Surface *map;
+					
+					track->load(menu->getItem(i)->getText(), 1);
+					if (track->getMap())
+					{
+						map = new Game::Surface(&screen->format, track->getMap());
+						allTracks.add(map);
+					} else
+						allTracks.add(0);
+				}
+				delete track;
+			}
+						
+			setState(MainMenuState);
+        break;
         case MainMenuState:
                 menu->clear();
                 menu->addItem(&menuItemPractice);
@@ -359,6 +408,7 @@ void GameEngine::setState(State newState)
                 renderableSet->add(env->track);
                 renderableSet->add(&env->meshPool);
         
+				preventWarping();
                 setState(RaceCountDownState);
         break;
         case RaceCountDownState:
@@ -451,21 +501,8 @@ void GameEngine::handleMenuAction(Menu::Action action)
                 switch(state)
                 {
                 case ChooseCarState:
-                        delete demoCar;
-						demoCar = 0;
-
-						if (menu->getSelection())
-							demoCar = new Car(env->getWorld(), menu->getSelection()->getText());
                 break;
                 case ChooseTrackState:
-                        delete demoTrack;
-						demoTrack = 0;
-
-						if (menu->getSelection())
-						{
-							demoTrack = new Track(this, env);
-							demoTrack->load(menu->getSelection()->getText(), 2);
-						}
                 break;
                 }
         break;
@@ -494,6 +531,7 @@ void GameEngine::handleEvent(Game::Event* event)
                 if (event->type == Game::Event::KeyPressEvent && event->key.code == KEY_EXIT)
                         framework->exit();
         break;
+		case RaceCountDownState:
         case RaceState:
                 handleRaceEvent(event);
         break;
@@ -621,29 +659,72 @@ void GameEngine::fillMenuWithDirectories(Menu *menu, const char *path)
                 while(entry = readdir(dir))
                 {
                         char fullName[256];
-                        
+						
+                        if (entry->d_name[0] == '.')
+							continue;
+						
 #ifdef EPOC
-                        sprintf(fullName, "%32s\\%32s", path, entry->d_name);
+						// stat() bug -> use opendir
+                        DIR *tmpDir;
+                        sprintf(fullName, "%.128s\\%.64s", path, entry->d_name);
+						tmpDir = opendir(fullName);
+						if (!tmpDir)
+							continue;
+						else
+							closedir(tmpDir);
 #else
-                        sprintf(fullName, "%32s/%32s", path, entry->d_name);
+                        sprintf(fullName, "%.128s/%.64s", path, entry->d_name);
+						
+						if (stat(fullName, &entryStat) != 0)
+							continue;
+						
+                        if (!S_ISDIR(entryStat.st_mode))
+							continue;
 #endif
-                        stat(fullName, &entryStat);
-                        
-//                        if (entry->d_name[0] != '.' && S_ISDIR(entryStat.st_mode))
-                        if (entry->d_name[0] != '.' && (entryStat.st_mode & S_IFDIR))
-                        {
-                                MenuItem *item = new MenuItem(entry->d_name);
-                                menuItemList.add(item);
-                                menu->addItem(item);
-                        }
+						
+						MenuItem *item = new MenuItem(entry->d_name);
+						menuItemList.add(item);
+						menu->addItem(item);
                 }
                 closedir(dir);
         }
 }
 
+void GameEngine::preventWarping()
+{
+	lastTime = time;
+}
+
 void GameEngine::renderTitle(Game::Surface *s, const char *title)
 {
-        env->bigFont->renderText(s, title, 1, 1, -1);
+	env->bigFont->renderText(s, title, 1, 1, -1);
+}
+
+void GameEngine::renderRotatingQuad(View *view, Game::Surface *texture)
+{
+	const scalar scale = FPInt(4);
+	const scalar depth = FPInt(-1);
+	Vector center = view->camera.target;
+	Vector v0, v1, v2, v3;
+	
+	v0.set(-scale + center.x, depth, -scale + center.z);
+	v1.set( scale + center.x, depth, -scale + center.z);
+	v2.set( scale + center.x, depth,  scale + center.z);
+	v3.set(-scale + center.x, depth,  scale + center.z);
+	
+	view->rasterizer->flags = Rasterizer::FlagPerspectiveCorrection;
+	view->rasterizer->setTexture(texture);
+
+	view->beginPolygon();
+	view->setTexCoord(FPInt(0), FPInt(0));
+	view->addVertex(v0);
+	view->setTexCoord(FPInt(128), FPInt(0));
+	view->addVertex(v1);
+	view->setTexCoord(FPInt(128), FPInt(128));
+	view->addVertex(v2);
+	view->setTexCoord(FPInt(0), FPInt(128));
+	view->addVertex(v3);
+	view->endPolygon();
 }
 
 // bootstrap
@@ -652,8 +733,7 @@ extern "C"
 
 Game::Engine* CreateEngine(Game::Framework* framework)
 {
-        return new GameEngine(framework);
+	return new GameEngine(framework);
 }
 
 }
-

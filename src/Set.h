@@ -167,6 +167,8 @@ public:
 
 	void clear()
 	{
+		if (autoDelete)
+			deleteItems();
 		count = 0;
 	}
 	
@@ -175,7 +177,7 @@ public:
 		int i;
 		for(i=0; i<count; i++)
 			delete item[i];
-		clear();
+		count = 0;
 	}
 
 	void remove(T t)
@@ -206,6 +208,11 @@ public:
 	inline int getCount() const
 	{
 		return count;
+	}
+	
+	void setAutoDelete(bool a)
+	{
+		autoDelete = a;
 	}
 
 private:

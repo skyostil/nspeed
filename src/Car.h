@@ -50,6 +50,9 @@ public:
 	void setGateIndex(int i) { gateIndex = i; }
 	int getLapCount() { return lapCount; }
 	
+	//! in the range [0, 100]
+	int getEnergy() { return energy>>FP; }
+	
 	scalar getAngle() { return angle; }
 	Vector getOrigin() { return origin * (FP_ONE>>CAR_COORDINATE_SCALE); }
 	void setOrigin(const Vector &o);
@@ -64,7 +67,9 @@ private:
 	void	updateGate();
 	void	updateAi();
 	void	updateCollisions();
+	void	updateTileEffects(Track *track);
 	void	checkCollision(Car *other);
+	void	explode();
 
 	Vector	origin, velocity, acceleration;
 	scalar	angle, angleSpeed, speed; // note: the speed is squared!
@@ -76,7 +81,7 @@ private:
 		scalar	threshold;
 	} AccelerationSegment;
 	
-	AccelerationSegment	accProfile[4];
+	AccelerationSegment	accProfile[8];
 	
 	bool	thrust, brake;
 	int		steering, steeringWheelPos, thrustPos, engineCycle;
@@ -86,6 +91,7 @@ private:
 	World			*world;
 	Game::SampleChunk	*engineSound;
 	int				sfxChannel, gateIndex, lapCount, carNumber;
+	scalar			energy;
 	bool			aiEnabled;
 };
 

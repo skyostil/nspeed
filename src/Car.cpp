@@ -43,9 +43,11 @@ Car::Car(World *_world, const char *name):
         lapCount(0),
         aiEnabled(false),
         carNumber(-1),
+		energy(100),
         world(_world)
 {
         char fileName[256];
+		FILE *f;
 
         sfxChannel = 4;
 
@@ -73,6 +75,21 @@ Car::Car(World *_world, const char *name):
         accProfile[3].acc = 12;
         accProfile[3].angleAcc = 64;
         accProfile[3].threshold = 0x7fffffff;
+		
+		// load the acceleration profile
+        sprintf(fileName, "cars/%s/acceleration.dat", name);
+		f = fopen(fileName, "r");
+		if (f)
+		{
+			int i = 0;
+			for(i=0; i<sizeof(accProfile)/sizeof(accProfile[0]); i++)
+			{
+				if (feof(f))
+					break;
+				fscanf(f, "%d %d %d", &accProfile[i].threshold, &accProfile[i].acc, &accProfile[i].angleAcc);
+			}
+			fclose(f);
+		}
 }
 
 Car::~Car()
@@ -87,6 +104,14 @@ Car::~Car()
 void Car::update(Track *track)
 {
         Vector worldOrigin = origin * (FP_ONE>>CAR_COORDINATE_SCALE);
+		bool airborne = (origin.y > 0);
+		const scalar gravity = FPInt(1)>>8;
+		
+		if (energy == 0)
+		{
+			explode();
+			return;
+		}
 
         // reset the acceleration
         acceleration.set(0,0,0);
@@ -96,10 +121,8 @@ void Car::update(Track *track)
 
 //      printf("Vel: %6d, %6d\n", velocity.x, velocity.z);
 
-        updateCollisions();
-        
         // collision detection & response
-        if (track->getCell(worldOrigin) == 0)
+        if (!airborne && track->getCell(worldOrigin) == 0)
         {
                 Vector normal = track->getNormal(worldOrigin);
 //              Vector vel = velocity;
@@ -235,7 +258,13 @@ void Car::update(Track *track)
                         }
                 }
         }
-        
+
+		if (!airborne)
+		{
+        	updateCollisions();
+			updateTileEffects(track);
+		}
+		        
         switch(steering)
         {
         case -1:
@@ -263,13 +292,24 @@ void Car::update(Track *track)
                 angle += (steeringWheelPos>>2) * getAngleAcceleration(speed);
 
 //      printf("Acc: %6d, %6d\n", acceleration.x, acceleration.z);
-                
+
+		// fall down if we're flying
+		if (origin.y > 0)
+			acceleration.y = -gravity;
+			
         // integration
 //      acceleration *= (FPInt(1)>>5);
         velocity += acceleration;
         origin += velocity;
         angle += angleSpeed;
-                
+
+		if (origin.y < 0)
+		{
+			origin.y = 0;
+			velocity.y = 0;
+			acceleration.y = 0;
+		}
+				
         // bring angle back in range
         while(angle > 2*PI)
                 angle -= 2*PI;
@@ -299,6 +339,35 @@ void Car::update(Track *track)
 
         if (aiEnabled)
                 updateAi();
+}
+
+void Car::updateTileEffects(Track *track)
+{
+	unsigned char tile = track->getCell(getOrigin());
+	
+	if (tile == 0)
+	{
+		energy = 0;
+	}
+	else if (track->tileGivesEnergy(tile))
+	{
+		energy += 50;
+		if (energy > FPInt(100))
+			energy = FPInt(100);
+	}
+	else if (track->tileBounces(tile))
+	{
+		const scalar maxJump = FPInt(2)>>3;
+		acceleration.y = (speed << 3);
+		if (acceleration.y > maxJump)
+			acceleration.y = maxJump;
+	}
+	else if (track->tileIsDamaging(tile))
+	{
+		energy - 10;
+		if (energy < 0)
+			energy = 0;
+	}
 }
 
 scalar Car::getAcceleration(scalar speed) const
@@ -419,14 +488,15 @@ void Car::prepareForRace(int position)
         gateIndex = 0;
         angleSpeed = 0;
         carNumber = position;
+		energy = FPInt(100);
         
         setOrigin(world->getEnvironment()->track->getStartingPosition(position));
         angle = world->getEnvironment()->track->getStartingAngle();
         
-        if (world->getEnvironment()->mixer && engineSound && position == 0)
+        if (world->getEnvironment()->mixer && engineSound && carNumber == 0)
         {
                 world->getEnvironment()->mixer->playSample(engineSound, 1, true, sfxChannel);
-                world->getEnvironment()->mixer->getChannel(sfxChannel)->setVolume(16);
+                world->getEnvironment()->mixer->getChannel(sfxChannel)->setVolume(8);
         }
         
         update(world->getEnvironment()->track);
@@ -499,4 +569,10 @@ void Car::setAiState(bool enabled)
                 setSteering(0);
         }
 }
+
+void Car::explode()
+{
+	origin.y = 0;
+}
+
 

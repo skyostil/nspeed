@@ -16,10 +16,12 @@ import zlib
 import sys
 
 FLAG_COMPRESSED = 0x1
+MAGIC = "TAG1"
 
 class WriteTagFile:
 	def __init__(self, name):
 		self.file = open(name, "wb")
+		self.file.write(MAGIC)
 
 	def getHeader(self, id, data, flags):
 		return (flags << 28) + (id << 24) + len(data)
@@ -47,7 +49,9 @@ class WriteTagFile:
 class ReadTagFile:
 	def __init__(self, name):
 		self.file = open(name, "rb")
-		
+		if not self.file.read(4) == MAGIC:
+			raise UserWarning("Not a tag file.")
+				
 	def readTag(self):
 		header = self.file.read(4)
 		if not header:

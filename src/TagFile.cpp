@@ -26,13 +26,31 @@
 #include <zlib.h>
 #endif
 
+#define MAGIC "TAG1"
+
 TagFile::TagFile(const char *name)
 {
+	char magic[4];
 	tag.id = 0;
 	tag.flags = 0;
 	tag.size = 0;
 	tag.uncompressedSize = 0;
 	file = fopen(name, "rb");
+	
+	if (file)
+	{
+		fread(magic, sizeof(magic), 1, file);
+		if (
+			magic[0] != MAGIC[0] ||
+			magic[1] != MAGIC[1] ||
+			magic[2] != MAGIC[2] ||
+			magic[3] != MAGIC[3])
+		{
+			fprintf(stderr, "TagFile: Bad magic: '%s'\n", name);
+			fclose(file);
+			file = 0;
+		}
+	}
 }
 
 TagFile::~TagFile()
@@ -105,6 +123,10 @@ unsigned int TagFile::readData(unsigned char *data, unsigned int size)
 WriteTagFile::WriteTagFile(const char *name)
 {
 	file = fopen(name, "wb");
+	if (file)
+	{
+		fwrite(MAGIC, 4, 1, file);
+	}
 }
 
 WriteTagFile::~WriteTagFile()
