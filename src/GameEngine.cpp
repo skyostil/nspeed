@@ -59,13 +59,17 @@ GameEngine::GameEngine(Game::Framework* _framework):
         raceCountDown(0),
         playerNameCounter(0),
         raceSuspendTime(0),
+        buttonUp(false),
+        buttonDown(false),
         rotateCamera(false),
+        raceLoaded(false),
         menuItemPractice("Single Race"),
         menuItemSettings("Settings"),
         menuItemQuit("Quit"),
         menuItemContinue("Continue"),
         menuItemRestart("Restart Race"),
         menuItemMainMenu("Main Menu"),
+        menuItemCredits("Credits"),
         menuItemAiCount(""),
         menuItemSfxVolume(""),
         menuItemMusicVolume("")
@@ -161,6 +165,28 @@ void GameEngine::renderVideo(Game::Surface* screen)
             screen->renderTransparentSurface(logo, screen->width/2 - logo->width/2, screen->height/3 - logo->height);
         menu->render(world);
         break;
+    case CreditsState:
+        screen->clear(0);
+        y = 32;
+
+        font->renderText(env->getScreen(), "Code, Graphics, Models", 8, y);
+        y += font->getHeight() + 2;
+        font->renderText(env->getScreen(), "Sami Kyostila", 16, y, textMask);
+        y += font->getHeight() + 2;
+
+        font->renderText(env->getScreen(), "Tracks, Graphics", 8, y);
+        y += font->getHeight() + 2;
+        font->renderText(env->getScreen(), "Joonas Kerttula", 16, y, textMask);
+        y += font->getHeight() + 2;
+
+        font->renderText(env->getScreen(), "Music", 8, y);
+        y += font->getHeight() + 2;
+        font->renderText(env->getScreen(), "Tommi Inkila", 16, y, textMask);
+        y += font->getHeight() + 2;
+
+        renderTitle(screen, "Credits");
+        break;
+    break;
     case SettingsMenuState:
         screen->clear(0);
 
@@ -461,6 +487,7 @@ void GameEngine::setState(State newState)
         menu->clear();
         menu->addItem(&menuItemPractice);
         menu->addItem(&menuItemSettings);
+        menu->addItem(&menuItemCredits);
         menu->addItem(&menuItemQuit);
         menu->setTopLevelMenu(true);
 
@@ -469,7 +496,10 @@ void GameEngine::setState(State newState)
         env->track->unload();
         env->stopSoundEffects();
 
-        if (oldState != ChooseCarState && oldState != SettingsMenuState)
+        if (oldState != ChooseCarState &&
+            oldState != SettingsMenuState &&
+            oldState != CreditsState
+            )
         {
             env->scheduleMusicChange(framework->findResource("music/menu.mod"));
         }
@@ -506,6 +536,7 @@ void GameEngine::setState(State newState)
         break;
     case RaceLoadingState:
         raceSuspendTime = 0;
+        raceLoaded = false;
         env->stopMusic();
         env->muteSoundEffects(true);
         break;
@@ -524,6 +555,7 @@ void GameEngine::setState(State newState)
 
         renderableSet->add(env->track);
         renderableSet->add(&env->meshPool);
+        raceLoaded = true;
         break;
     case RaceCountDownState:
         env->muteSoundEffects(false);
@@ -584,6 +616,8 @@ void GameEngine::handleMenuAction(Menu::Action action)
                 setState(ChooseCarState);
             else if (menu->getSelection() == &menuItemSettings)
                 setState(SettingsMenuState);
+            else if (menu->getSelection() == &menuItemCredits)
+                setState(CreditsState);
             else if (menu->getSelection() == &menuItemQuit)
                 setState(QuitState);
             break;
@@ -668,11 +702,20 @@ void GameEngine::handleEvent(Game::Event* event)
 
     switch(state)
     {
+    case CreditsState:
+        if (event->type == Game::Event::KeyPressEvent && 
+            (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST)
+            )
+            setState(MainMenuState);
+    break;
     case IdleState:
         if (event->type == Game::Event::KeyPressEvent && event->key.code == KEY_EXIT)
             framework->exit();
         break;
     case RaceIntroState:
+        if (!raceLoaded)
+            return;
+
         if (event->type == Game::Event::KeyPressEvent && 
             (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST)
             )
@@ -763,7 +806,7 @@ void GameEngine::handleRaceEvent(Game::Event* event)
 {
     Car *car = env->carPool.getItem(0);
 
-    if (!env->carPool.getCount())
+    if (!raceLoaded)
         return;
 
     switch(event->type)

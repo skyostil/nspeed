@@ -1,0 +1,36 @@
+;Languages
+&EN
+;
+; UID is the app's UID
+;
+#{"N-Speed-DesertTrack"},(0x06406E50),1,0,0
+;
+;
+;Supports Series 60 v 0.9
+;This line indicates that this installation is for the Series 60 platform v0.9
+;This line must appear _exactly_ as shown below in the sis file
+;If this line is missing or incorrect, the sis file will not be able
+;to be installed on Series 60 v0.9 platforms
+(0x101F6F88), 0, 0, 0, {"Series60ProductID"}
+;
+
+; desert track
+"..\..\data\tracks\desert\track.trk"       -"!:\system\apps\N-Speed\tracks\desert\track.trk"
+"..\..\data\tracks\desert\tile1.png"       -"!:\system\apps\N-Speed\tracks\desert\tile1.png"
+"..\..\data\tracks\desert\tile2.png"       -"!:\system\apps\N-Speed\tracks\desert\tile2.png"
+"..\..\data\tracks\desert\tile3.png"       -"!:\system\apps\N-Speed\tracks\desert\tile3.png"
+"..\..\data\tracks\desert\tile4.png"       -"!:\system\apps\N-Speed\tracks\desert\tile4.png"
+"..\..\data\tracks\desert\tile8.png"       -"!:\system\apps\N-Speed\tracks\desert\tile8.png"
+"..\..\data\tracks\desert\tile9.png"       -"!:\system\apps\N-Speed\tracks\desert\tile9.png"
+"..\..\data\tracks\desert\tile10.png"      -"!:\system\apps\N-Speed\tracks\desert\tile10.png"
+"..\..\data\tracks\desert\tile11.png"      -"!:\system\apps\N-Speed\tracks\desert\tile11.png"
+"..\..\data\tracks\desert\tile16.png"      -"!:\system\apps\N-Speed\tracks\desert\tile16.png"
+"..\..\data\tracks\desert\tile24.png"      -"!:\system\apps\N-Speed\tracks\desert\tile24.png"
+"..\..\data\tracks\desert\tile25.png"      -"!:\system\apps\N-Speed\tracks\desert\tile25.png"
+"..\..\data\tracks\desert\tile26.png"      -"!:\system\apps\N-Speed\tracks\desert\tile26.png"
+"..\..\data\tracks\desert\tile27.png"      -"!:\system\apps\N-Speed\tracks\desert\tile27.png"
+"..\..\data\tracks\desert\tile32.png"      -"!:\system\apps\N-Speed\tracks\desert\tile32.png"
+"..\..\data\tracks\desert\tile33.png"      -"!:\system\apps\N-Speed\tracks\desert\tile33.png"
+"..\..\data\tracks\desert\ground.png"      -"!:\system\apps\N-Speed\tracks\desert\ground.png"
+"..\..\data\tracks\desert\sky.png"         -"!:\system\apps\N-Speed\tracks\desert\sky.png"
+;"..\..\data\tracks\desert\music.mod"       -"!:\system\apps\N-Speed\tracks\desert\music.mod"

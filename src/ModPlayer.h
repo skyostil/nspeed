@@ -40,6 +40,7 @@ public:
     void    unload();
     void    play();
     void    stop();
+    bool    save(const char *fileName) const;
 
     //! \param vol is in the range [0, 64]
     void    setVolume(int vol);
@@ -50,8 +51,6 @@ protected:
     unsigned short  bigEndian16(unsigned short b);
     int             amigaToHz(int period);
     int             calcVolume(int v);
-
-    int     channels;
 
     class ModSample
     {
@@ -111,6 +110,7 @@ protected:
     ModSample       *sample[31];
     ModNote         *note;
     ModChannel      *channel;
+    int             channels;
     signed char     *order;
     signed char     songLength, songSpeed;
     signed char     patternCount;

@@ -55,7 +55,7 @@ if not len(sys.argv)>1:
     print "Rata puuttuu, hölö! [file.map]"
     sys.exit(1)
     
-data = open(sys.argv[1]).read()
+data = open(sys.argv[1], "rb").read()
 output = WriteTagFile(sys.argv[1].replace(".map",".trk"))
 
 findSpecialTiles(data)

@@ -35,6 +35,7 @@ public:
         IdleState,
         LoadingState,
         MainMenuState,
+        CreditsState,
         SettingsMenuState,
         ChooseCarState,
         ChooseTrackState,
@@ -88,12 +89,13 @@ private:
     Environment     *env;
     scalar          time, lastTime, fpsCountStart;
     unsigned int    frameCount;
-    bool            rotateCamera, madeRecord;
+    bool            rotateCamera, madeRecord, raceLoaded;
 
     // main menu
     MenuItem        menuItemPractice;
     MenuItem        menuItemSettings;
     MenuItem        menuItemQuit;
+    MenuItem        menuItemCredits;
     Game::Surface   *logo;
 
     // choose car menu

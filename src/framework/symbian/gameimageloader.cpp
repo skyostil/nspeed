@@ -1,7 +1,7 @@
 #include "GameImageLoader.h"
 #include <e32math.h>
 
-#define IMAGEREAD_TIMEOUT 5 * 1000 * 1000
+#define IMAGEREAD_TIMEOUT 10 * 1000 * 1000
 
 void CGameImageLoader::DoCancel()
 {
@@ -187,6 +187,8 @@ void CGameImageLoader::CreateSurface()
 
 	if( error != KErrNone )
 	{
+        delete iSurface;
+        iSurface = NULL;
 		iErrorCode = error;
 		return;
 	}

@@ -29,6 +29,7 @@
  ***************************************************************************/
 
 #include "ModPlayer.h"
+#include "TagFile.h"
 #include "Config.h"
 #include <stdio.h>
 
@@ -309,6 +310,89 @@ bool ModPlayer::load(const char *file)
 unsigned short ModPlayer::bigEndian16(unsigned short x)
 {
         return (x>>8) + ((x&0xff)<<8);
+}
+
+
+#ifdef _MSC_VER
+#pragma pack(push, 1)
+#endif
+typedef struct
+{
+    signed char     songLength, songSpeed;
+    signed char     channelCount, sampleCount;
+} PACKED PackedModHeader;
+
+typedef struct
+{
+    signed char     fineTune, volume;
+    unsigned short  loopStart, loopLength;
+} PACKED PackedModSample;
+
+typedef struct
+{
+    unsigned char   sampleNumber;
+    unsigned short  amigaPeriod;
+    signed short    note;
+    unsigned char   effectNumber;
+    unsigned char   effectParameter;
+} PACKED PackedModNote;
+#ifdef _MSC_VER
+#pragma pack(pop)
+#endif
+
+
+bool ModPlayer::save(const char *fileName) const
+{
+    PackedModHeader header;
+    PackedModSample sampleHeader;
+    PackedModNote *packedNote;
+    int i;
+
+    WriteTagFile file(fileName);
+
+    header.sampleCount = 0;
+    header.songLength = songLength;
+    header.songSpeed = songSpeed;
+    header.channelCount = channels;
+
+    for(i=0; i<sizeof(sample)/sizeof(sample[0]); i++)
+        if (sample[i])
+            header.sampleCount++;
+        else
+            break;
+
+    file.writeTag(0, (unsigned char*)&header, sizeof(header));
+    file.writeTag(1, (unsigned char*)order, songLength);
+
+    packedNote = new PackedModNote[channels * 64 /* rows per channel */ * patternCount];
+
+    for(i=0; i<channels * 64 /* rows per channel */ * patternCount; i++)
+    {
+        packedNote[i].sampleNumber = note[i].sampleNumber;
+        packedNote[i].amigaPeriod = note[i].amigaPeriod;
+        packedNote[i].note = note[i].note;
+        packedNote[i].effectNumber = note[i].effectNumber;
+        packedNote[i].effectParameter = note[i].effectParameter;
+    }
+
+    file.writeTag(2, (unsigned char*)packedNote, channels * 64 /* rows per channel */ * patternCount * sizeof(PackedModNote));
+
+    delete[] packedNote;
+
+    for(i=0; i<sizeof(sample)/sizeof(sample[0]); i++)
+    {
+        if (!sample[i])
+            break;
+
+        sampleHeader.fineTune = sample[i]->fineTune;
+        sampleHeader.volume = sample[i]->volume;
+        sampleHeader.loopStart = sample[i]->loopStart;
+        sampleHeader.loopLength = sample[i]->loopLength;
+        file.writeTag(2*i+3, (unsigned char*)&sampleHeader, sizeof(sampleHeader));
+        file.writeTag(2*i+4, (unsigned char*)&sample[i]->sample->data, sample[i]->sample->bytes);
+    }
+
+    return true;
 }
 
 ModPlayer::ModSample::ModSample(int _length, char _fineTune, char _volume, unsigned short _loopStart, unsigned short _loopLength):
