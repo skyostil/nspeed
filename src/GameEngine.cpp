@@ -95,7 +95,8 @@ void GameEngine::configureAudio(Game::SampleChunk* sample)
 
 void GameEngine::lookAtCarFromBehind(Car *car)
 {
-    scalar angle = rotateCamera?FPMod((time>>1), 2*PI):car->getAngle();
+//    scalar angle = rotateCamera?FPMod((time>>1), 2*PI):car->getAngle();
+    scalar angle = car->getAngle();
     scalar x = FPMul(FPCos(angle), FPInt(3)>>3);
     scalar z = FPMul(FPSin(angle), FPInt(3)>>3);
     //      scalar y = FPInt(2)>>2;
@@ -215,7 +216,8 @@ void GameEngine::renderVideo(Game::Surface* screen)
             }
 
             rotateAroundCar(car);
-            world->render();
+            car->getMesh()->render(world);
+//            world->render();
         }
 
         renderTitle(screen, "Choose Car");
@@ -388,7 +390,6 @@ void GameEngine::setState(State newState)
         logo = 0;
         break;
     case ChooseCarState:
-        renderableSet->remove(&env->meshPool);
         break;
     case ChooseTrackState:
         break;
@@ -453,6 +454,8 @@ void GameEngine::setState(State newState)
         menu->addItem(&menuItemQuit);
         menu->setTopLevelMenu(true);
 
+        renderableSet->clear();
+        
         env->track->unload();
         env->stopSoundEffects();
 
@@ -481,7 +484,6 @@ void GameEngine::setState(State newState)
         menu->clear();
         fillMenuWithDirectories(menu, framework->findResource("cars"));
         menu->setTopClipping(screen->height - 64);
-        renderableSet->add(&env->meshPool);
         break;
     case ChooseTrackState:
         menu->clear();

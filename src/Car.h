@@ -43,6 +43,9 @@ public:
         void setBrake(bool _brake);
         void setSteering(int _steering);
         void setAiState(bool enabled);
+        void show();
+        void hide();
+        Mesh *getMesh() const { return mesh; }
         
         int getSteering() const { return steering; }
         scalar getSpeed() const { return FPSqrt(speed); }

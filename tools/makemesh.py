@@ -2,6 +2,8 @@
 
 # WARNING: This is broken.
 
+raise UserWarning("This program is broken!")
+
 from Dice3DS import *
 from tagfile import WriteTagFile
 import sys

@@ -99,7 +99,8 @@ bool Track::load(const char *name, int mapScale, bool loadOnlyMetadata)
     sprintf(fileName, "tracks/%.64s/track.trk", name);
     TagFile file(env->getFramework()->findResource(fileName));
 
-    while(1) switch(file.readTag())
+    while(1)
+        switch(file.readTag())
         {
         case 0: // map dimensions
             {
@@ -351,13 +352,13 @@ int Track::getCell(const Vector &pos) const
     return lookup(x,y);
 }
 
-void Track::setCell(const Vector &pos)
+void Track::setCell(const Vector &pos, unsigned char c)
 {
     unsigned char x, y;
 
     project(pos, x, y);
 
-    ((Game::Pixel8*)(texture->pixels))[x + (y<<8)] = 2;
+    ((Game::Pixel8*)(texture->pixels))[x + (y<<8)] = c;
 }
 
 Vector Track::getNormal(const Vector &pos) const
@@ -401,8 +402,7 @@ Vector Track::unproject(unsigned char x, unsigned char y) const
 LineSegment::LineSegment():
         valid(false),
         angle(0)
-{
-}
+{}
 
 bool LineSegment::isInside(const Vector &pos) const
 {
@@ -462,7 +462,7 @@ Vector Track::getStartingPosition(int carNumber) const
     if (carNumber & 1)
         dir = -dir;
 
-    return gate[0].getCenter() + dir + (gate[0].getNormal() * (FPInt(carNumber/2+1)>>2));
+    return gate[0].getCenter() + dir + (gate[0].getNormal() * (FPInt(carNumber/2+1)>>1));
 }
 
 scalar Track::getStartingAngle() const
@@ -529,45 +529,91 @@ bool Track::getNextPointOnAiPath(const Vector &pos, Vector &out) const
     scalar nearest = FPInt(4096), dist;
     Vector point;
     LineSegment *nearestSegment = NULL;
+    scalar limit = FPInt(1);
 
     for(i=0; i<aiPathLength; i++)
     {
         if (aiPath[i].getNearestPoint(pos, point))
         {
-            dist = (point - pos).lengthSquared();
+//            dist = (point - pos).lengthSquared();
+            dist = (point - pos).manhattanNorm();
 
             if (dist < nearest)
             {
-                out = point;
+//                out = point;
                 nearest = dist;
+
                 out = aiPath[i].getRight();
+                dist = (out - pos).manhattanNorm();
+                                
+                if (dist < limit)
+                {
+//                    printf("seuraava\t%d\n", dist);
+                    out = aiPath[(i + 1) % aiPathLength].getRight();
+                }
+                else
+                {
+//                    printf("tämä\t%d\n", dist);
+                }
+                
+//                out = aiPath[i].getRight();
                 nearestSegment = &aiPath[i];
+                nearestSegment = &aiPath[(i + 1) % aiPathLength];
             }
         }
     }
 
+/*
     // if no nearest point was found, find the nearest corner
     if (!nearestSegment)
     {
         for(i=0; i<aiPathLength; i++)
         {
-            dist = (pos - aiPath[i].getLeft()).lengthSquared();
+//            dist = (pos - aiPath[i].getLeft()).lengthSquared();
+            dist = (pos - aiPath[i].getLeft()).manhattanNorm();
 
             if (dist < nearest)
             {
-                out = aiPath[i].getRight();
+                if (dist < limit)
+                {
+                    printf("seuraava\n");
+                    out = aiPath[i].getRight();
+                }
+                else
+                {
+                    printf("tämä\n");
+                    out = aiPath[i].getLeft();
+                }
+                    
                 nearest = dist;
                 nearestSegment = &aiPath[i];
+//                nearestSegment = &aiPath[(i + 1) % aiPathLength];
             }
         }
     }
-
+*/    
+/*    
+    Vector d = (pos - out);
+    scalar len =  d.manhattanNorm();
+    scalar limit = FPInt(1)>>1;
+    
+    if (nearestSegment && len < limit)
+    {
+        printf("seuraava\t%d\n",len);
+        out = nearestSegment->getRight();
+    } else
+        printf("tämä\t%d\n",len);
+*/
     return nearestSegment != NULL;
 }
 
 bool Track::shouldAiAvoidTile(unsigned char tile) const
 {
-    if (tile == 0 || (tile >= Track::BorderStart && tile <= Track::BorderEnd))
+    if (
+        tile == 0 || 
+        (tile >= Track::BorderStart && tile <= Track::BorderEnd) ||
+        (tile >= Track::DirtStart && tile <= Track::DirtEnd)
+        )
         return true;
     return false;
 }
@@ -636,7 +682,7 @@ int Track::getNearestGateIndex(const Vector &pos) const
 {
     scalar nearest = FPInt(4096), dist;
     int i, nearestIndex = 0;
-    
+
     for(i=0; i<getGateCount(); i++)
     {
         dist = (gate[i].getCenter() - pos).lengthSquared();

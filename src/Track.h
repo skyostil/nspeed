@@ -80,7 +80,7 @@ public:
         void            render(World *world);
         
         int             getCell(const Vector &pos) const;
-        void            setCell(const Vector &pos);
+        void            setCell(const Vector &pos, unsigned char c = 2);
         
         Vector          getStartingPosition(int carNumber) const;
         scalar          getStartingAngle() const;

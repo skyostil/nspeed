@@ -1,13 +1,18 @@
 #ifndef FIXEDPOINTVECTOR_H
 #define FIXEDPOINTVECTOR_H
 
-// Vector math stuff (C) 2001 by Sami Kyöstilä
-
+// Vector math stuff (C) 2001 by Sami Kyöstilä
+
+
+
 #ifdef MSVC
 #pragma warning (disable: 4786)
-#endif
-
-#include "FixedPointMath.h"
+#endif
+
+
+
+#include "FixedPointMath.h"
+
 
 class Vector	// 3
 {
@@ -35,6 +40,7 @@ public:
 	Vector cross(const class Vector &b) const;
 	scalar length() const;
 	scalar lengthSquared() const;
+	scalar manhattanNorm() const;
 	Vector normalize();
 	void   set(const scalar _x, const scalar _y, const scalar _z);
 	bool   nonzero() const;

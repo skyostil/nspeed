@@ -64,8 +64,6 @@ Car::Car(World *_world, const char *name):
     sprintf(fileName, "cars/%.64s/mesh.mesh", name);
     mesh = new Mesh(this, world->getEnvironment()->getFramework()->findResource(fileName), texture);
 
-    world->getEnvironment()->meshPool.add(mesh);
-
     // build an acceleration profile
     accProfile[0].acc = 96;
     accProfile[0].angleAcc = 96;
@@ -83,7 +81,7 @@ Car::Car(World *_world, const char *name):
     // load the acceleration profile
     sprintf(fileName, "cars/%.64s/acceleration.dat", name);
     f = fopen(world->getEnvironment()->getFramework()->findResource(fileName), "r");
-    
+
     if (f)
     {
         int i = 0;
@@ -131,7 +129,7 @@ void Car::update(Track *track)
     {
         Vector normal = track->getNormal(worldOrigin);
         //              Vector vel = velocity;
-        int backtrackLimit = 16;
+        int backtrackLimit = 32;
 
         //              vel.normalize();
 
@@ -330,7 +328,8 @@ void Car::update(Track *track)
     {
         DAMPEN(velocity.x, 8);
         DAMPEN(velocity.z, 8);
-    } else
+    }
+    else
     {
         DAMPEN(velocity.x, brake?64:8);
         DAMPEN(velocity.z, brake?64:8);
@@ -545,6 +544,7 @@ void Car::prepareForRace(int position)
     lapStart = 0;
     raceStart = 0;
 
+    show();
     setAiState(position > 0);
 
     setOrigin(world->getEnvironment()->track->getStartingPosition(position));
@@ -574,60 +574,96 @@ void Car::updateAi()
 {
     Track *track = world->getEnvironment()->track;
     Vector o = getOrigin();
-    Vector probe;
     Vector target, steerTarget;
+    const int probeCount = 4;
+    int i;
+    bool onDirt = track->tileIsDirt(track->getCell(o));
+    Vector probe[probeCount];
 
     if (speed < 128)
     {
         // probe ahead
-        probe = o + (Vector(FPCos(angle), 0, FPSin(angle)) * FPInt(1));
+        probe[0] = o + (Vector(FPCos(angle), 0, FPSin(angle)) * (FPInt(1)>>3));
+        probe[1] = o + (Vector(FPCos(angle), 0, FPSin(angle)) * (FPInt(1)>>2));
+        probe[2] = o + (Vector(FPCos(angle), 0, FPSin(angle)) * (FPInt(1)>>1));
+        probe[3] = o + (Vector(FPCos(angle), 0, FPSin(angle)) * (FPInt(1)));
     }
     else
     {
         // probe according to current velocity
-        probe = o + (velocity * FPInt(10));
+        probe[0] = o + (velocity * FPInt(2));
+        probe[1] = o + (velocity * FPInt(5));
+        probe[2] = o + (velocity * FPInt(7));
+        probe[3] = o + (velocity * FPInt(8));
     }
 
     // find out the nearest point on the AI path
-    if (track->getNearestPointOnAiPath(probe, target))
+    //    if (track->getNearestPointOnAiPath(probe, target))
+    /*
+        if (
+            track->getNearestPointOnAiPath(probe[0], target) ||
+            track->getNearestPointOnAiPath(probe[1], target) ||
+            track->getNearestPointOnAiPath(probe[2], target) ||
+            track->getNearestPointOnAiPath(probe[3], target)
+        )
+    */
+    for(i=0; i<probeCount; i++)
     {
-        //              track->setCell(probe);
-        //              if (carNumber == 0)
-        //                      track->setCell(target);
-
-        unsigned char tile = track->getCell(probe);
-
-        // avoid emptyness and edges
-        if (track->shouldAiAvoidTile(tile))
+        if (track->getNearestPointOnAiPath(probe[i], target))
         {
-//            track->getNextPointOnAiPath(o, steerTarget);
-            steerTarget = target;
-        
-            // something's ahead -> slow down and turn toward the path
-            setThrust(false);
+/*
+            if (carNumber == 0)
+            {
+                if (track->getCell(probe[i]))
+                    track->setCell(probe[i]);
+//                track->setCell(target);
+            }
+*/
+            unsigned char tile = track->getCell(probe[i]);
 
-            if (track->shouldAiAvoidTile(track->getCell(o + (velocity * FPInt(3)))))
-                setBrake(true);
-
-            if (((probe - o).cross(steerTarget - o)).y < 0)
-                setSteering(1);
+            // don't get stuck
+            if (speed < 128)
+            {
+                setThrust(true);
+                setBrake(false);
+                break;
+            }
+            
+            // avoid emptyness and edges
+            if (track->shouldAiAvoidTile(tile))
+            {
+                track->getNextPointOnAiPath(o, steerTarget);
+//                steerTarget = target;
+/*
+                if (carNumber == 0)
+                {
+                    track->setCell(steerTarget, (world->getEnvironment()->getFramework()->getTickCount()&1)?1:2);
+                }
+*/
+//                if (track->shouldAiAvoidTile(track->getCell(o + (velocity * FPInt(3)))))
+                if (!onDirt && i < 2)
+                    setBrake(true);
+                
+                if (i < probeCount-1)
+                {
+                    // something's ahead -> slow down and turn toward the path
+                    if (!onDirt)
+                        setThrust(false);
+                    
+                    if (((probe[i] - o).cross(steerTarget - o)).y < 0)
+                        setSteering(1);
+                    else
+                        setSteering(-1);
+                    break;
+                }
+            }
             else
-                setSteering(-1);
-
-        }
-        else
-        {
-            // no obstacles -> pedal to the metal
-            setBrake(false);
-            setThrust(true);
-            setSteering(0);
-        }
-
-        // don't get stuck
-        if (speed < 64)
-        {
-            setThrust(true);
-            setBrake(false);
+            {
+                // no obstacles -> pedal to the metal
+                setBrake(false);
+                setThrust(true);
+                setSteering(0);
+            }
         }
     }
 }
@@ -687,7 +723,7 @@ int Car::getRank() const
     int index = lapCount * track->getGateCount() + gateIndex;
     int rank = 1;
     int nextGateIndex = (gateIndex+1) % world->getEnvironment()->track->getGateCount();
-    
+
     if (hasFinished())
     {
         return finishingRank;
@@ -701,10 +737,10 @@ int Car::getRank() const
         if (index == otherIndex)
         {
             scalar dist, otherDist;
-            
+
             dist = (getOrigin() - track->getGate(nextGateIndex)->getCenter()).lengthSquared();
             otherDist = (other->getOrigin() - track->getGate(nextGateIndex)->getCenter()).lengthSquared();
-            
+
             if (otherDist < dist)
             {
                 rank++;
@@ -722,5 +758,15 @@ void Car::adjustTimes(int delta)
 {
     lapStart += delta;
     raceStart += delta;
+}
+
+void Car::show()
+{
+    world->getEnvironment()->meshPool.add(mesh);
+}
+
+void Car::hide()
+{
+    world->getEnvironment()->meshPool.remove(mesh);
 }
 

@@ -36,25 +36,25 @@ def findSpecialTiles(data):
                     aiLen = d - aiStart + 1
 
 def lookup(data, x, y):
-	return data[((y+offset[1]) % size[1]) * size[1] + ((x+offset[0]) % size[0])]
+    return data[((y+offset[1]) % size[1]) * size[1] + ((x+offset[0]) % size[0])]
 
 def transform(data):
     offsetData = ""
     
     for y in xrange(0, size[1]):
-    	for x in xrange(0, size[0]):
+        for x in xrange(0, size[0]):
                 tile = lookup(data,x,y)
                 if ord(tile)>tileLimit:
-        		offsetData += offsetData[-1]
-        	else:
-        		offsetData += tile
+                    offsetData += offsetData[-1]
+                else:
+                    offsetData += tile
     return offsetData
 
 
 if not len(sys.argv)>1:
-	print "Rata puuttuu, hölö! [file.map]"
-	sys.exit(1)
-	
+    print "Rata puuttuu, hölö! [file.map]"
+    sys.exit(1)
+    
 data = open(sys.argv[1]).read()
 output = WriteTagFile(sys.argv[1].replace(".map",".trk"))
 
@@ -66,14 +66,14 @@ print "Gates:"
 print gates
 
 output.writeTag(0,
-	struct.pack(
-		"HHhhhhhhhhhhhhhhhh",
-		size[0], size[1],
-		gates[0][0], gates[0][1], gates[1][0], gates[1][1],
-		gates[2][0], gates[2][1], gates[3][0], gates[3][1],
-		gates[4][0], gates[4][1], gates[5][0], gates[5][1],
-		gates[6][0], gates[6][1], gates[7][0], gates[7][1]
-	)
+    struct.pack(
+        "HHhhhhhhhhhhhhhhhh",
+        size[0], size[1],
+        gates[0][0], gates[0][1], gates[1][0], gates[1][1],
+        gates[2][0], gates[2][1], gates[3][0], gates[3][1],
+        gates[4][0], gates[4][1], gates[5][0], gates[5][1],
+        gates[6][0], gates[6][1], gates[7][0], gates[7][1]
+    )
 )
 output.writeTag(1, transform(data))
 
