@@ -73,12 +73,6 @@ Car::Car(World *_world, const char *name):
 	accProfile[3].acc = 12;
 	accProfile[3].angleAcc = 64;
 	accProfile[3].threshold = 0x7fffffff;
-
-	if (world->getEnvironment()->mixer && engineSound)
-	{
-		world->getEnvironment()->mixer->playSample(engineSound, 1, true, sfxChannel);
-		world->getEnvironment()->mixer->getChannel(sfxChannel)->setVolume(4);
-	}
 }
 
 Car::~Car()
@@ -307,7 +301,7 @@ void Car::update(Track *track)
 		updateAi();
 }
 
-scalar Car::getAcceleration(scalar speed)
+scalar Car::getAcceleration(scalar speed) const
 {
 	int i = 0;
 	
@@ -345,7 +339,7 @@ void Car::updateGate()
 	}
 }
 
-scalar Car::getAngleAcceleration(scalar speed)
+scalar Car::getAngleAcceleration(scalar speed) const
 {
 	int i = 0;
 	
@@ -428,6 +422,12 @@ void Car::prepareForRace(int position)
 	
 	setOrigin(world->getEnvironment()->track->getStartingPosition(position));
 	angle = world->getEnvironment()->track->getStartingAngle();
+	
+	if (world->getEnvironment()->mixer && engineSound && position == 0)
+	{
+		world->getEnvironment()->mixer->playSample(engineSound, 1, true, sfxChannel);
+		world->getEnvironment()->mixer->getChannel(sfxChannel)->setVolume(4);
+	}
 }
 
 void Car::updateAi()

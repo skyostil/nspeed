@@ -21,6 +21,10 @@
 #include "GameEngine.h"
 
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <string.h>
 #include "Config.h"
 #include "FixedPointMath.h"
 #include "FixedPointVector.h"
@@ -42,16 +46,20 @@ GameEngine::GameEngine(Game::Framework* _framework):
 	framework(_framework),
 	env(0),
 	time(0),
+	logo(0),
 	lastTime(0),
 	state(IdleState),
 	fpsCountStart(0),
 	frameCount(0),
 	rotateCamera(false),
-	testMenuItem1("test 1"),
-	testMenuItem2("test 2"),
-	testMenuItem3("foo bar baz")
+	menuItemPractice("Practice"),
+	menuItemQuit("Quit"),
+	menuItemRestart("Restart Race"),
+	menuItemMainMenu("Main Menu")
 {
 	debugMessage[0] = 0;
+	selectedCar[0] = 0;
+	selectedTrack[0] = 0;
 }
 
 GameEngine::~GameEngine()
@@ -83,15 +91,86 @@ void GameEngine::lookAtCarFromBehind(Car *car)
 	env->getView()->camera.update();
 }
 
+void GameEngine::rotateAroundCar(Car *car)
+{
+	scalar angle = FPMod(car->getAngle() + (time>>1), 2*PI);
+	scalar x = FPMul(FPCos(angle), FPInt(1)>>1)>>2;
+	scalar z = FPMul(FPSin(angle), FPInt(1)>>1)>>2;
+	scalar y = FPInt(3)>>4;
+
+	env->getView()->camera.target = car->getOrigin();
+	env->getView()->camera.origin = car->getOrigin() + Vector(x,y,z);
+	env->getView()->camera.update();
+}
+
+void GameEngine::rotateAroundGoal(Track *track)
+{
+	scalar angle = FPMod((time>>1), 2*PI);
+	scalar angle2 = FPMod((time), 2*PI);
+	scalar x = FPMul(FPCos(angle), FPInt(3)>>3);
+	scalar z = FPMul(FPSin(angle), FPInt(3)>>3);
+	scalar y = FPMul(FPSin(angle2), FPInt(3)>>2) + FPInt(3)>>3;
+
+	env->getView()->camera.target = track->getStartingPosition(0);
+	env->getView()->camera.origin = track->getStartingPosition(0) + Vector(x,y,z);
+	env->getView()->camera.update();
+}
+
 void GameEngine::renderVideo(Game::Surface* screen)
 {
-	if (state != RaceState)
-		setState(RaceState);
+	Menu *menu = env->getMenu();
+	World *world = env->getWorld();
+
+	if (state == IdleState)
+		setState(MainMenuState);
 
 	step();
-
+	handleMenuAction(env->getMenu()->getAction());
+	
 	switch(state)
 	{
+	case MainMenuState:
+		screen->clear(0);
+		if (logo)
+			screen->renderTransparentSurface(logo, screen->width/2 - logo->width/2, screen->height/3 - logo->height);
+		menu->render(world);
+	break;
+	case ChooseCarState:
+		screen->clear(0);
+
+		if (demoCar)
+		{
+			scalar speed = 0;
+			int x = 0;
+			
+			for(x=0; x<screen->width; x++)
+			{
+				speed += demoCar->getAcceleration(speed);
+				printf("%d\n", speed);
+			}
+		
+			rotateAroundCar(demoCar);
+			world->render();
+		}
+				
+		renderTitle(screen, "Choose Car");
+		menu->render(world);
+	break;
+	case ChooseTrackState:
+		screen->clear(0);
+		
+		if (demoTrack)
+		{
+			rotateAroundGoal(demoTrack);
+			demoTrack->render(world);
+		
+			Game::Surface *m = demoTrack->getMap();
+			if (m)
+				screen->renderTransparentSurface(m, screen->width/2 - m->width/2 + (menu->getSelectionRectangleError()<<2), screen->height/3 - m->height/2);
+		}
+		renderTitle(screen, "Choose Track");
+		menu->render(world);
+	break;
 	case RaceState:
 	{
 		Car *playerCar = env->carPool.getItem(0);
@@ -136,14 +215,31 @@ void GameEngine::renderAudio(Game::SampleChunk* sample)
 void GameEngine::setState(State newState)
 {
 	int i;
+	Menu *menu = env->getMenu();
+	Set<Renderable*> *renderableSet = &env->getWorld()->getRenderableSet();
+	Game::Surface *screen = env->getScreen();
 
 	if (state == newState) return;
 
+	// clear old state
 	switch(state)
 	{
 	case IdleState:
 	break;
+	case MainMenuState:
+		delete logo;
+		logo = 0;
+	break;
+	case ChooseCarState:
+		delete demoCar;
+		demoCar = 0;
+	break;
+	case ChooseTrackState:
+		delete demoTrack;
+		demoTrack = 0;
+	break;
 	case RaceState:
+/*	
 		env->track->unload();
 
 		if (env->modplayer)
@@ -153,13 +249,32 @@ void GameEngine::setState(State newState)
 			delete env->carPool.getItem(i);
 		env->carPool.clear();
 
-		env->getWorld()->getRenderableSet().remove(env->track);
-		env->getWorld()->getRenderableSet().remove(&env->meshPool);
+		renderableSet->remove(env->track);
+		renderableSet->remove(&env->meshPool);
+*/		
 	break;
 	}
 
+	// set new state
 	switch(newState)
 	{
+	case MainMenuState:
+		menu->clear();
+		menu->addItem(&menuItemPractice);
+		menu->addItem(&menuItemQuit);
+		menu->setTopLevelMenu(true);
+		logo = env->loadImage("logo.png");
+	break;
+	case ChooseCarState:
+		menu->clear();
+		fillMenuWithDirectories(menu, framework->findResource("cars"));
+		menu->setTopClipping(screen->height - 64);
+	break;
+	case ChooseTrackState:
+		menu->clear();
+		fillMenuWithDirectories(menu, framework->findResource("tracks"));
+		menu->setTopClipping(screen->height - 64);
+	break;
 	case RaceState:
 		if (!env->track->load("test"))
 		{
@@ -173,23 +288,6 @@ void GameEngine::setState(State newState)
 		env->carPool.getItem(1)->prepareForRace(1);
 		env->carPool.getItem(1)->setAiState(true);
 		
-		env->getMenu()->clear();
-		env->getMenu()->addItem(&testMenuItem1);
-		env->getMenu()->addItem(&testMenuItem1);
-		env->getMenu()->addItem(&testMenuItem1);
-		env->getMenu()->addItem(&testMenuItem1);
-		env->getMenu()->addItem(&testMenuItem2);
-		env->getMenu()->addItem(&testMenuItem2);
-		env->getMenu()->addItem(&testMenuItem2);
-		env->getMenu()->addItem(&testMenuItem2);
-		env->getMenu()->addItem(&testMenuItem3);
-		env->getMenu()->addItem(&testMenuItem3);
-		env->getMenu()->addItem(&testMenuItem3);
-		env->getMenu()->addItem(&testMenuItem3);
-		env->getMenu()->addItem(&testMenuItem1);
-		env->getMenu()->addItem(&testMenuItem2);
-		env->getMenu()->addItem(&testMenuItem3);
-		
 		if (env->modplayer)
 		{
 			env->modplayer->load(framework->findResource("dallas.mod"));
@@ -198,14 +296,93 @@ void GameEngine::setState(State newState)
 
 		env->getWorld()->getRenderableSet().add(env->track);
 		env->getWorld()->getRenderableSet().add(&env->meshPool);
-		env->getWorld()->getRenderableSet().add(env->getMenu());
+	break;
+	case QuitState:
+		framework->exit();
 	break;
 	}
 	state = newState;
 }
 
+void GameEngine::handleMenuAction(Menu::Action action)
+{
+	Menu *menu = env->getMenu();
+
+	switch(action)
+	{
+	case Menu::GoBack:
+		switch(state)
+		{
+		case ChooseCarState:
+			setState(MainMenuState);
+		break;
+		case ChooseTrackState:
+			setState(ChooseCarState);
+		break;
+		case RaceMenuState:
+			setState(RaceState);
+		break;
+		}
+	break;
+	case Menu::Select:
+		switch(state)
+		{
+		case MainMenuState:
+			if (menu->getSelection() == &menuItemPractice)
+				setState(ChooseCarState);
+			else if (menu->getSelection() == &menuItemQuit)
+				setState(QuitState);
+		break;
+		case ChooseCarState:
+			copySelectedMenuItem(menu, selectedCar, sizeof(selectedCar));
+			setState(ChooseTrackState);
+		break;
+		case ChooseTrackState:
+			copySelectedMenuItem(menu, selectedTrack, sizeof(selectedTrack));
+			setState(RaceIntroState);
+		break;
+		case RaceMenuState:
+			if (menu->getSelection() == &menuItemRestart)
+				setState(RaceIntroState);
+			else if (menu->getSelection() == &menuItemMainMenu)
+				setState(MainMenuState);
+		break;
+		}
+	break;
+	case Menu::GoUp:
+	case Menu::GoDown:
+		switch(state)
+		{
+		case ChooseCarState:
+			delete demoCar;
+			demoCar = new Car(env->getWorld(), menu->getSelection()->getText());
+		break;
+		case ChooseTrackState:
+			delete demoTrack;
+			demoTrack = new Track(this, env);
+			demoTrack->load(menu->getSelection()->getText(), 2);
+		break;
+		}
+	break;
+	}
+}
+
+void GameEngine::copySelectedMenuItem(Menu *menu, char *out, unsigned int outSize)
+{
+	MenuItem *item = menu->getSelection();
+	
+	if (item)
+	{
+		strncpy(out, item->getText(), outSize);
+	}
+	else
+		out[0] = 0;
+}
+
 void GameEngine::handleEvent(Game::Event* event)
 {
+	env->getMenu()->handleEvent(event);
+
 	switch(state)
 	{
 	case IdleState:
@@ -214,7 +391,6 @@ void GameEngine::handleEvent(Game::Event* event)
 	break;
 	case RaceState:
 		handleRaceEvent(event);
-		env->getMenu()->handleEvent(event);
 	break;
 	}
 }
@@ -293,7 +469,7 @@ void GameEngine::step()
 	if (framework->getTickCount() - fpsCountStart > framework->getTicksPerSecond() / 4)
 	{
 		Car *car = env->carPool.getItem(0);
-		sprintf(debugMessage, "%d fps, %d s, gate %d, lap %d", frameCount*4, framework->getTickCount() / framework->getTicksPerSecond(), car?car->getGateIndex():-1, car?car->getLapCount()+1:0);
+//		sprintf(debugMessage, "%d fps, %d s, gate %d, lap %d", frameCount*4, framework->getTickCount() / framework->getTicksPerSecond(), car?car->getGateIndex():-1, car?car->getLapCount()+1:0);
 		fpsCountStart = framework->getTickCount();
 		frameCount = 0;
 	}
@@ -317,6 +493,40 @@ void GameEngine::atomicStep()
 
 	for(i=env->carPool.begin(); i!=env->carPool.end(); i++)
 		(*i)->update(env->track);
+}
+
+void GameEngine::fillMenuWithDirectories(Menu *menu, const char *path)
+{
+	DIR *dir = opendir(path);
+	
+	menuItemList.deleteItems();
+	
+	if (dir)
+	{
+		struct dirent *entry;
+		struct stat entryStat;
+		
+		while(entry = readdir(dir))
+		{
+			char fullName[256];
+			
+			snprintf(fullName, sizeof(fullName), "%s/%s", path, entry->d_name);
+			stat(fullName, &entryStat);
+			
+			if (entry->d_name[0] != '.' && S_ISDIR(entryStat.st_mode))
+			{
+				MenuItem *item = new MenuItem(entry->d_name);
+				menuItemList.add(item);
+				menu->addItem(item);
+			}
+		}
+		closedir(dir);
+	}
+}
+
+void GameEngine::renderTitle(Game::Surface *s, const char *title)
+{
+	env->bigFont->renderText(s, title, 1, 1, -1);
 }
 
 // bootstrap

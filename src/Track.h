@@ -64,7 +64,7 @@ public:
 	Track(Object *parent, Environment *_env);
 	~Track();
 
-	bool		load(const char *name);
+	bool		load(const char *name, int mapScale = 6);
 	void		unload();
 	void		render(World *world);
 	

@@ -130,7 +130,7 @@ void Camera::configure()
 	clipStack[4].normal.x = 0;
 	clipStack[4].normal.y = 0;
 	clipStack[4].normal.z = FPInt(1);
-	clipStack[4].dist = FPInt(1)>>2;
+	clipStack[4].dist = FPInt(1)>>4;
 	
 	clipStackCount = 5;
 	

@@ -169,6 +169,14 @@ public:
 	{
 		count = 0;
 	}
+	
+	void deleteItems()
+	{
+		int i;
+		for(i=0; i<count; i++)
+			delete item[i];
+		clear();
+	}
 
 	void remove(T t)
 	{

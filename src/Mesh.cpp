@@ -127,10 +127,11 @@ Mesh::~Mesh()
 	int fc = faceCount;
 	Face *f = &face[0];
 	
-	while(fc--)
-	{
-		delete[] (f++)->vertex;
-	}
+	if (f)
+		while(fc--)
+		{
+			delete[] (f++)->vertex;
+		}
 
 	delete[] vertex;
 	delete[] transformedVertex;

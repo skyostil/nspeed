@@ -33,7 +33,14 @@ public:
 	enum State
 	{
 		IdleState,
-		RaceState
+		MainMenuState,
+		ChooseCarState,
+		ChooseTrackState,
+		RaceIntroState,
+		RaceCountdownState,
+		RaceMenuState,
+		RaceState,
+		QuitState
 	};
 
 	GameEngine(Game::Framework* _framework);
@@ -47,10 +54,16 @@ public:
 
 private:
 	void			setState(State newState);
+	void			handleMenuAction(Menu::Action action);
 	void			lookAtCarFromBehind(Car *car);
+	void 			rotateAroundCar(Car *car);
+	void 			rotateAroundGoal(Track *track);
 	void			handleRaceEvent(Game::Event* event);
 	void			step();
 	void			atomicStep();
+	void			fillMenuWithDirectories(Menu *menu, const char *path);
+	void			copySelectedMenuItem(Menu *menu, char *out, unsigned int outSize);
+	void			renderTitle(Game::Surface *s, const char *title);
 
 	Game::Framework	*framework;
 	State			state;
@@ -58,11 +71,26 @@ private:
 	scalar			time, lastTime, fpsCountStart;
 	unsigned int	frameCount;
 	bool			rotateCamera;
-	MenuItem		testMenuItem1;
-	MenuItem		testMenuItem2;
-	MenuItem		testMenuItem3;
 
+	// main menu
+	MenuItem		menuItemPractice;
+	MenuItem		menuItemQuit;
+	Game::Surface	*logo;
+	
+	// choose car menu
+	Car				*demoCar;
+
+	// choose track menu
+	Track			*demoTrack;
+		
+	// race menu
+	MenuItem		menuItemRestart;
+	MenuItem		menuItemMainMenu;
+	
+	Set<MenuItem*>	menuItemList;
+	
 	char			debugMessage[256];
+	char			selectedCar[64], selectedTrack[64];
 };
 
 #endif

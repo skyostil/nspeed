@@ -53,6 +53,8 @@ public:
 	{
 		NoAction,
 		Select,
+		GoUp,
+		GoDown,
 		GoBack,
 	};
 	
@@ -63,16 +65,20 @@ public:
 	MenuItem *getSelection() const;
 	
 	void setTopClipping(int _clipMinY);
+	void setTopLevelMenu(bool topLevel);
+	
+	int getSwooshAmount() const;
+	int getSelectionRectangleError() const;
 	
 	//! Returns the menu action deferred by e.g. animation
 	Action getAction();
-	
+
+	void dimScreen(Game::Surface *s, int minY, int maxY) const;
 private:
 	unsigned int getWidth(MenuItem *item) const;
 	unsigned int getHeight(MenuItem *item) const;
 	void renderItem(MenuItem *item, int x, int y, int w, int h, bool selected) const;
 	void renderSelectionRectangle(int x, int y, int w, int h) const;
-	void dimScreen(Game::Surface *s) const;
 	void animate();
 	void atomicStep();
 
@@ -82,7 +88,7 @@ private:
 	int				jiggleAmount, jiggleSpeed, jiggleDirection;
 	int				minY, maxY, offsetY;
 	int				clipMinY;
-	bool			swooshDone;
+	bool			swooshDone, topLevelMenu;
 	Action			deferredAction;
 	Environment		*env;
 	Set<MenuItem*>	items;

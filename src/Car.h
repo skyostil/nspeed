@@ -55,6 +55,10 @@ public:
 	void setOrigin(const Vector &o);
 	
 	void prepareForRace(int position);
+	
+	scalar	getAcceleration(scalar speed) const;
+	scalar	getAngleAcceleration(scalar speed) const;
+	
 private:
 	void	updateSound();
 	void	updateGate();
@@ -64,9 +68,6 @@ private:
 
 	Vector	origin, velocity, acceleration;
 	scalar	angle, angleSpeed, speed; // note: the speed is squared!
-
-	scalar	getAcceleration(scalar speed);
-	scalar	getAngleAcceleration(scalar speed);
 
 	typedef struct
 	{

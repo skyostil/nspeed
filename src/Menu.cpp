@@ -76,7 +76,8 @@ Menu::Menu(Object *parent, Environment *_env):
 	offsetY(0),
 	jiggleAmount(0),
 	jiggleDirection(1),
-	jiggleSpeed(0)
+	jiggleSpeed(0),
+	topLevelMenu(false)
 {
 }
 
@@ -88,6 +89,10 @@ void Menu::clear()
 {
 	swooshDirection = 0;
 	swooshAmount = 0;
+	selected = 0;
+	clipMinY = 0;
+	offsetY = 0;
+	topLevelMenu = false;
 	items.clear();
 }
 
@@ -103,18 +108,19 @@ void Menu::render(World *world)
 	const int verticalSpacing = 2;
 	
 	animate();
-	dimScreen(screen);
 	
 	for(i=0; i<items.getCount(); i++)
 		totalHeight += getHeight(items.getItem(i)) + verticalSpacing;
 		
-	y = screen->height / 2 - totalHeight / 2;
-	minY = y - 4;
+	y = (screen->height - clipMinY) / 2 - totalHeight / 2;
+	minY = y - 4 + offsetY;
 	maxY = minY + totalHeight + 8;
 	
 	if (minY < clipMinY) minY = clipMinY;
 	if (maxY > screen->height - 1) maxY = screen->height - 1;
 
+	dimScreen(screen, minY, maxY);
+	
 	if (selectionBarY + offsetY < clipMinY)
 		offsetY = clipMinY - selectionBarY;
 	if (selectionBarY + offsetY + selectionBarHeight > screen->height - 1)
@@ -209,7 +215,7 @@ void Menu::renderSelectionRectangle(int x, int y, int w, int h) const
 	}
 }
 
-void Menu::dimScreen(Game::Surface *s) const
+void Menu::dimScreen(Game::Surface *s, int minY, int maxY) const
 {
 	Game::Surface *screen = env->getScreen();
 	Game::Pixel16 *p = (Game::Pixel16*)screen->pixels;
@@ -218,14 +224,15 @@ void Menu::dimScreen(Game::Surface *s) const
 		(((1<<screen->format.rsize-1)-1) << screen->format.rshift) |
 		(((1<<screen->format.gsize-1)-1) << screen->format.gshift) |
 		(((1<<screen->format.bsize-1)-1) << screen->format.bshift);
+		
+	if (minY > maxY)
+		return;
 
 	p += screen->width * minY;
 		
 	while(i--)
 	{
-//		if (i^1) *p = 0;
 		*p++ = ((*p) >> 1) & mask;
-//		p++;
 	}
 }
 
@@ -253,13 +260,8 @@ void Menu::animate()
 
 void Menu::atomicStep()
 {
-	int dist = selectionBarY - selectionBarTargetY;
+	int dist = getSelectionRectangleError() >> 1;
 	const int jiggleLimit = 16;
-	
-	if (dist < 0)
-		dist = -dist;
-		
-	dist >>= 1;
 	
 	if (dist == 0)
 		dist = 1;
@@ -271,7 +273,7 @@ void Menu::atomicStep()
 		
 	swooshAmount += swooshDirection;
 	swooshDirection += swooshDirection;
-	
+		
 	jiggleAmount += jiggleSpeed;
 	jiggleSpeed += jiggleDirection;
 	if (jiggleSpeed == -jiggleLimit || jiggleSpeed == jiggleLimit)
@@ -295,16 +297,23 @@ Menu::Action Menu::handleEvent(Game::Event* event)
 				selected--;
 				if (selected < 0)
 					selected = items.getCount() - 1;
+				deferredAction = GoUp;
+				return deferredAction;
 			break;
 			case KEY_DOWN:
 				selected++;
 				if (selected > items.getCount() - 1)
 					selected = 0;
+				deferredAction = GoDown;
+				return deferredAction;
 			break;
 			case KEY_LEFT:
-				swooshDirection = 1;
-				deferredAction = GoBack;
-				return deferredAction;
+				if (!topLevelMenu)
+				{
+					swooshDirection = 1;
+					deferredAction = GoBack;
+					return deferredAction;
+				}
 			break;
 			case KEY_SELECT:
 				swooshDirection = -1;
@@ -322,7 +331,7 @@ Menu::Action Menu::handleEvent(Game::Event* event)
 
 MenuItem *Menu::getSelection() const
 {
-	if (selected < items.getCount() - 1)
+	if (selected <= items.getCount() - 1)
 		return items.getItem(selected);
 	return NULL;
 }
@@ -330,10 +339,12 @@ MenuItem *Menu::getSelection() const
 Menu::Action Menu::getAction()
 {
 	const int swooshLimit = 512;
-	if (swooshAmount < -swooshLimit || swooshAmount > swooshLimit)
+	if (!swooshDirection || (swooshAmount < -swooshLimit || swooshAmount > swooshLimit))
 	{
 		swooshDirection = 0;
-		return deferredAction;
+		Action a = deferredAction;
+		deferredAction = NoAction;
+		return a;
 	}
 	return NoAction;
 }
@@ -341,5 +352,24 @@ Menu::Action Menu::getAction()
 void Menu::setTopClipping(int _clipMinY)
 {
 	clipMinY = _clipMinY;
+}
+
+void Menu::setTopLevelMenu(bool topLevel)
+{
+	topLevelMenu = topLevel;
+}
+int Menu::getSwooshAmount() const
+{
+	return swooshAmount;
+}
+
+int Menu::getSelectionRectangleError() const
+{
+	int dist = selectionBarY - selectionBarTargetY;
+	
+	if (dist < 0)
+		dist = -dist;
+		
+	return dist;
 }
 

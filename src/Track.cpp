@@ -73,7 +73,7 @@ typedef struct
 #pragma pack(pop)
 #endif
 
-bool Track::load(const char *name)
+bool Track::load(const char *name, int mapScale)
 {
 	unsigned short w=0, h=0;
 	Game::PixelFormat pf(8);
@@ -172,7 +172,7 @@ bool Track::load(const char *name)
 
 		ground = new Land(groundTexture, skyTexture, Rasterizer::FlagPerspectiveCorrection, 2 /* textureScale */, FPInt(6));
 		
-		initializeMap();
+		initializeMap(mapScale);
 		
 		return true;
 	}

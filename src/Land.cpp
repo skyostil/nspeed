@@ -81,7 +81,7 @@ void Land::render(World *world)
 	view->camera.project(&center, &dummy0, &horizon, &dummy1, &dummy2, &dummy3);
 
 	// add magic number to ensure we don't see too far
-	horizon+=13*FP_ONE;
+	horizon+=17*FP_ONE;
 	
 	// clip the horizon
 	if (horizon < 0)
