@@ -139,6 +139,8 @@ public:
                 PointerButtonPressedEvent,
                 PointerButtonReleasedEvent,
                 ExitEvent,
+                JoystickButtonEvent,
+                JoystickAxisEvent,
         };
 
         Event(Type t=NullEvent): type(t) {}
@@ -156,6 +158,18 @@ public:
                         int x, y;
                         int button;
                 } pointer;
+                struct
+                {
+                        int which;
+                        int button;
+                        int state;
+                } joyButton;
+                struct
+                {
+                        int which;
+                        int axis;
+                        int value;
+                } joyAxis;
         };
 };
 

@@ -62,6 +62,7 @@ void SDLFramework::printUsage()
            "--xres n                Set horizontal resolution\n"
            "--yres n                Set vertical resolution\n"
            "--rate n                Set sound sampling rate\n"
+           "--joynum n              Use joystick n\n"
           );
 }
 
@@ -70,6 +71,7 @@ int SDLFramework::run(int argc, char **argv)
     int i;
     bool useSound = true, useVideo = true;
     int xres = 176, yres = 208, rate = 22050;
+    int joynum = 0;
 
     done = false;
 
@@ -104,6 +106,10 @@ int SDLFramework::run(int argc, char **argv)
         else if (!strcmp(argv[i], "--yres"))
         {
             yres = atoi(argv[++i]);
+        }
+        else if (!strcmp(argv[i], "--joynum"))
+        {
+            joynum = atoi(argv[++i]);
         }
         else
         {
@@ -183,6 +189,18 @@ int SDLFramework::run(int argc, char **argv)
             }
         }
     }
+    
+    if (SDL_Init(SDL_INIT_JOYSTICK) == 0)
+    {
+        SDL_JoystickEventState(SDL_ENABLE);
+        if (SDL_JoystickOpen(joynum))
+        {
+            printf("Using joystick '%s'\n", SDL_JoystickName(joynum));
+        } else
+        {
+            fprintf(stderr, "Unable to open joystick %d.\n", joynum);
+        }
+    }
 
     while(!done)
     {
@@ -208,6 +226,21 @@ int SDLFramework::run(int argc, char **argv)
                 engine->handleEvent(&gameEvent);
                 exit();
                 return 0;
+                break;
+            case SDL_JOYAXISMOTION:
+                gameEvent.type = Game::Event::JoystickAxisEvent;
+                gameEvent.joyAxis.which = event.jaxis.which;
+                gameEvent.joyAxis.axis = event.jaxis.axis;
+                gameEvent.joyAxis.value = event.jaxis.value;
+                engine->handleEvent(&gameEvent);
+                break;
+            case SDL_JOYBUTTONDOWN:
+            case SDL_JOYBUTTONUP:
+                gameEvent.type = Game::Event::JoystickAxisEvent;
+                gameEvent.joyButton.which = event.jbutton.which;
+                gameEvent.joyButton.button = event.jbutton.button;
+                gameEvent.joyButton.state = event.jbutton.state;
+                engine->handleEvent(&gameEvent);
                 break;
             case SDL_VIDEORESIZE:
                 SDL_FreeSurface(screen);
