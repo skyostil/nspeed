@@ -37,6 +37,7 @@ Car::Car(World *_world, const char *name):
 	steering(0),
 	steeringWheelPos(0),
 	thrustPos(0),
+	engineCycle(0),
 	world(_world)
 {
 	char meshName[128], textureName[128];
@@ -49,16 +50,16 @@ Car::Car(World *_world, const char *name):
 	world->getEnvironment()->meshPool.add(mesh);
 
 	// build an acceleration profile
-	accProfile[0].acc = 10;
-	accProfile[0].angleAcc = 80;
-	accProfile[0].threshold = 3000;
-	accProfile[1].acc = 6;
-	accProfile[1].angleAcc = 70;
-	accProfile[1].threshold = 4000;
-	accProfile[2].acc = 2;
-	accProfile[2].angleAcc = 60;
+	accProfile[0].acc = 14;
+	accProfile[0].angleAcc = 100;
+	accProfile[0].threshold = 500;
+	accProfile[1].acc = 10;
+	accProfile[1].angleAcc = 90;
+	accProfile[1].threshold = 1500;
+	accProfile[2].acc = 6;
+	accProfile[2].angleAcc = 80;
 	accProfile[2].threshold = 5000;
-	accProfile[3].acc = 1;
+	accProfile[3].acc = 2;
 	accProfile[3].angleAcc = 50;
 	accProfile[3].threshold = 0x7fffffff;
 }
@@ -153,7 +154,7 @@ void Car::update(Track *track)
 
 		{
 	//		scalar acc = speed >> 5;
-			if (speed > 1000)
+			if (speed > 1024)
 			{
 				Vector vel = velocity;
 	//			Vector dir(FPCos(angle), 0, FPSin(angle));
@@ -246,6 +247,7 @@ void Car::update(Track *track)
 		angle += 2*PI;
 		
 //	DAMPEN(speed, brake?32:4);
+
 	DAMPEN(velocity.x, brake?16:4);
 	DAMPEN(velocity.z, brake?16:4);
 	DAMPEN(angleSpeed, 1);

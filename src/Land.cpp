@@ -143,54 +143,29 @@ void Land::render(World *world)
 		scalar angle;
 		scalar skyWidth = FPDiv(FPInt(256),PI);
 		scalar skyHeight = FPInt(64);
-		
-//		if (v.z)
-		{
-			if (FPAbs(v.z) > FPAbs(v.x))
-			{
-//				angle = FPArcTan(FPDiv(v.x, v.z));
-				angle = FPArcTan2(v.z, v.x);
-//				printf("Z ");
-			}
-			else
-			{
-//				angle = PI/2 - FPArcTan(FPDiv(v.z, v.x));
-				angle = -FPArcTan2(v.x, v.z);
-//				printf("X ");
-			}
-		}
-//		else
-//			angle = 2*PI;
-			
-/*
-		v.normalize();
-		Vector reference(FP_ONE, 0, FP_ONE);
-		
-		if (v.cross(reference).z > 0)
-			angle = FPArcCos(v.dot(reference));
-		else
-			angle = FPArcCos(v.dot(-reference));
-*/
-//		angle = FPMod(angle, PI);
+		scalar vOffset = 0;
 
-//		printf("%f\n", (double)angle/(PI));
-/*		
-		int i = 36 * (((double)angle/(PI))+1.0);
-		
-		while(i--)
-			printf("*");
-		printf("\n");
-*/
+		if (FPAbs(v.z) > FPAbs(v.x))
+		{
+			angle = FPArcTan2(v.z, v.x);
+		}
+		else
+		{
+			angle = -FPArcTan2(v.x, v.z) + PI/2;
+//			angle = -FPArcTan2(v.x, v.z);
+//			vOffset = FPInt(64);
+		}
+
 		scalar x = FPMul(angle, -skyWidth) + skyWidth*4;
 
 		scalar u0 = x;
-		scalar v0 = FPInt(0);
+		scalar v0 = horizon - skyHeight + vOffset;
 		scalar u1 = x + skyWidth;
-		scalar v1 = FPInt(0);
+		scalar v1 = horizon - skyHeight + vOffset;
 		scalar u2 = x + skyWidth;
-		scalar v2 = skyHeight;
+		scalar v2 = skyHeight + vOffset;
 		scalar u3 = x;
-		scalar v3 = skyHeight;
+		scalar v3 = skyHeight + vOffset;
 
 		view->rasterizer->flags = 0;
 		view->rasterizer->setTexture(skyTexture);
@@ -231,4 +206,77 @@ void Land::render(World *world)
 	view->rasterizer->endPolygon();
 
 	view->rasterizer->flags &= ~flags;
+
+	// draw the horizon gradient
+	if (!skyTexture)
+	{
+		unsigned int x;
+		Game::Pixel16 *p = (Game::Pixel16*)view->rasterizer->screen->pixels;
+		Game::Pixel16 mask = 
+			(view->rasterizer->screen->format.rmask & (view->rasterizer->screen->format.rmask>>1)) +
+			(view->rasterizer->screen->format.gmask & (view->rasterizer->screen->format.gmask>>1)) +
+			(view->rasterizer->screen->format.bmask & (view->rasterizer->screen->format.bmask>>1));
+		int c = 16;
+
+		p+=(horizon>>FP) * view->rasterizer->screen->width;
+
+		if (c > 0)
+		{
+			int maxr = ((1<<view->rasterizer->screen->format.rsize)-1) <<view->rasterizer->screen->format.rshift;
+			int maxg = ((1<<view->rasterizer->screen->format.gsize)-1) <<view->rasterizer->screen->format.gshift;
+			int maxb = ((1<<view->rasterizer->screen->format.bsize)-1) <<view->rasterizer->screen->format.bshift;
+			while(c--)
+			{
+				int gradr = c << view->rasterizer->screen->format.rshift;
+				int gradg = c << view->rasterizer->screen->format.gshift;
+				int gradb = c << view->rasterizer->screen->format.bshift;
+
+				for(x=0; x<view->rasterizer->screen->width; x++)
+				{
+					int r = (*p) & view->rasterizer->screen->format.rmask;
+					int g = (*p) & view->rasterizer->screen->format.gmask;
+					int b = (*p) & view->rasterizer->screen->format.bmask;
+
+					r += c << view->rasterizer->screen->format.rshift;
+					g += c << view->rasterizer->screen->format.gshift;
+					b += c << view->rasterizer->screen->format.bshift;
+
+					if (r > maxr) r = maxr;
+					if (g > maxg) g = maxg;
+					if (b > maxb) b = maxb;
+
+					*p++ = (r|g|b);
+				}
+			}
+		}
+		else
+		{
+			int minr = (1<<view->rasterizer->screen->format.rshift);
+			int ming = (1<<view->rasterizer->screen->format.gshift);
+			int minb = (1<<view->rasterizer->screen->format.bshift);
+			while(c++)
+			{
+				int gradr = c << view->rasterizer->screen->format.rshift;
+				int gradg = c << view->rasterizer->screen->format.gshift;
+				int gradb = c << view->rasterizer->screen->format.bshift;
+
+				for(x=0; x<view->rasterizer->screen->width; x++)
+				{
+					int r = (*p) & view->rasterizer->screen->format.rmask;
+					int g = (*p) & view->rasterizer->screen->format.gmask;
+					int b = (*p) & view->rasterizer->screen->format.bmask;
+
+					r += gradr;
+					g += gradg;
+					b += gradb;
+
+					if (r < minr) r = minr;
+					if (g < ming) g = ming;
+					if (b < minb) b = minb;
+
+					*p++ = (r|g|b);
+				}
+			}
+		}
+	}
 }

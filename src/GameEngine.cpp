@@ -119,9 +119,14 @@ void GameEngine::renderVideo(Game::Surface* screen)
 		env->getWorld()->render();
 		
 		// render the map & OSD
-		int mapX = env->getScreen()->width - env->track->getMap()->width - 2;
-		int mapY = env->getScreen()->height - env->track->getMap()->height - 2;
-		env->getScreen()->renderTransparentSurface(env->track->getMap(), mapX, mapY);
+		Game::Surface *map = env->track->getMap();
+
+		if (map != NULL)
+		{
+			int mapX = env->getScreen()->width - env->track->getMap()->width - 2;
+			int mapY = env->getScreen()->height - env->track->getMap()->height - 2;
+			env->getScreen()->renderTransparentSurface(env->track->getMap(), mapX, mapY);
+		}
 		
 		char speedText[16];
 		int speedX = 4;
@@ -173,7 +178,12 @@ void GameEngine::setState(State newState)
 	switch(newState)
 	{
 	case RaceState:
-		env->track->load(framework->findResource("track.trk"));
+		if (!env->track->load(framework->findResource("track3.trk")))
+		{
+			setState(IdleState);
+			return;
+		}
+
 		env->carPool.add(new Car(env->getWorld(), "default"));
 
 		if (env->modplayer)

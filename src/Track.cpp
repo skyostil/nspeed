@@ -146,16 +146,16 @@ void Track::render(World *world)
 
 void Track::initializeMap(int scale)
 {
-	int x, y;
+	unsigned int x, y;
 	
 	map = new Game::Surface(&env->getScreen()->format, texture->width/scale, texture->height/scale);
-	
+
 	Game::PixelFormat &format = env->getScreen()->format;
 	Game::Pixel road = format.makePixel(255, 255, 255);
 	Game::Pixel edge = format.makePixel(16, 16, 16);
 	
-	for(y=0; y<texture->height; y+=scale)
-	for(x=0; x<texture->width; x+=scale)
+	for(y=0; y<texture->height-scale; y+=scale)
+	for(x=0; x<texture->width-scale; x+=scale)
 	{
 		int px = x/scale;
 		int py = y/scale;

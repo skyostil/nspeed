@@ -63,7 +63,7 @@ private:
 	AccelerationSegment	accProfile[4];
 	
 	bool	thrust, brake;
-	int		steering, steeringWheelPos, thrustPos;
+	int		steering, steeringWheelPos, thrustPos, engineCycle;
 	
 	Mesh			*mesh;
 	Game::Surface	*texture;
