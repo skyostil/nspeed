@@ -21,9 +21,10 @@
 #include "Mixer.h"
 #include "ModPlayer.h"
 #include "Track.h"
+#include "Car.h"
 
-#include "models/Duck.h"
-#include "models/Loop.h"
+//#include "models/Duck.h"
+//#include "models/Loop.h"
 #include "models/Alus.h"
 
 class MyEngine: public Game::Engine
@@ -35,6 +36,7 @@ public:
         Object          *object;
         Land            *ground, *sky;
 	Track		*track;
+	Car		car;
         scalar          t;
         
         Mixer           *mixer;
@@ -47,6 +49,8 @@ public:
                 view(NULL),
 		audioBuffer(0)
         {
+		car.origin.set(0,0,0);
+		car.angle = 0;
         }
 
         ~MyEngine()
@@ -153,13 +157,15 @@ public:
                 track = new Track(framework, screen);
 		track->load(framework->findResource("track.trk"));
 
-                ground = new Land(framework->loadImage(framework->findResource("ground.png"), &screen->format), 0, FPInt(4), FPInt(0), FPInt(2), FPInt(256));
-                sky = new Land(framework->loadImage(framework->findResource("sky.png"), &screen->format), 0, FPInt(6), FPInt(1), FPInt(0), FPInt(64));
+                ground = new Land(framework->loadImage(framework->findResource("ground.png"), &screen->format), 0 /*flags*/, 0 /* textureScale */, FPInt(6));
+//                sky = new Land(framework->loadImage(framework->findResource("sky.png"), &screen->format), 0, FPInt(6), FPInt(1), FPInt(0), FPInt(64));
                 
 #if 1
 //              object = new Duck(FPInt(1)>>9);
 //              object = new Loop(FPInt(1)>>3, texture2);
                 object = new Alus(FPInt(1)>>8);
+		Vector axis(FP_ONE,0,0);
+		object->transformation = Matrix::makeRotation(axis, PI>>1);
 #else
                 object = new Object(8, 6);
                 object->beginMesh();
@@ -307,20 +313,35 @@ public:
                 
         void setupView()
         {
-                scalar angle = t % (2*PI);
-                scalar x = FPMul(FPSin(angle), FPInt(3)) + FPInt(0);
-                scalar z = FPMul(FPCos(angle), FPInt(1)) + FPInt(0);
+#if 0	
+                scalar angle = (t>>2) % (2*PI);
+		int r = 2;
+                scalar x = 0*FPMul(FPSin(angle), FPInt(8)) + FPInt(0);
+                scalar z = FPMul(FPCos(angle), FPInt(8)) + FPInt(0);
+                scalar y = 0*FPMul(FPCos(angle)+(FP_ONE>>1), FPInt(2)) + FPInt(3)>>3;
+//                scalar y = FPInt(3)>>4;
                 
 //              printf("%d, %d, %d\n", t, framework->getTickCount()/10, framework->getTicksPerSecond());
 
                 view->rasterizer->setTexture(texture);
 
                 view->camera.target = Vector(FPInt(0),FPInt(0),FPInt(0));
-                view->camera.origin = Vector(x,FPInt(3)>>4,z);
+//                view->camera.origin = Vector(x,FPInt(3)>>4,z);
+                view->camera.origin = Vector(x,y,z);
 
-//              view->camera.origin = Vector(FPInt(2),FPInt(3)>>4,FPInt(0));
-//              view->camera.target = Vector(x,0,z);
-                                
+                view->camera.target = Vector(x+FPInt(0),FPInt(0),z+FPInt(1));
+                view->camera.origin = Vector(x,y,z);
+		
+//                view->camera.origin = Vector(FPInt(0),FPInt(3)>>4,FPInt(0));
+//                view->camera.target = Vector(x,0,z);
+#endif
+                scalar x = FPMul(FPCos(car.angle), FPInt(1));
+                scalar z = FPMul(FPSin(car.angle), FPInt(1));
+                scalar y = FPInt(3)>>3;
+
+                view->camera.target = car.origin;
+                view->camera.origin = Vector(car.origin.x-x,car.origin.y+y,car.origin.z-z);
+		
                 view->camera.update();
         }
 #if 1
@@ -423,6 +444,8 @@ public:
         
         void renderVideo(Game::Surface* screen)
         {
+		car.update(FP_ONE);
+	
                 screen->clear();
 #if 1
                 t = (100*framework->getTickCount() / framework->getTicksPerSecond()) << (FP-8);
@@ -431,11 +454,15 @@ public:
 
 //              renderBackground(screen);
 //              renderLand();
-                sky->render(view);
-                ground->render(view);
-                track->render(view);
+//		sky->render(view);
+		ground->render(view);
+		track->render(view);
 
 		rasterizer->flags &= ~Rasterizer::FlagPerspectiveCorrection;
+		Vector axis(FP_ONE,0,0);
+		Matrix translation = Matrix::makeTranslation(car.origin);
+		object->transformation = Matrix::makeRotation(axis, PI>>1);
+		object->transformation *= translation;
 		object->render(view);
 		rasterizer->flags |= Rasterizer::FlagPerspectiveCorrection;
 		
@@ -477,7 +504,34 @@ public:
                         case SDLK_ESCAPE:
                                 framework->exit();
                         break;
+			case SDLK_UP:
+				car.acceleration = 2;
+			break;
+			case SDLK_DOWN:
+				car.acceleration = -2;
+			break;
+			case SDLK_LEFT:
+				car.angleAcceleration = -2;
+			break;
+			case SDLK_RIGHT:
+				car.angleAcceleration = 2;
+			break;
 #endif
+                        }
+                }
+		break;
+                case Game::Event::KeyReleaseEvent:
+                {
+                        switch(event->key.code)
+                        {
+			case SDLK_UP:
+			case SDLK_DOWN:
+				car.acceleration = 0;
+			break;
+			case SDLK_LEFT:
+			case SDLK_RIGHT:
+				car.angleAcceleration = 0;
+			break;
                         }
                 }
                 break;

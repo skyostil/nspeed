@@ -71,6 +71,7 @@ public:
 	//! The polygon MUST be convex and clipped to screen-space.
 	//! x and y are in screen-space, z in camera-space.
 	void	beginPolygon();
+	//! invz must be of proper format, \see INVZ_SCALE
 	void	setInvZ(scalar invz);
 	//! u and v must be divided by z.
 	void	setTexCoord(scalar uz, scalar vz);

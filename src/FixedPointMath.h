@@ -8,7 +8,7 @@
 #define FP_FRACMASK	((1<<FP)-1)
 #define FP_MIN_DIVISOR	(1<<6)
 
-typedef int scalar;
+typedef signed int scalar;
 
 const scalar PI = 205887;
 const scalar PI_OVER_2 = (PI/2);

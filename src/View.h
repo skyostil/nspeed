@@ -56,6 +56,19 @@ typedef struct
 	
 } Vertex;
 
+class Plane
+{
+public:
+	//! \returns the shortest distance from the plane to the given point.
+	scalar	pointDistance(Vector &point);
+	
+	//! ray is in object-space
+	scalar intersectRay(Vector &origin, Vector &direction);
+
+	Vector	normal;
+	scalar	dist;
+};
+
 class Camera
 {
 public:
@@ -71,27 +84,30 @@ public:
 	//! Clips given polygon. \returns outCount.
 	int clipPolygon(Vertex *in, int inCount, Vertex *out);
 
-	//! Projects the given world-space coordinates to screen-space.
+	//! Projects the given camera-space coordinates (v) to screen-space (sx, sy, uz, vz, invz).
 	void project(Vertex *v, scalar *sx, scalar *sy, scalar *uz, scalar *vz, scalar *invz);
-	
+
+	//! Projects the given screen-space (sx, sy, z) coordinates to camera-space (v).
+	void unproject(scalar sx, scalar sy, scalar z, Vertex *v);
+		
 	//! Transforms the given world-space vector into camera-space.
 	Vector	transform(Vector &v);
 
 	//! Transforms the given world-space direction vector into camera-space.
 	Vector	transformDirection(Vector &v);
-			
+
+	//! Transforms the given camera-space vector into world-space.
+	Vector	inverseTransform(Vector &v);
+
+	//! Transforms the given camera-space direction vector into world-space.
+	Vector	inverseTransformDirection(Vector &v);
+				
 	Vector	target;
 	Vector	origin;
 
 protected:
-	class ClippingPlane
+	class ClippingPlane: public Plane
 	{
-	public:
-		//! \returns the shortest distance from the plane to the given point.
-		scalar	pointDistance(Vector &point);
-	
-		Vector	normal;
-		scalar	dist;
 	};
 
 	//! \returns outCount.
@@ -104,6 +120,7 @@ protected:
 	scalar		aspectRatio, fov;
 	scalar		perspective;
 	Matrix		transformation, rotation;
+	Matrix		invTransformation, invRotation;
 
 	Rasterizer	*rasterizer;
 };

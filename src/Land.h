@@ -29,18 +29,17 @@
 class Land
 {
 public:
+	//! Depth must be > 1
 	Land(Game::Surface *_texture,
 	     int _flags = Rasterizer::FlagTileTexture,
-	     scalar _scale = FPInt(4),
-	     scalar _depth = FPInt(0),
-	     scalar _textureScale = FPInt(8),
-	     scalar _textureWindowSize = FPInt(32));
+	     int _textureScale = 3,
+	     scalar _depth = FPInt(1));
 	
 	void render(View *view);
 	
 	Game::Surface	*texture;
-	int		flags;
-	scalar		scale, depth, textureScale, textureWindowSize;
+	int		flags, textureScale;
+	scalar		invDepth;
 };
 
 #endif

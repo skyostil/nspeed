@@ -183,7 +183,7 @@ int SDLFramework::run(int argc, const char **argv)
 			break;
 			case SDL_KEYUP:
 				gameEvent.type = Game::Event::KeyReleaseEvent;
-				gameEvent.key.code = event.key.keysym.scancode;
+				gameEvent.key.code = event.key.keysym.sym;
 				engine->handleEvent(&gameEvent);
 			break;
 			case SDL_QUIT:

@@ -99,8 +99,8 @@ void Camera::configure()
 {
 	scalar halfFOV = FPMul(FPDiv(fov,FPInt(2)), (PI/180));
 
-	scalar s = FPSin(halfFOV - VIEW_FRUSTUM_TWEAK*(1<<FP)/128);
-	scalar c = FPCos(halfFOV - VIEW_FRUSTUM_TWEAK*(1<<FP)/128);
+	scalar s = FPSin(halfFOV - VIEW_FRUSTUM_TWEAK*(1<<FP)/512);
+	scalar c = FPCos(halfFOV - VIEW_FRUSTUM_TWEAK*(1<<FP)/512);
 	
 	// left
 	clipStack[0].normal.x = c;
@@ -142,11 +142,13 @@ void Camera::update()
 	Vector dir(target - origin);
 	Vector o(-origin);
 	Matrix tr(Matrix::makeTranslation(o));
+	Matrix invtr(Matrix::makeTranslation(origin));
 	
-	rotation = Matrix::makeLookAt(dir, 0);
+	invRotation = rotation = Matrix::makeLookAt(dir, 0);
 	rotation = rotation.transpose3x3();
 	
 	transformation = tr * rotation;
+	invTransformation =  invRotation * invtr;
 }
 
 int Camera::clipPolygon(Vertex *in, int inCount, Vertex *out)
@@ -184,7 +186,7 @@ int Camera::clipPolygon(Vertex *in, int inCount, Vertex *out)
 
 void Camera::project(Vertex *v, scalar *sx, scalar *sy, scalar *uz, scalar *vz, scalar *invz)
 {
-	*invz = FPDiv(FPInt(1), v->pos.z);
+	*invz = FPDiv(FP_ONE, v->pos.z);
 	
 	if (rasterizer->flags & Rasterizer::FlagPerspectiveCorrection)
 	{
@@ -206,6 +208,23 @@ void Camera::project(Vertex *v, scalar *sx, scalar *sy, scalar *uz, scalar *vz, 
 //	printf("%d\n", *invz);
 
 //	printf("screen: %d, %d\n", (*sx)>>FP, (*sy)>>FP);
+}
+
+void Camera::unproject(scalar sx, scalar sy, scalar z, Vertex *v)
+{
+	scalar p = FPDiv(z, perspective);
+
+	v->pos.x = FPMul(sx - FPInt(rasterizer->screen->width>>1), p);
+	v->pos.y = FPMul(sy - FPInt(rasterizer->screen->height>>1), FPDiv(p,aspectRatio));
+	v->pos.z = z;
+	
+//	v->pos = invTransformation * v->pos;
+//	v->pos = invRotation * v->pos - origin;
+
+//	scalar sx2, sy2, dummy1, dummy2, dummy3;
+//	project(v, &sx2, &sy2, &dummy1, &dummy2, &dummy3);
+	
+//	printf("%4d -> %4d, %4d -> %4d\n", sx>>FP, sx2>>FP, sy>>FP, sy2>>FP);
 }
 
 int Camera::clipToPlane(ClippingPlane *plane, Vertex *in, int inCount, Vertex *out)
@@ -287,9 +306,23 @@ int Camera::clipToPlane(ClippingPlane *plane, Vertex *in, int inCount, Vertex *o
 	return outCount;
 }
 
-scalar Camera::ClippingPlane::pointDistance(Vector &point)
+scalar Plane::pointDistance(Vector &point)
 {
 	return point.dot(normal) - dist;
+}
+
+scalar Plane::intersectRay(Vector &origin, Vector &direction)
+{
+	scalar div = normal.dot(direction);
+	scalar t = -FP_ONE;
+	
+	if (div > (FP_ONE>>4) || div < -(FP_ONE>>4))
+	{
+//		t = -(dist + normal.dot(origin)) / div;
+		t = -FPDiv((dist + normal.dot(origin)), div);
+	}
+	
+	return (t>0)?t:-FP_ONE;
 }
 
 Vector Camera::transform(Vector &v)
@@ -300,4 +333,14 @@ Vector Camera::transform(Vector &v)
 Vector Camera::transformDirection(Vector &v)
 {
 	return rotation * v;
+}
+
+Vector Camera::inverseTransform(Vector &v)
+{
+	return invTransformation * v;
+}
+
+Vector Camera::inverseTransformDirection(Vector &v)
+{
+	return invRotation * v;
 }

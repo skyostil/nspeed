@@ -1,9 +1,16 @@
+#!/usr/bin/python
+
 import zlib
 import Image
+import ImageChops
 import struct
 
-i = Image.open("track.png")
+offset = (128, 128)
+i = Image.open("track2.png")
 o = open("track.trk","wb")
+
+
+i = ImageChops.offset(i, offset[0], offset[1])
 
 """
 last = None

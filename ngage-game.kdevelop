@@ -13,7 +13,7 @@
     </keywords>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description/>
+    <description></description>
     <ignoreparts/>
     <secondaryLanguages/>
   </general>
@@ -27,7 +27,7 @@
       <terminal>true</terminal>
       <directoryradio>executable</directoryradio>
       <customdirectory>/</customdirectory>
-      <programargs/>
+      <programargs>-ns</programargs>
       <autocompile>true</autocompile>
       <envvars/>
       <runarguments>
@@ -64,7 +64,7 @@
       <abortonerror>false</abortonerror>
       <numberofjobs>1</numberofjobs>
       <dontact>false</dontact>
-      <makebin/>
+      <makebin></makebin>
     </make>
   </kdevautoproject>
   <kdevfilecreate>
@@ -107,9 +107,7 @@
     <references/>
   </kdevcppsupport>
   <kdevfileview>
-    <groups>
-      <hidenonprojectfiles>false</hidenonprojectfiles>
-    </groups>
+    <groups/>
     <tree>
       <hidepatterns>*.o,*.lo,CVS</hidepatterns>
       <hidenonprojectfiles>false</hidenonprojectfiles>
@@ -117,12 +115,12 @@
   </kdevfileview>
   <kdevdebugger>
     <general>
-      <programargs/>
-      <gdbpath/>
+      <programargs></programargs>
+      <gdbpath></gdbpath>
       <dbgshell>/usr/bin/libtool</dbgshell>
-      <configGdbScript/>
-      <runShellScript/>
-      <runGdbScript/>
+      <configGdbScript></configGdbScript>
+      <runShellScript></runShellScript>
+      <runGdbScript></runGdbScript>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>false</floatingtoolbar>
