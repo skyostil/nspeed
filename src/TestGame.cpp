@@ -39,11 +39,13 @@ public:
         
         Mixer           *mixer;
         ModPlayer       *modplayer;
+	Game::SampleChunk	*audioBuffer;
 
         MyEngine(Game::Framework* _framework):
                 Game::Engine(_framework),
                 rasterizer(NULL),
-                view(NULL)
+                view(NULL),
+		audioBuffer(0)
         {
         }
 
@@ -397,11 +399,30 @@ public:
                 }
         }
 #endif
+
+	void renderAudioBuffer(Game::Surface *screen)
+	{
+		if (!audioBuffer)
+			return;
+
+		int x, y;
+		for(x=0; x<screen->width; x++)
+		{
+			y = ((Game::Sample*)audioBuffer->data)[x];
+			y >>= 8;
+			y += screen->height/2;
+
+			if (y<0) y=0;
+			if (y>screen->height-1) y=screen->height-1;
+
+			screen->setPixel(x, y, -1);
+		}
+	}
         
         void renderVideo(Game::Surface* screen)
         {
                 t = (100*framework->getTickCount() / framework->getTicksPerSecond()) << (FP-8);
-        
+
                 screen->clear();
 		setupView();
 
@@ -416,6 +437,8 @@ public:
                 object->render(view);
                 rasterizer->flags |= Rasterizer::FlagPerspectiveCorrection;
 //                renderObjectTest(view);
+
+		renderAudioBuffer(screen);
         }
 
         void configureAudio(Game::SampleChunk* sample)
@@ -428,6 +451,7 @@ public:
         void renderAudio(Game::SampleChunk* sample)
         {
                 mixer->render(sample);
+		audioBuffer = sample;
         }
 
         void handleEvent(Game::Event* event)

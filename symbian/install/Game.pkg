@@ -1,0 +1,31 @@
+;
+; Installation file for Game application
+;
+;Languages
+&EN
+;
+; UID is the app's UID
+;
+#{"Game"},(0x06406E42),1,0,0
+;
+;Supports Series 60 v 0.9
+;This line indicates that this installation is for the Series 60 platform v0.9
+;This line must appear _exactly_ as shown below in the sis file
+;If this line is missing or incorrect, the sis file will not be able
+;to be installed on Series 60 v0.9 platforms
+(0x101F6F88), 0, 0, 0, {"Series60ProductID"}
+;
+; Files to install
+;
+"\Symbian\6.1\Series60\Epoc32\release\armi\urel\Game.app"         -"!:\system\apps\Game\Game.app"
+"\Symbian\6.1\Series60\Epoc32\release\armi\urel\Game.rsc"         -"!:\system\apps\Game\Game.rsc"
+"\Symbian\6.1\Series60\Epoc32\release\armi\urel\Game_caption.rsc" -"!:\system\apps\Game\Game_caption.rsc"
+"\Symbian\6.1\Series60\Epoc32\release\armi\urel\Game.aif"         -"!:\system\apps\Game\Game.aif"
+"..\..\data\test.png"         -"!:\system\apps\Game\test.png"
+"..\..\data\test2.png"         -"!:\system\apps\Game\test2.png"
+"..\..\data\test3.png"         -"!:\system\apps\Game\test3.png"
+"..\..\data\track.trk"         -"!:\system\apps\Game\track.trk"
+"..\..\data\sky.png"         -"!:\system\apps\Game\sky.png"
+"..\..\data\ground.png"         -"!:\system\apps\Game\ground.png"
+"..\..\data\dallas.mod"         -"!:\system\apps\Game\dallas.mod"
+

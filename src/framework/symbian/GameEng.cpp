@@ -16,6 +16,7 @@ CGameEng::CGameEng(Game::Engine* aEngine, RWsSession& aClient, CWsScreenDevice& 
     iDrawing(EFalse),
     iScreenAddr(0),
     iOffScreenBmp(0),
+    iStream(0),
     iUseFrameBuffer(aUseFrameBuffer)
 {    
         iRect.SetRect(iPosition, aWindow.Size());
@@ -41,6 +42,7 @@ CGameEng::~CGameEng()
 
 	if (iStream)
 		iStream->Stop();
+
         delete iStream;
         delete iAudioBuffer;
         delete iAudioBufferPtr;
@@ -62,10 +64,10 @@ void CGameEng::ConstructL()
 
 #if defined(__WINS__)
         // for emulator, always use offscreen bitmap
-    iUseFrameBuffer = EFalse;
+        iUseFrameBuffer = EFalse;
 #endif
     
-    if(iUseFrameBuffer)        
+        if(iUseFrameBuffer)        
         {
                 // fetch screen buffer address
                 TScreenInfoV01 screenInfo;
@@ -98,7 +100,11 @@ void CGameEng::ConstructL()
 
         // initialize audio
         Game::SampleFormat sf(16,1);
-        iAudioBuffer = new Game::SampleChunk(&sf, 512, 22050);
+#if defined(__WINS__)
+        iAudioBuffer = new Game::SampleChunk(&sf, 1024, 8000);
+#else
+        iAudioBuffer = new Game::SampleChunk(&sf, 1024, 8000);
+#endif
         iAudioBufferPtr = new TPtr8((TUint8*)iAudioBuffer->data, iAudioBuffer->bytes, iAudioBuffer->bytes);
         iStream = CMdaAudioOutputStream::NewL(*this);
         iStream->Open(&iSettings);
@@ -112,7 +118,7 @@ void CGameEng::StartDrawingL()
         // error notes (e.g. active screen saver may cause problems)
         TRAPD(dsaErr, iDirectScreenAccess->StartL());
 
-    if(dsaErr == KErrNone)
+        if(dsaErr == KErrNone)
         {
                 // Get graphics context for it
                 iGc = iDirectScreenAccess->Gc();
@@ -162,7 +168,7 @@ void CGameEng::RunL()
 
         // blit the offscreen bitmap (if used) to screen
         if(!iUseFrameBuffer)
-    {        
+        {        
                 iGc->BitBlt(iPosition, iOffScreenBmp, iRect);
                 // Force screen update: this is required for WINS, but may
                 // not be for all hardware. 
@@ -171,7 +177,7 @@ void CGameEng::RunL()
                 // rather we access a screen buffer.
                 iDirectScreenAccess->ScreenDevice()->Update();
         }
-    else
+        else
         {        
                 // copy bitmap contents to frame buffer
                 Mem::Copy(iScreenAddr, iOffScreenBmp->DataAddress(), iScreen->bytes);
@@ -202,7 +208,11 @@ void CGameEng::MaoscOpenComplete(TInt aError)
         if (aError==KErrNone)
         {
                 TInt channels = (iAudioBuffer->format.channels==1)?TMdaAudioDataSettings::EChannelsMono:TMdaAudioDataSettings::EChannelsStereo;
+#if defined(__WINS__)
                 TInt rate = TMdaAudioDataSettings::ESampleRate22050Hz;
+#else
+                TInt rate = TMdaAudioDataSettings::ESampleRate8000Hz;
+#endif
 
                 switch(iAudioBuffer->rate)
                 {
@@ -228,7 +238,11 @@ void CGameEng::MaoscOpenComplete(TInt aError)
                         rate = TMdaAudioDataSettings::ESampleRate48000Hz;
                 break;
                 default:
+#if defined(__WINS__)
                         iAudioBuffer->rate = 22050;
+#else
+                        iAudioBuffer->rate = 8000;
+#endif
                 break;
                 }
 
@@ -240,8 +254,8 @@ void CGameEng::MaoscOpenComplete(TInt aError)
                         iEngine->configureAudio(iAudioBuffer);
 
                         // Note that MaxVolume() is different in the emulator and the real device!
-                        iStream->SetVolume(iStream->MaxVolume());
-                        iStream->SetPriority(EPriorityMuchMore, EMdaPriorityPreferenceNone);
+                        iStream->SetVolume(iStream->MaxVolume() / 2);
+                        iStream->SetPriority(EPriorityNormal, EMdaPriorityPreferenceNone);
                         GetAudioData();
                 }
         }
@@ -267,7 +281,15 @@ void CGameEng::MaoscPlayComplete(TInt aError)
 
 void CGameEng::GetAudioData()
 {
+#if 0	// The most annoying sound in the world
+	int l = iAudioBuffer->length;
+	short *d = (short*)iAudioBuffer->data;
+
+	while(l--)
+		*d++ = (l&1)*10000;
+#else
         iEngine->renderAudio(iAudioBuffer);
+#endif
         iStream->WriteL(*iAudioBufferPtr);
 }
 

@@ -158,6 +158,8 @@ ModPlayer::~ModPlayer()
 	unload();
 }
 
+#include <e32def.h>
+
 bool ModPlayer::load(const char *file)
 {
 #ifdef __VC32__
@@ -168,21 +170,21 @@ bool ModPlayer::load(const char *file)
 #endif
 	typedef struct
 	{
-		char		name[22] PACKED;
-		unsigned short	length PACKED;
-		char		fineTune PACKED;
-		char		volume PACKED;
-		unsigned short	loopStart PACKED;
-		unsigned short	loopLength PACKED;
-	} SampleHeader;
+		unsigned char	name[22];
+		unsigned short	length;
+		signed char	fineTune;
+		signed char	volume;
+		unsigned short	loopStart;
+		unsigned short	loopLength;
+	} PACKED SampleHeader;
 	
 	typedef struct
 	{
-		unsigned char	byte0 PACKED;
-		unsigned char	byte1 PACKED;
-		unsigned char	byte2 PACKED;
-		unsigned char	byte3 PACKED;
-	} Note;
+		unsigned char	byte0;
+		unsigned char	byte1;
+		unsigned char	byte2;
+		unsigned char	byte3;
+	} PACKED Note;
 #ifdef __VC32__
 #pragma pack(0);
 #endif
@@ -193,6 +195,10 @@ bool ModPlayer::load(const char *file)
 	
 	if (!f)
 		return false;
+
+	// check that the compiler didn't mess things up
+	if (sizeof(Note)!=4) return false;
+	if (sizeof(SampleHeader)!=30) return false;
 	
 	unload();
 	
@@ -242,7 +248,7 @@ bool ModPlayer::load(const char *file)
 	fseek(f,1,SEEK_CUR); // skip unused byte
 	
 	// read pattern order and figure out pattern count
-	order = new char[songLength];
+	order = new signed char[songLength];
 	fread(order, songLength, 1, f);
 	patternCount = 0;
 	for(i=0; i<songLength; i++)
@@ -288,11 +294,9 @@ bool ModPlayer::load(const char *file)
 		{
 			fread(sample[i]->sample->data, sizeof(char), sample[i]->sample->bytes, f); 
 			for(j=0; j<sample[i]->sample->length; j++)
-				((char*)(sample[i]->sample->data))[j] -= 0x80;
+				((signed char*)(sample[i]->sample->data))[j] -= 0x80;
 		}
 	}
-//	mixer->playSample(sample[i]->sample, sample[i]->sample->rate);
-
 	restart();
 	fclose(f);
 
@@ -353,7 +357,7 @@ void ModPlayer::tick()
 //	printf("%d/%d %2d:%02d\n", currentTick, songSpeed, order[currentOrder], currentRow);
 	
 	for(ch=0; ch<channels; ch++)
-//	ch=1;
+//	ch=3;
 	{
 		ModNote *n = &note[order[co]*(channels*64) + cr*channels + ch];
 		

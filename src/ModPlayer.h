@@ -34,7 +34,7 @@ class ModPlayer: private Ticker
 {
 public:
 	ModPlayer(Mixer *_mixer);
-	~ModPlayer();
+	virtual ~ModPlayer();
 
 	bool	load(const char *file);
 	void	unload();
@@ -55,7 +55,7 @@ protected:
 		~ModSample();
 		
 		Game::SampleChunk	*sample;
-		char			fineTune, volume;
+		signed char		fineTune, volume;
 		unsigned short		loopStart, loopLength;
 	};
 	
@@ -64,7 +64,7 @@ protected:
 	public:
 		unsigned char	sampleNumber;
 		unsigned short	amigaPeriod;
-		short		note;
+		signed short	note;
 		unsigned char	effectNumber;
 		unsigned char	effectParameter;
 	};
@@ -75,7 +75,7 @@ protected:
 		ModChannel();
 		
 		ModSample	*sample;
-		char		volume;
+		signed char	volume;
 		unsigned short	amigaPeriod;
 		short		note;
 		
@@ -85,34 +85,34 @@ protected:
 		
 //		char		vibratoWaveform;
 //		char		vibratoWaveformRetrig;	// four bits
-		char		vibratoDepth;
-		char		vibratoSpeed;
-		char		vibratoPos;
-		char		vibratoNeg;
+		signed char	vibratoDepth;
+		signed char	vibratoSpeed;
+		signed char	vibratoPos;
+		signed char	vibratoNeg;
 
 //		char		tremoloWaveform;
 //		char		tremoloWaveformRetrig;	// four bits
-		char		tremoloDepth;
-		char		tremoloSpeed;
-		char		tremoloPos;
-		char		tremoloNeg;
+		signed char	tremoloDepth;
+		signed char	tremoloSpeed;
+		signed char	tremoloPos;
+		signed char	tremoloNeg;
 		
-		char		arpeggioCounter;
+		signed char	arpeggioCounter;
 				
-		char		loopRow;
-		char		loopCounter;
+		signed char	loopRow;
+		signed char	loopCounter;
 	};
 
 	ModSample	*sample[31];
 	ModNote		*note;
 	ModChannel	*channel;
-	char		*order;
-	char		songLength, songSpeed;
-	char		patternCount;
-	char		currentOrder;
-	char		currentTick;
-	char		currentRow;
-	char		patternDelay;
+	signed char	*order;
+	signed char	songLength, songSpeed;
+	signed char	patternCount;
+	signed char	currentOrder;
+	signed char	currentTick;
+	signed char	currentRow;
+	signed char	patternDelay;
 	
 private:
 	void	tick();
