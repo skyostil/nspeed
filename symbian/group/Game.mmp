@@ -38,6 +38,7 @@ SOURCE  Land.cpp
 SOURCE  Mixer.cpp
 SOURCE  ModPlayer.cpp
 SOURCE  Track.cpp
+SOURCE  Car.cpp
 
 RESOURCE ..\symbian\data\Game.rss
 RESOURCE ..\symbian\data\Game_caption.rss

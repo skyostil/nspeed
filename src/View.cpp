@@ -267,10 +267,14 @@ int Camera::clipToPlane(ClippingPlane *plane, Vertex *in, int inCount, Vertex *o
 			}
 		
 			// XXX - custom division here!
-#if not defined(VIEW_64BIT_CLIPPING)
+#if !defined(VIEW_64BIT_CLIPPING) || defined(__WINS__)
 			scalar t = FPDiv(d1, d);
 #else
+#ifdef __VC32__
+			scalar t = (((__int64)(d1))<<16) / d;
+#else
 			scalar t = (((long long)(d1))<<16) / d;
+#endif
 #endif
 /*
 			double real_t = 65536 * (double)d1 / (double)d;

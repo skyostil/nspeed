@@ -23,6 +23,21 @@
 #include "Track.h"
 #include "Car.h"
 
+#ifdef EPOC
+#define KEY_LEFT	EStdKeyLeftArrow
+#define KEY_RIGHT	EStdKeyRightArrow
+#define KEY_UP		EStdKeyUpArrow
+#define KEY_DOWN	EStdKeyDownArrow
+#define KEY_EXIT	EStdKeyDevice0
+#else
+#define KEY_LEFT	SDLK_LEFT
+#define KEY_RIGHT	SDLK_RIGHT
+#define KEY_UP		SDLK_UP
+#define KEY_DOWN	SDLK_DOWN
+#define KEY_EXIT	SDLK_ESCAPE
+#endif
+
+
 //#include "models/Duck.h"
 //#include "models/Loop.h"
 #include "models/Alus.h"
@@ -37,7 +52,7 @@ public:
         Land            *ground, *sky;
 	Track		*track;
 	Car		car;
-        scalar          t;
+        scalar          t, lastTime;
         
         Mixer           *mixer;
         ModPlayer       *modplayer;
@@ -47,10 +62,10 @@ public:
                 Game::Engine(_framework),
                 rasterizer(NULL),
                 view(NULL),
+		t(0),
+		lastTime(0),
 		audioBuffer(0)
         {
-		car.origin.set(0,0,0);
-		car.angle = 0;
         }
 
         ~MyEngine()
@@ -60,7 +75,7 @@ public:
                 delete texture;
                 delete texture2;
                 delete track;
-                delete sky;
+//                delete sky;
                 delete ground;
                 delete view;
                 delete mixer;
@@ -444,11 +459,18 @@ public:
         
         void renderVideo(Game::Surface* screen)
         {
-		car.update(FP_ONE);
-	
                 screen->clear();
 #if 1
                 t = (100*framework->getTickCount() / framework->getTicksPerSecond()) << (FP-8);
+
+		while(lastTime < t)
+		{
+			lastTime+=128;
+			car.update(FP_ONE);
+		}
+
+
+		lastTime = t;
 
 		setupView();
 
@@ -496,27 +518,21 @@ public:
                 {
                         switch(event->key.code)
                         {
-#ifdef EPOC                     
-                        case EStdKeyDevice0:
+                        case KEY_EXIT:
                                 framework->exit();
                         break;
-#else
-                        case SDLK_ESCAPE:
-                                framework->exit();
-                        break;
-			case SDLK_UP:
+			case KEY_UP:
 				car.acceleration = 2;
 			break;
-			case SDLK_DOWN:
+			case KEY_DOWN:
 				car.acceleration = -2;
 			break;
-			case SDLK_LEFT:
+			case KEY_LEFT:
 				car.angleAcceleration = -2;
 			break;
-			case SDLK_RIGHT:
+			case KEY_RIGHT:
 				car.angleAcceleration = 2;
 			break;
-#endif
                         }
                 }
 		break;
@@ -524,12 +540,12 @@ public:
                 {
                         switch(event->key.code)
                         {
-			case SDLK_UP:
-			case SDLK_DOWN:
+			case KEY_UP:
+			case KEY_DOWN:
 				car.acceleration = 0;
 			break;
-			case SDLK_LEFT:
-			case SDLK_RIGHT:
+			case KEY_LEFT:
+			case KEY_RIGHT:
 				car.angleAcceleration = 0;
 			break;
                         }
