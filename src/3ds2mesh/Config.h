@@ -17,49 +17,9 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+#ifndef CONFIG_H
+#define CONFIG_H
 
-#ifndef ENGINE_H
-#define ENGINE_H
-
-#include "engine/Engine.h"
-#include "Config.h"
-#include "Car.h"
-#include "Object.h"
-
-class GameEngine: public Game::Engine, public Object
-{
-public:
-	enum State
-	{
-		IdleState,
-		RaceState
-	};
-
-	GameEngine(Game::Framework* _framework);
-	~GameEngine();
-
-	void configureVideo(Game::Surface* screen);
-	void configureAudio(Game::SampleChunk* sample);
-	void renderVideo(Game::Surface* screen);
-	void renderAudio(Game::SampleChunk* sample);
-	void handleEvent(Game::Event* event);
-
-private:
-	void			setState(State newState);
-	void			lookAtCarFromBehind(Car *car);
-	void			handleRaceEvent(Game::Event* event);
-	void			step();
-	void			atomicStep();
-
-	Game::Framework	*framework;
-	State			state;
-	Rasterizer      *rasterizer;
-	View            *view;
-	World			*world;
-	Environment		*env;
-	scalar			time, lastTime;
-
-	char			debugMessage[256];
-};
+#define PACKED __attribute__((packed)) 
 
 #endif

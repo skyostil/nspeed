@@ -19,7 +19,7 @@
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>src/fixedpoint3d</activetarget>
+      <activetarget>src/3ds2mesh/3ds2mesh</activetarget>
       <useconfiguration>debug</useconfiguration>
     </general>
     <run>

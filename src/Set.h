@@ -127,7 +127,7 @@ public:
 		delete[] item;
 	}
 	
-	inline const Iterator &begin() const
+	inline const Iterator begin() const
 	{
 		return Iterator(this);
 	}

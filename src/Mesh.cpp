@@ -43,13 +43,13 @@ Mesh::Mesh(Object *parent, int _vertexCount, int _faceCount, int _flags):
 #endif
 typedef struct
 {
-	int	x, y, z;
-	int u, v;
+	scalar x, y, z;
+	scalar u, v;
 } PACKED SerializedVertex;
 
 typedef struct
 {
-	short a, b, c;
+	signed short a, b, c;
 } PACKED SerializedTriangle;
 #ifdef _MSC_VER
 #pragma pack(pop)
@@ -88,6 +88,7 @@ Mesh::Mesh(Object *parent, const char *fileName, Game::Surface *texture, int _fl
 		
 		for(i=0; i<vertexCount; i++)
 		{
+			printf("u: %8d, v: %8d\n", v[i].u, v[i].v);
 			setTexCoord(v[i].u, v[i].v);
 			addVertex(Vector(v[i].x, v[i].y, v[i].z));
 		}

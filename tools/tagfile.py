@@ -72,11 +72,11 @@ class ReadTagFile:
 		return data
 		
 if __name__=="__main__":
-	f = WriteTagFile("test.tag")
-	f.writeTag(0, "abcd\0")
-	f.writeTag(1, "abcdefgh\0")
+#	f = WriteTagFile("test.tag")
+#	f.writeTag(0, "abcd\0")
+#	f.writeTag(1, "abcdefgh\0")
 
-	f = ReadTagFile("test.tag")
+	f = ReadTagFile("car.mesh")
 	while f.readTag() != -1:
-		print f.getData()
+		print len(f.getData())
 			

@@ -28,6 +28,7 @@ Car::Car(World *_world, const char *name):
 	Object(_world),
 	angle(0),
 	speed(0),
+	texture(0),
 	angleSpeed(0),
 	velocity(0,0,0),
 	origin(0,0,0),
@@ -40,7 +41,9 @@ Car::Car(World *_world, const char *name):
 {
 //	mesh = new CarModel(FPInt(1)>>8, world->getFramework()->loadImage(world->getFramework()->findResource("car.png"), &world->getScreen()->format));
 //	mesh = new Mesh(0, 0);
-	mesh = new Mesh(world, world->getEnvironment()->getFramework()->findResource("car.mesh"));
+	texture = world->getEnvironment()->loadImage("car.png");
+	printf("%p\n", texture);
+	mesh = new Mesh(world, world->getEnvironment()->getFramework()->findResource("car.mesh"), texture);
 	world->getEnvironment()->meshPool.add(mesh);
 
 	// build an acceleration profile
@@ -61,6 +64,7 @@ Car::Car(World *_world, const char *name):
 Car::~Car()
 {
 	world->getEnvironment()->meshPool.remove(mesh);
+	delete texture;
 }
 
 #define DAMPEN(x,amount) if (x) x += (x>(amount))?(-(amount)):(amount)

@@ -87,4 +87,4 @@ AC_SUBST(LIBSDL_LIBS)
 AC_SUBST(LIBSDL_CFLAGS)
 AC_SUBST(LIBSDL_RPATH)
 
-AC_OUTPUT(Makefile src/Makefile src/engine/Makefile src/framework/Makefile src/framework/sdl/Makefile src/3ds2h/Makefile)
+AC_OUTPUT(Makefile src/Makefile src/engine/Makefile src/framework/Makefile src/framework/sdl/Makefile src/3ds2mesh/Makefile)

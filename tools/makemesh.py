@@ -11,7 +11,7 @@ scale = 1.0/256.0
 #scale = 1.0/4.0
 #scale = 1.0
 
-def fixedPoint(f):
+def fixedPoint(f,scale = 1):
 	return long(f*65536.0*scale)
 
 def loadTexture(*foo):
@@ -37,11 +37,12 @@ def convert3DSToMesh(srcFile, destFile):
 					(u,v) = (0,0)
 				except IndexError:
 					(u,v) = (0,0)
+					
+				print u, v
 				
-				
-				x = fixedPoint(x)
-				y = fixedPoint(y)
-				z = fixedPoint(z)
+				x = fixedPoint(x,scale)
+				y = fixedPoint(y,scale)
+				z = fixedPoint(z,scale)
 				u = fixedPoint(u)
 				v = fixedPoint(v)
 				

@@ -66,8 +66,9 @@ private:
 	bool	thrust, brake;
 	int		steering, steeringWheelPos, thrustPos;
 	
-	Mesh	*mesh;
-	World	*world;
+	Mesh			*mesh;
+	Game::Surface	*texture;
+	World			*world;
 };
 
 #endif

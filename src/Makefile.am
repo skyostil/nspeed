@@ -8,5 +8,5 @@ INCLUDES = $(all_includes) -I../../unix
 fixedpoint3d_LDFLAGS = $(all_libraries) $(LIBSDL_RPATH)
 fixedpoint3d_CXXFLAGS = $(LIBSDL_CFLAGS)
 fixedpoint3d_LDADD = $(top_builddir)/src/framework/sdl/libsdlframework.a $(top_builddir)/src/engine/libengine.a $(LIBSDL_LIBS) -lSDL_image
-SUBDIRS = engine framework 3ds2h
+SUBDIRS = engine framework 3ds2mesh
 noinst_HEADERS = World.h FixedPointMath.h FixedPointMatrix.h FixedPointVector.h Rasterizer.h Land.h Mixer.h ModPlayer.h Car.h BitmapFont.h Config.h TagFile.h Object.h MeshSet.h Renderable.h Texture.h
