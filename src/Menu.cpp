@@ -33,7 +33,8 @@ MenuItem::MenuItem(const char *_text):
 
 MenuItem::~MenuItem()
 {
-	delete[] text;
+	if (text)
+		delete[] text;
 	text = 0;
 }
 
@@ -46,8 +47,9 @@ void MenuItem::setText(const char *_text)
 {
 	unsigned int len = strlen(_text), i;
 	
-	delete[] text;
-	text = new char[len];
+	if (text)
+		delete[] text;
+	text = new char[len+1];
 	
 	if (text)
 		for(i=0; i<len+1; i++)
@@ -180,7 +182,7 @@ void Menu::renderSelectionRectangle(int x, int y, int w, int h) const
 		(screen->format.gmask & (screen->format.gmask>>1)) +
 		(screen->format.bmask & (screen->format.bmask>>1));
 	const int scale = 1;
-	int c = 63;
+	int c = 31;
 	const int r = 1, g = 0, b = 0;
 
 	p+=y * screen->width;
@@ -195,7 +197,8 @@ void Menu::renderSelectionRectangle(int x, int y, int w, int h) const
 		int gradg = ((g*c)>>scale) << screen->format.gshift;
 		int gradb = ((b*c)>>scale) << screen->format.bshift;
 		
-		c-=(1<<(scale+1));
+//		c-=(1<<(scale+1));
+		c-=2;
 
 		for(x=0; x<screen->width; x++)
 		{

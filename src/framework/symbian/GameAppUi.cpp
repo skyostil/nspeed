@@ -41,7 +41,7 @@ void CGameAppUi::ConstructL()
         iTimerFreq = 1000000 / period;
 		iTimerBase = User::TickCount();
 
-        iEngine = Game::CreateEngine(this);
+        iEngine = Game::CreateEngine(this, 0, NULL);
 
         iAppContainer = new (ELeave) CGameContainer(iEngine);
         iAppContainer->SetMopParent(this);

@@ -49,15 +49,13 @@ Car::Car(World *_world, const char *name):
         char fileName[256];
 		FILE *f;
 
-        sfxChannel = 4;
-
-        sprintf(fileName, "cars/%s/engine.wav", name);
+        sprintf(fileName, "cars/%.64s/engine.wav", name);
         engineSound = world->getEnvironment()->getFramework()->loadSample(world->getEnvironment()->getFramework()->findResource(fileName));
 
-        sprintf(fileName, "cars/%s/texture.png", name);
+        sprintf(fileName, "cars/%.64s/texture.png", name);
         texture = world->getEnvironment()->loadImage(fileName);
 
-        sprintf(fileName, "cars/%s/mesh.mesh", name);
+        sprintf(fileName, "cars/%.64s/mesh.mesh", name);
         mesh = new Mesh(this, world->getEnvironment()->getFramework()->findResource(fileName), texture);
 
         world->getEnvironment()->meshPool.add(mesh);
@@ -77,7 +75,7 @@ Car::Car(World *_world, const char *name):
         accProfile[3].threshold = 0x7fffffff;
 		
 		// load the acceleration profile
-        sprintf(fileName, "cars/%s/acceleration.dat", name);
+        sprintf(fileName, "cars/%.64s/acceleration.dat", name);
 		f = fopen(fileName, "r");
 		if (f)
 		{
@@ -107,7 +105,7 @@ void Car::update(Track *track)
 		bool airborne = (origin.y > 0);
 		const scalar gravity = FPInt(1)>>8;
 		
-		if (energy == 0)
+		if (carNumber <= 0 && energy == 0)
 		{
 			explode();
 			return;
@@ -174,6 +172,7 @@ void Car::update(Track *track)
 
                 if (acceleration.lengthSquared() < 128)
                         acceleration += normal * 256;
+
 //              printf("%d\n", acceleration.lengthSquared());
 //              printf("%d\n", normal.dot(velocity));
                 
@@ -351,7 +350,7 @@ void Car::updateTileEffects(Track *track)
 	}
 	else if (track->tileGivesEnergy(tile))
 	{
-		energy += 50;
+		energy += 32768;
 		if (energy > FPInt(100))
 			energy = FPInt(100);
 	}
@@ -364,9 +363,19 @@ void Car::updateTileEffects(Track *track)
 	}
 	else if (track->tileIsDamaging(tile))
 	{
-		energy - 10;
+		energy -= 8192;
 		if (energy < 0)
 			energy = 0;
+        acceleration -= (velocity * (speed>>3));
+	}
+	else if (track->tileIsTurbo(tile))
+	{
+        const scalar turbo = FPInt(1)>>4;
+        acceleration += (velocity * turbo);
+	}
+	else if (track->tileIsDirt(tile))
+	{
+        acceleration -= (velocity * (speed>>1));
 	}
 }
 
@@ -392,7 +401,7 @@ void Car::updateSound()
                 freq = (FPSqrt(speed) << 2) + 8000;
 
         if (world->getEnvironment()->mixer)
-                world->getEnvironment()->mixer->getChannel(sfxChannel)->setFrequency(freq);
+                world->getEnvironment()->getEngineSoundChannel()->setFrequency(freq);
 }
 
 void Car::updateGate()
@@ -489,14 +498,15 @@ void Car::prepareForRace(int position)
         angleSpeed = 0;
         carNumber = position;
 		energy = FPInt(100);
+
+        setAiState(position > 0);
         
         setOrigin(world->getEnvironment()->track->getStartingPosition(position));
         angle = world->getEnvironment()->track->getStartingAngle();
         
         if (world->getEnvironment()->mixer && engineSound && carNumber == 0)
         {
-                world->getEnvironment()->mixer->playSample(engineSound, 1, true, sfxChannel);
-                world->getEnvironment()->mixer->getChannel(sfxChannel)->setVolume(8);
+                world->getEnvironment()->getEngineSoundChannel()->playSample(engineSound, 1, true);
         }
         
         update(world->getEnvironment()->track);

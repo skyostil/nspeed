@@ -36,11 +36,16 @@
 "..\..\data\cars\default\mesh.mesh"     -"!:\system\apps\Game\cars\default\mesh.mesh"
 "..\..\data\cars\default\texture.png"   -"!:\system\apps\Game\cars\default\texture.png"
 "..\..\data\cars\default\engine.wav"    -"!:\system\apps\Game\cars\default\engine.wav"
+"..\..\data\cars\default\acceleration.dat" -"!:\system\apps\Game\cars\default\acceleration.dat"
 
 ; tracks
 "..\..\data\tracks\tile1.png"           -"!:\system\apps\Game\tracks\tile1.png"
 "..\..\data\tracks\tile2.png"           -"!:\system\apps\Game\tracks\tile2.png"
-"..\..\data\tracks\tile3.png"           -"!:\system\apps\Game\tracks\tile3.png"
+"..\..\data\tracks\tile4.png"           -"!:\system\apps\Game\tracks\tile4.png"
+"..\..\data\tracks\tile8.png"           -"!:\system\apps\Game\tracks\tile8.png"
+"..\..\data\tracks\tile16.png"          -"!:\system\apps\Game\tracks\tile16.png"
+"..\..\data\tracks\tile24.png"          -"!:\system\apps\Game\tracks\tile24.png"
+"..\..\data\tracks\tile32.png"          -"!:\system\apps\Game\tracks\tile32.png"
 "..\..\data\tracks\test\track.trk"      -"!:\system\apps\Game\tracks\test\track.trk"
 "..\..\data\tracks\test\ground.png"     -"!:\system\apps\Game\tracks\test\ground.png"
 "..\..\data\tracks\test\sky.png"        -"!:\system\apps\Game\tracks\test\sky.png"

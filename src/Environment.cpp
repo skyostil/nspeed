@@ -70,6 +70,25 @@ void Environment::initializeSound(Game::SampleChunk *sample)
 {
         mixer = new Mixer(sample->rate, 8);
         modplayer = new ModPlayer(mixer);
+
+        muteSoundEffects(false);
+}
+
+void Environment::muteSoundEffects(bool mute)
+{
+    if (mixer)
+    {
+        if (mute)
+        {
+            getEngineSoundChannel()->setVolume(0);
+            getSfxChannel()->setVolume(0);
+        }
+        else
+        {
+            getEngineSoundChannel()->setVolume(4);
+            getSfxChannel()->setVolume(4);
+        }
+    }
 }
 
 Environment::~Environment()
@@ -93,5 +112,28 @@ Game::Surface *Environment::loadImage(const char *name)
         Game::Surface *img = framework->loadImage(framework->findResource(name), &screen->format);
         
         return img;
+}
+
+Channel *Environment::getEngineSoundChannel() const
+{
+    if (mixer)
+        return mixer->getChannel(4);
+    return NULL;
+}
+
+Channel *Environment::getSfxChannel() const
+{
+    if (mixer)
+        return mixer->getChannel(5);
+    return NULL;
+}
+
+void Environment::stopSoundEffects()
+{
+    if (mixer)
+    {
+        getEngineSoundChannel()->stop();
+        getSfxChannel()->stop();
+    }
 }
 

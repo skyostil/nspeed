@@ -30,74 +30,74 @@
 class GameEngine: public Game::Engine, public Object
 {
 public:
-	enum State
-	{
-		IdleState,
-		LoadingState,
-		MainMenuState,
-		ChooseCarState,
-		ChooseTrackState,
-		RaceIntroState,
-		RaceCountDownState,
-		RaceMenuState,
-		RaceState,
-		QuitState
-	};
+        enum State
+        {
+                IdleState,
+                LoadingState,
+                MainMenuState,
+                ChooseCarState,
+                ChooseTrackState,
+                RaceIntroState,
+                RaceCountDownState,
+                RaceMenuState,
+                RaceState,
+                QuitState
+        };
 
-	GameEngine(Game::Framework* _framework);
-	~GameEngine();
+        GameEngine(Game::Framework* _framework);
+        ~GameEngine();
 
-	void configureVideo(Game::Surface* screen);
-	void configureAudio(Game::SampleChunk* sample);
-	void renderVideo(Game::Surface* screen);
-	void renderAudio(Game::SampleChunk* sample);
-	void handleEvent(Game::Event* event);
+        void configureVideo(Game::Surface* screen);
+        void configureAudio(Game::SampleChunk* sample);
+        void renderVideo(Game::Surface* screen);
+        void renderAudio(Game::SampleChunk* sample);
+        void handleEvent(Game::Event* event);
 
 private:
-	void			setState(State newState);
-	void			handleMenuAction(Menu::Action action);
-	void			lookAtCarFromBehind(Car *car);
-	void 			rotateAroundCar(Car *car);
-	void 			rotateAroundPosition(const Vector &pos);
-	void			handleRaceEvent(Game::Event* event);
-	void			step();
-	void			atomicStep();
-	void			fillMenuWithDirectories(Menu *menu, const char *path);
-	void			copySelectedMenuItem(Menu *menu, char *out, unsigned int outSize);
-	void			renderTitle(Game::Surface *s, const char *title);
-	void			preventWarping();
-	void			renderRotatingQuad(View *view, Game::Surface *texture);
+        void                    setState(State newState);
+        void                    handleMenuAction(Menu::Action action);
+        void                    lookAtCarFromBehind(Car *car);
+        void                    rotateAroundCar(Car *car);
+        void                    rotateAroundPosition(const Vector &pos);
+        void                    handleRaceEvent(Game::Event* event);
+        void                    step();
+        void                    atomicStep();
+        void                    fillMenuWithDirectories(Menu *menu, const char *path);
+        void                    copySelectedMenuItem(Menu *menu, char *out, unsigned int outSize);
+        void                    renderTitle(Game::Surface *s, const char *title);
+        void                    preventWarping();
+        void                    renderRotatingQuad(View *view, Game::Surface *texture);
+        void                    renderEnergyBar(Game::Surface *screen, scalar energy, int y) const;
 
-	Game::Framework	*framework;
-	State			state;
-	Environment		*env;
-	scalar			time, lastTime, fpsCountStart;
-	unsigned int	frameCount;
-	bool			rotateCamera;
+        Game::Framework *framework;
+        State                   state;
+        Environment             *env;
+        scalar                  time, lastTime, fpsCountStart;
+        unsigned int			frameCount;
+        bool                    rotateCamera;
 
-	// main menu
-	MenuItem		menuItemPractice;
-	MenuItem		menuItemQuit;
-	Game::Surface	*logo;
-	
-	// choose car menu
-	Set<Car*>		allCars;
+        // main menu
+        MenuItem                menuItemPractice;
+        MenuItem                menuItemQuit;
+        Game::Surface   *logo;
+        
+        // choose car menu
+        Set<Car*>               allCars;
 
-	// choose track menu
-//	Track			*demoTrack;
-	Set<Game::Surface*>	allTracks;
-	
-	// race
-	int				raceCountDown;
-		
-	// race menu
-	MenuItem		menuItemRestart;
-	MenuItem		menuItemMainMenu;
-	
-	Set<MenuItem*>	menuItemList;
-	
-	char			debugMessage[256];
-	char			selectedCar[64], selectedTrack[64];
+        // choose track menu
+        Set<Track*>				allTracks;
+        
+        // race
+        int						raceCountDown;
+                
+        // race menu
+        MenuItem        menuItemRestart;
+        MenuItem        menuItemMainMenu;
+        
+        Set<MenuItem*>  menuItemList;
+        
+        char			debugMessage[256];
+        char			selectedCar[64], selectedTrack[64];
 };
 
 #endif

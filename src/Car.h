@@ -35,64 +35,64 @@ class Track;
 class Car: public Object
 {
 public:
-	Car(World *_world, const char *name);
-	~Car();
-	
-	void update(Track *track);
-	void setThrust(bool _thrust);
-	void setBrake(bool _brake);
-	void setSteering(int _steering);
-	void setAiState(bool enabled);
-	
-	int getSteering() { return steering; }
-	scalar getSpeed() { return FPSqrt(speed); }
-	int getGateIndex() { return gateIndex; }
-	void setGateIndex(int i) { gateIndex = i; }
-	int getLapCount() { return lapCount; }
-	
-	//! in the range [0, 100]
-	int getEnergy() { return energy>>FP; }
-	
-	scalar getAngle() { return angle; }
-	Vector getOrigin() { return origin * (FP_ONE>>CAR_COORDINATE_SCALE); }
-	void setOrigin(const Vector &o);
-	
-	void prepareForRace(int position);
-	
-	scalar	getAcceleration(scalar speed) const;
-	scalar	getAngleAcceleration(scalar speed) const;
-	
+        Car(World *_world, const char *name);
+        ~Car();
+        
+        void update(Track *track);
+        void setThrust(bool _thrust);
+        void setBrake(bool _brake);
+        void setSteering(int _steering);
+        void setAiState(bool enabled);
+        
+        int getSteering() { return steering; }
+        scalar getSpeed() { return FPSqrt(speed); }
+        int getGateIndex() { return gateIndex; }
+        void setGateIndex(int i) { gateIndex = i; }
+        int getLapCount() { return lapCount; }
+        
+        //! in the range [0, 100]
+        int getEnergy() { return energy>>FP; }
+        
+        scalar getAngle() { return angle; }
+        Vector getOrigin() { return origin * (FP_ONE>>CAR_COORDINATE_SCALE); }
+        void setOrigin(const Vector &o);
+        
+        void prepareForRace(int position);
+        
+        scalar  getAcceleration(scalar speed) const;
+        scalar  getAngleAcceleration(scalar speed) const;
+        
 private:
-	void	updateSound();
-	void	updateGate();
-	void	updateAi();
-	void	updateCollisions();
-	void	updateTileEffects(Track *track);
-	void	checkCollision(Car *other);
-	void	explode();
+        void    updateSound();
+        void    updateGate();
+        void    updateAi();
+        void    updateCollisions();
+        void    updateTileEffects(Track *track);
+        void    checkCollision(Car *other);
+        void    explode();
 
-	Vector	origin, velocity, acceleration;
-	scalar	angle, angleSpeed, speed; // note: the speed is squared!
+        Vector  origin, velocity, acceleration;
+        scalar  angle, angleSpeed, speed; // note: the speed is squared!
 
-	typedef struct
-	{
-		scalar	acc;
-		scalar	angleAcc;
-		scalar	threshold;
-	} AccelerationSegment;
-	
-	AccelerationSegment	accProfile[8];
-	
-	bool	thrust, brake;
-	int		steering, steeringWheelPos, thrustPos, engineCycle;
-	
-	Mesh			*mesh;
-	Game::Surface	*texture;
-	World			*world;
-	Game::SampleChunk	*engineSound;
-	int				sfxChannel, gateIndex, lapCount, carNumber;
-	scalar			energy;
-	bool			aiEnabled;
+        typedef struct
+        {
+                scalar  acc;
+                scalar  angleAcc;
+                scalar  threshold;
+        } AccelerationSegment;
+        
+        AccelerationSegment     accProfile[8];
+        
+        bool    thrust, brake;
+        int             steering, steeringWheelPos, thrustPos, engineCycle;
+        
+        Mesh                    *mesh;
+        Game::Surface   *texture;
+        World                   *world;
+        Game::SampleChunk       *engineSound;
+        int                             sfxChannel, gateIndex, lapCount, carNumber;
+        scalar                  energy;
+        bool                    aiEnabled;
 };
 
 #endif

@@ -62,6 +62,7 @@ void SDLFramework::printUsage()
 	       "-nv, --novideo          Disable video\n"
 	       "--xres n                Set horizontal resolution\n"
 	       "--yres n                Set vertical resolution\n"
+	       "--rate n                Set sound sampling rate\n"
 	       );
 }
 
@@ -69,12 +70,17 @@ int SDLFramework::run(int argc, char **argv)
 {
 	int i;
 	bool useSound = true, useVideo = true;
-	int xres = 176, yres = 208;
+	int xres = 176, yres = 208, rate = 22050;
 	
 	done = false;
 	
 	for(i=1; i<argc; i++)
 	{
+		if (argv[i][0] != '-')
+		{
+			continue;
+		}
+
 		if (!strcmp(argv[i], "-ns") || !strcmp(argv[i], "--nosound"))
 		{
 			useSound = false;
@@ -92,6 +98,10 @@ int SDLFramework::run(int argc, char **argv)
 		{
 			xres = atoi(argv[++i]);
 		}
+		else if (!strcmp(argv[i], "--rate"))
+		{
+			rate = atoi(argv[++i]);
+		}
 		else if (!strcmp(argv[i], "--yres"))
 		{
 			yres = atoi(argv[++i]);
@@ -104,7 +114,7 @@ int SDLFramework::run(int argc, char **argv)
 		}
 	}
 	
-	engine = CreateEngine(this);
+	engine = Game::CreateEngine(this, argc, argv);
 	
 	if (!engine)
 		return 1;
@@ -148,7 +158,7 @@ int SDLFramework::run(int argc, char **argv)
 			SDL_AudioSpec audio, audioResult;
 			
 			memset(&audio, 0, sizeof(SDL_AudioSpec));
-			audio.freq = 22050;
+			audio.freq = rate;
 			audio.format = AUDIO_S16;
 			audio.channels = 1;
 			audio.samples = 2048;

@@ -28,88 +28,90 @@
 class Channel
 {
 public:
-	Channel(int _outputFreq = 0);
+        Channel(int _outputFreq = 0);
 
-	bool	isActive();
-	
-	inline Game::Sample play()
-	{
-		Game::Sample a;
-		
-		if (!sample)
-			return 0;
-		
-		switch(sample->format.bytesPerSample)
-		{
-		case 1:
-			a = (sample->data[pos] * volume);
-		break;
-		case 2:
-			a = (((Game::Sample16*)sample->data)[pos] * volume) >> 8;
-		break;
-		}
-		
-		counter += lspeed;
-		pos += hspeed;
-		
-		if (counter>0xffff)
-		{
-			counter -= 0xffff;
-			pos++;
-		}
-		
-		if (loopLength)
-			if (pos>=loopStart+loopLength)
-			{
-				pos-=loopLength;
-			}
-		
-		if (pos >= sample->length)
-			sample = 0;
-		
-		return a;
-	}
-	
-	void	start(Game::SampleChunk *_sample, int _freq, int _loopStart = 0, int _loopLength = 0);
-	void	setFrequency(int _freq);
-	void	setOutputFrequency(int _outputFreq);
-	void	setSample(Game::SampleChunk *_sample);
-	void	setPosition(int _pos);
-	void	setVolume(int _volume);
+        bool    isActive();
+        
+        inline Game::Sample play()
+        {
+                Game::Sample a;
+                
+                if (!sample)
+                        return 0;
+                
+                switch(sample->format.bytesPerSample)
+                {
+                case 1:
+                        a = (sample->data[pos] * volume);
+                break;
+                case 2:
+                        a = (((Game::Sample16*)sample->data)[pos] * volume) >> 8;
+                break;
+                }
+                
+                counter += lspeed;
+                pos += hspeed;
+                
+                if (counter>0xffff)
+                {
+                        counter -= 0xffff;
+                        pos++;
+                }
+                
+                if (loopLength)
+                        if (pos>=loopStart+loopLength)
+                        {
+                                pos-=loopLength;
+                        }
+                
+                if (pos >= sample->length)
+                        sample = 0;
+                
+                return a;
+        }
+        
+        void    start(Game::SampleChunk *_sample, int _freq, int _loopStart = 0, int _loopLength = 0);
+        void    playSample(Game::SampleChunk *sample, int freq, bool loop = false);
+        void    setFrequency(int _freq);
+        void    setOutputFrequency(int _outputFreq);
+        void    setSample(Game::SampleChunk *_sample);
+        void    setPosition(int _pos);
+        void    setVolume(int _volume);
+        void    stop();
 
-	Game::SampleChunk	*sample;
-	int			pos, counter, freq;
-	int			lspeed, hspeed;
-	int			loopStart, loopLength;
-	int			volume;
-	int			outputFreq;
+        Game::SampleChunk       *sample;
+        int                     pos, counter, freq;
+        int                     lspeed, hspeed;
+        int                     loopStart, loopLength;
+        int                     volume;
+        int                     outputFreq;
 };
 
 class Ticker
 {
 public:
-	virtual void tick() = 0;
+        virtual void tick() = 0;
 };
 
 class Mixer
 {
 public:
-	Mixer(int _outputFreq, int _channelCount = 8);
-	~Mixer();
+        Mixer(int _outputFreq, int _channelCount = 8);
+        ~Mixer();
 
-	void	render(Game::SampleChunk *buffer);
-	void	installTicker(Ticker *t, int hz);
-	
-	//! \returns the channel the sample ended up on.
-	Channel	*playSample(Game::SampleChunk *sample, int freq, bool loop = false, int ch = -1);
-	Channel	*getChannel(int ch) { return &channel[ch]; }
+        void    render(Game::SampleChunk *buffer);
+        void    installTicker(Ticker *t, int hz);
+        
+        //! \returns the channel the sample ended up on.
+        Channel *playSample(Game::SampleChunk *sample, int freq, bool loop = false, int ch = -1);
+        Channel *getChannel(int ch) { return &channel[ch]; }
 
-	int	channelCount;
-	int	outputFreq;
+        int     channelCount;
+        int     outputFreq;
 protected:
-	Channel	*channel;
-	Ticker	*ticker;
-	int	tickerCounter, tickerInterval;
+        Channel *channel;
+        Ticker  *ticker;
+        int     tickerCounter, tickerInterval;
 };
 
 #endif

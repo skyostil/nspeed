@@ -21,162 +21,172 @@
 #include "Mixer.h"
 
 Channel::Channel(int _outputFreq):
-	sample(0),
-	pos(0),
-	lspeed(0),
-	hspeed(0),
-	loopStart(0),
-	loopLength(0),
-	outputFreq(_outputFreq),
-	volume(64)
+        sample(0),
+        pos(0),
+        lspeed(0),
+        hspeed(0),
+        loopStart(0),
+        loopLength(0),
+        outputFreq(_outputFreq),
+        volume(64)
 {
 }
 
 bool Channel::isActive()
 {
-	return sample != 0;
+        return sample != 0;
 }
 
 void Channel::start(Game::SampleChunk *_sample, int _freq, int _loopStart, int _loopLength)
 {
-	counter = 0;
-	loopStart = _loopStart;
-	loopLength = _loopLength;
-	setSample(_sample);
-	setPosition(0);
-	setFrequency(_freq);
+        counter = 0;
+        loopStart = _loopStart;
+        loopLength = _loopLength;
+        setSample(_sample);
+        setPosition(0);
+        setFrequency(_freq);
+}
+
+void Channel::stop()
+{
+        sample = 0;
+}
+
+void Channel::playSample(Game::SampleChunk *sample, int freq, bool loop)
+{
+        start(sample, freq, 0, loop?sample->length:0);
 }
 
 void Channel::setFrequency(int _freq)
 {
-	freq = _freq;
-	hspeed = _freq  / outputFreq;
-	lspeed = ((_freq % outputFreq)<<16) / outputFreq;
+        freq = _freq;
+        hspeed = _freq  / outputFreq;
+        lspeed = ((_freq % outputFreq)<<16) / outputFreq;
 }
 
 void Channel::setSample(Game::SampleChunk *_sample)
 {
-	sample = _sample;
+        sample = _sample;
 }
 
 void Channel::setPosition(int _pos)
 {
-	pos = _pos;
+        pos = _pos;
 }
 
 void Channel::setVolume(int _volume)
 {
-	volume = _volume;
+        volume = _volume;
 }
 
 void Channel::setOutputFrequency(int _outputFreq)
 {
-	outputFreq = _outputFreq;
+        outputFreq = _outputFreq;
 }
 
 
 Mixer::Mixer(int _outputFreq, int _channelCount):
-	channelCount(_channelCount),
-	outputFreq(_outputFreq),
-	ticker(0)
+        channelCount(_channelCount),
+        outputFreq(_outputFreq),
+        ticker(0)
 {
-	int ch;
+        int ch;
 
-	channel = new Channel[channelCount];
-	for(ch=0; ch<channelCount; ch++)
-		channel[ch].setOutputFrequency(outputFreq);
+        channel = new Channel[channelCount];
+        for(ch=0; ch<channelCount; ch++)
+                channel[ch].setOutputFrequency(outputFreq);
 }
 
 Mixer::~Mixer()
 {
-	delete[] channel;
+        delete[] channel;
 }
 
 void Mixer::render(Game::SampleChunk *buffer)
 {
-	int ch;
-	int count = buffer->length;
-	
-	switch(buffer->format.bytesPerSample)
-	{
-	case 2:
-	{
-		Game::Sample16 *data = (Game::Sample16*)buffer->data;
-		
-		while(count--)
-		{
-			Game::Sample32 a = 0;
-			
-			for(ch=0; ch<channelCount; ch++)
-			{
-				a+=channel[ch].play();
-			}
-			
-//			*data++ = a / (channelCount*2);
-//			*data++ = a / (1);
-			*data++ = a;
-			
-			if (ticker)
-			{
-				if (++tickerCounter == tickerInterval)
-				{
-					tickerCounter = 0;
-					ticker->tick();
-				}
-			}
-		}
-	}
-	break;
-	case 1:
-	{
-		Game::Sample8 *data = (Game::Sample8*)buffer->data;
-		
-		while(count--)
-		{
-			Game::Sample32 a = 0;
-			
-			for(ch=0; ch<channelCount; ch++)
-			{
-				if (channel[ch].isActive())
-				{
-					a+=channel[ch].play();
-				}
-			}
-			
-//			*data++ = (a/(channelCount*2))>>8;
-			*data++ = a>>8;
-			
-			if (ticker)
-			{
-				if (++tickerCounter == tickerInterval)
-				{
-					tickerCounter = 0;
-					ticker->tick();
-				}
-			}
-		}
-	}
-	break;
-	};
+        int ch;
+        int count = buffer->length;
+        
+        switch(buffer->format.bytesPerSample)
+        {
+        case 2:
+        {
+                Game::Sample16 *data = (Game::Sample16*)buffer->data;
+                
+                while(count--)
+                {
+                        Game::Sample32 a = 0;
+                        
+                        for(ch=0; ch<channelCount; ch++)
+                        {
+                                a+=channel[ch].play();
+                        }
+                        
+//                      *data++ = a / (channelCount*2);
+//                      *data++ = a / (1);
+                        *data++ = a;
+                        
+                        if (ticker)
+                        {
+                                if (++tickerCounter == tickerInterval)
+                                {
+                                        tickerCounter = 0;
+                                        ticker->tick();
+                                }
+                        }
+                }
+        }
+        break;
+        case 1:
+        {
+                Game::Sample8 *data = (Game::Sample8*)buffer->data;
+                
+                while(count--)
+                {
+                        Game::Sample32 a = 0;
+                        
+                        for(ch=0; ch<channelCount; ch++)
+                        {
+                                if (channel[ch].isActive())
+                                {
+                                        a+=channel[ch].play();
+                                }
+                        }
+                        
+//                      *data++ = (a/(channelCount*2))>>8;
+                        *data++ = a>>8;
+                        
+                        if (ticker)
+                        {
+                                if (++tickerCounter == tickerInterval)
+                                {
+                                        tickerCounter = 0;
+                                        ticker->tick();
+                                }
+                        }
+                }
+        }
+        break;
+        };
 }
 
 Channel *Mixer::playSample(Game::SampleChunk *sample, int freq, bool loop, int ch)
 {
-	if (ch == -1)
-	{
-		for(ch=0; ch<channelCount-1; ch++)
-			if (!channel[ch].isActive())
-				break;
-	}
-	channel[ch].start(sample, freq, 0, loop?sample->length:0);
-	
-	return &channel[ch];
+        if (ch == -1)
+        {
+                for(ch=0; ch<channelCount-1; ch++)
+                        if (!channel[ch].isActive())
+                                break;
+        }
+        channel[ch].start(sample, freq, 0, loop?sample->length:0);
+        
+        return &channel[ch];
 }
 
 void Mixer::installTicker(Ticker *t, int hz)
 {
-	ticker = t;
-	tickerCounter = 0;
-	tickerInterval = outputFreq / hz;
+        ticker = t;
+        tickerCounter = 0;
+        tickerInterval = outputFreq / hz;
 }
 

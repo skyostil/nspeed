@@ -25,15 +25,15 @@
 class Object
 {
 public:
-	Object(Object *_parent);
-	virtual ~Object();
-	
+        Object(Object *_parent);
+        virtual ~Object();
+        
 private:
-	virtual void	addChild(Object *c);
-	virtual void	removeChild(Object *c);
+        virtual void    addChild(Object *c);
+        virtual void    removeChild(Object *c);
 
-	Object			*parent;
-	Set<Object*>	children;
+        Object                  *parent;
+        Set<Object*>    children;
 };
 
 #endif

@@ -191,11 +191,10 @@ protected:
         Framework*      framework;
 };
 
-
 extern "C"
 {
 
-extern Engine*  CreateEngine(Framework *framework);
+extern Engine*  CreateEngine(Framework *framework, int argc = 0, char **argv = 0);
 
 };
 

@@ -25,98 +25,98 @@
 #include "engine/Engine.h"
   
 // PAL
-#define MOD_FREQ_BASE	(int)(7159090.5)
+#define MOD_FREQ_BASE   (int)(7159090.5)
 
 // NTSC
-//#define MOD_FREQ_BASE	(int)(7093789.2)
+//#define MOD_FREQ_BASE (int)(7093789.2)
 
 class ModPlayer: private Ticker
 {
 public:
-	ModPlayer(Mixer *_mixer);
-	virtual ~ModPlayer();
+        ModPlayer(Mixer *_mixer);
+        virtual ~ModPlayer();
 
-	bool	load(const char *file);
-	void	unload();
-	void	play();
-	
-	Mixer	*mixer;
+        bool    load(const char *file);
+        void    unload();
+        void    play();
+        
+        Mixer   *mixer;
 
 protected:
-	unsigned short	bigEndian16(unsigned short b);
-	int		amigaToHz(int period);
+        unsigned short  bigEndian16(unsigned short b);
+        int             amigaToHz(int period);
 
-	int	channels;
-	
-	class ModSample
-	{
-	public:
-		ModSample(int _length, char _fineTune, char _volume, unsigned short _loopStart, unsigned short _loopLength);
-		~ModSample();
-		
-		Game::SampleChunk	*sample;
-		signed char		fineTune, volume;
-		unsigned short		loopStart, loopLength;
-	};
-	
-	class ModNote
-	{
-	public:
-		unsigned char	sampleNumber;
-		unsigned short	amigaPeriod;
-		signed short	note;
-		unsigned char	effectNumber;
-		unsigned char	effectParameter;
-	};
-	
-	class ModChannel
-	{
-	public:
-		ModChannel();
-		
-		ModSample	*sample;
-		signed char	volume;
-		unsigned short	amigaPeriod;
-		short		note;
-		
-		unsigned char	portaSpeed;
-		unsigned short	portaTarget;	// amiga period
-		bool		glissando;
-		
-//		char		vibratoWaveform;
-//		char		vibratoWaveformRetrig;	// four bits
-		signed char	vibratoDepth;
-		signed char	vibratoSpeed;
-		signed char	vibratoPos;
-		signed char	vibratoNeg;
+        int     channels;
+        
+        class ModSample
+        {
+        public:
+                ModSample(int _length, char _fineTune, char _volume, unsigned short _loopStart, unsigned short _loopLength);
+                ~ModSample();
+                
+                Game::SampleChunk       *sample;
+                signed char             fineTune, volume;
+                unsigned short          loopStart, loopLength;
+        };
+        
+        class ModNote
+        {
+        public:
+                unsigned char   sampleNumber;
+                unsigned short  amigaPeriod;
+                signed short    note;
+                unsigned char   effectNumber;
+                unsigned char   effectParameter;
+        };
+        
+        class ModChannel
+        {
+        public:
+                ModChannel();
+                
+                ModSample       *sample;
+                signed char     volume;
+                unsigned short  amigaPeriod;
+                short           note;
+                
+                unsigned char   portaSpeed;
+                unsigned short  portaTarget;    // amiga period
+                bool            glissando;
+                
+//              char            vibratoWaveform;
+//              char            vibratoWaveformRetrig;  // four bits
+                signed char     vibratoDepth;
+                signed char     vibratoSpeed;
+                signed char     vibratoPos;
+                signed char     vibratoNeg;
 
-//		char		tremoloWaveform;
-//		char		tremoloWaveformRetrig;	// four bits
-		signed char	tremoloDepth;
-		signed char	tremoloSpeed;
-		signed char	tremoloPos;
-		signed char	tremoloNeg;
-		
-		signed char	arpeggioCounter;
-				
-		signed char	loopRow;
-		signed char	loopCounter;
-	};
+//              char            tremoloWaveform;
+//              char            tremoloWaveformRetrig;  // four bits
+                signed char     tremoloDepth;
+                signed char     tremoloSpeed;
+                signed char     tremoloPos;
+                signed char     tremoloNeg;
+                
+                signed char     arpeggioCounter;
+                                
+                signed char     loopRow;
+                signed char     loopCounter;
+        };
 
-	ModSample	*sample[31];
-	ModNote		*note;
-	ModChannel	*channel;
-	signed char	*order;
-	signed char	songLength, songSpeed;
-	signed char	patternCount;
-	signed char	currentOrder;
-	signed char	currentTick;
-	signed char	currentRow;
-	signed char	patternDelay;
-	
+        ModSample       *sample[31];
+        ModNote         *note;
+        ModChannel      *channel;
+        signed char     *order;
+        signed char     songLength, songSpeed;
+        signed char     patternCount;
+        signed char     currentOrder;
+        signed char     currentTick;
+        signed char     currentRow;
+        signed char     patternDelay;
+        
 private:
-	void	tick();
-	void	playNote(int ch, ModNote *n);
+        void    tick();
+        void    playNote(int ch, ModNote *n);
 };
 
 #endif

@@ -55,7 +55,7 @@ GameEngine::GameEngine(Game::Framework* _framework):
         frameCount(0),
         raceCountDown(0),
         rotateCamera(false),
-        menuItemPractice("Practice"),
+        menuItemPractice("Single Race"),
         menuItemQuit("Quit"),
         menuItemRestart("Restart Race"),
         menuItemMainMenu("Main Menu")
@@ -114,7 +114,7 @@ void GameEngine::rotateAroundPosition(const Vector &pos)
         scalar angle2 = FPMod((time), 2*PI);
         scalar x = FPMul(FPCos(angle), FPInt(3));
         scalar z = FPMul(FPSin(angle), FPInt(3));
-        scalar y = FPMul(FPSin(angle2), FPInt(3)>>2) + FPInt(3)>>3;
+        scalar y = FPMul(FPSin(angle2), FPInt(3)>>2) + FPInt(3);
 
         env->getView()->camera.target = pos;
         env->getView()->camera.origin = pos + Vector(x,y,z);
@@ -123,8 +123,11 @@ void GameEngine::rotateAroundPosition(const Vector &pos)
 
 void GameEngine::renderVideo(Game::Surface* screen)
 {
+		char text[64];
         Menu *menu = env->getMenu();
         World *world = env->getWorld();
+        BitmapFont *font = env->font;
+		int x, y, i;
 
         if (state == IdleState)
 		{
@@ -202,11 +205,45 @@ void GameEngine::renderVideo(Game::Surface* screen)
                 {
                         rotateAroundPosition(Vector(0,0,0));
                 
-                        Game::Surface *m = allTracks.getItem(menu->getSelectionIndex());
-                        if (m)
+                        Track *track = allTracks.getItem(menu->getSelectionIndex());
+                        if (track)
 						{
-//                                screen->renderTransparentSurface(m, screen->width/2 - m->width/2 + (menu->getSelectionRectangleError()<<2), screen->height/3 - m->height/2);
-								renderRotatingQuad(env->getView(), m);
+                                Game::Surface *map = track->getMap();
+//                                screen>renderTransparentSurface(m, screen->width/2 - m->width/2 + (menu->getSelectionRectangleError()<<2), screen->height/3 - m->height/2);
+
+                                if (map)
+    								renderRotatingQuad(env->getView(), map);
+
+
+                                y = 48;
+
+                                sprintf(text, "Best lap:");
+                                font->renderText(env->getScreen(), text, 4, y);
+
+                                i = track->getBestLapTime(text, sizeof(text));
+
+                                if (i != -1)
+                                {
+                                    font->renderText(env->getScreen(), text, 64, y);
+
+                                    sprintf(text, "%02d:%02d'%02d", (i/100)/60, (i/100)%60, i%100);
+                                    font->renderText(env->getScreen(), text, 108, y);
+                                }
+
+                                y += font->getHeight() + 2;
+
+                                sprintf(text, "Best race:");
+                                font->renderText(env->getScreen(), text, 4, y);
+
+                                i = track->getBestTotalTime(text, sizeof(text));
+
+                                if (i != -1)
+                                {
+                                    font->renderText(env->getScreen(), text, 64, y);
+
+                                    sprintf(text, "%02d:%02d'%02d", (i/100)/60, (i/100)%60, i%100);
+                                    font->renderText(env->getScreen(), text, 108, y);
+                                }
 						}
                 }
                 renderTitle(screen, "Choose Track");
@@ -233,20 +270,24 @@ void GameEngine::renderVideo(Game::Surface* screen)
                         env->getScreen()->renderTransparentSurface(env->track->getMap(), mapX, mapY);
                 }
                 
-                BitmapFont *font = env->font;
-                char text[16];
-                int speedX = 4;
-                int speedY = env->getScreen()->height - font->getHeight() - 2;
+                x = 4;
+                y = env->getScreen()->height - font->getHeight() - 2;
                 scalar speed = playerCar->getSpeed();
                 
                 if (speed <= (32<<2))
                         speed = 0;
                 
                 sprintf(text, "%3d km/h", speed >> 5);
-                font->renderText(env->getScreen(), text, speedX, speedY);
+                font->renderText(env->getScreen(), text, x, y);
                 
+                y -= font->getHeight() - 2;
                 sprintf(text, "lap %d:%d", playerCar->getLapCount()+1, env->track->getLapCount());
-                font->renderText(env->getScreen(), text, speedX, speedY - font->getHeight() - 2);
+                font->renderText(env->getScreen(), text, x, y);
+
+                y -= font->getHeight() - 2;
+//                sprintf(text, "%d", playerCar->getEnergy());
+//                font->renderText(env->getScreen(), text, x, y);
+                renderEnergyBar(screen, playerCar->getEnergy(), y);
                 
                 if (state == RaceMenuState)
                 {
@@ -305,6 +346,9 @@ void GameEngine::setState(State newState)
         break;
         case RaceState:
         break;
+        case RaceMenuState:
+                env->muteSoundEffects(false);
+        break;
         }
 
         // set new state
@@ -335,17 +379,10 @@ void GameEngine::setState(State newState)
 				
 				if (track)
 				{
-					Game::Surface *map;
-					
-					track->load(menu->getItem(i)->getText(), 1);
-					if (track->getMap())
-					{
-						map = new Game::Surface(&screen->format, track->getMap());
-						allTracks.add(map);
-					} else
-						allTracks.add(0);
-				}
-				delete track;
+					track->load(menu->getItem(i)->getText(), 1, true);
+					allTracks.add(track);
+                } else
+                    allTracks.add(0);
 			}
 						
 			setState(MainMenuState);
@@ -357,6 +394,7 @@ void GameEngine::setState(State newState)
                 menu->setTopLevelMenu(true);
                 
                 env->track->unload();
+                env->stopSoundEffects();
                 
                 if (env->modplayer)
 				{
@@ -392,29 +430,31 @@ void GameEngine::setState(State newState)
                 }
                 env->carPool.add(new Car(env->getWorld(), selectedCar));
                 env->carPool.add(new Car(env->getWorld(), selectedCar));
-                env->carPool.getItem(1)->setAiState(true);
-                
+//                env->carPool.getItem(1)->setAiState(true);
+/*
                 if (env->modplayer)
                 {
-                        char song[256];
-                        sprintf(song, "tracks/%32s/music.mod", selectedTrack);
+                        char song[128];
+                        sprintf(song, "tracks/%.32s/music.mod", selectedTrack);
                         if (!env->modplayer->load(framework->findResource(song)))
                         {
                                 env->modplayer->load(framework->findResource("music.mod"));
                         }
                         env->modplayer->play();
                 }
-                
+*/
+                env->muteSoundEffects(false);
+
                 renderableSet->add(env->track);
                 renderableSet->add(&env->meshPool);
-        
-				preventWarping();
+
                 setState(RaceCountDownState);
         break;
         case RaceCountDownState:
                 for(i=0; i<env->carPool.getCount(); i++)
                         env->carPool.getItem(i)->prepareForRace(i);
                 raceCountDown = RACECOUNTDOWN;
+				preventWarping();
         break;
         case RaceState:
 /*      
@@ -444,6 +484,7 @@ void GameEngine::setState(State newState)
                 framework->exit();
         break;
         case RaceMenuState:
+                env->muteSoundEffects(true);
                 menu->clear();
                 menu->addItem(&menuItemRestart);
                 menu->addItem(&menuItemMainMenu);
@@ -611,8 +652,10 @@ void GameEngine::step()
         
         if (framework->getTickCount() - fpsCountStart > framework->getTicksPerSecond() / 4)
         {
+/*
                 Car *car = env->carPool.getItem(0);
                 sprintf(debugMessage, "%d fps, %d s, g %d, s %d", frameCount*4, framework->getTickCount() / framework->getTicksPerSecond(), car?car->getGateIndex():-1, state);
+*/
                 fpsCountStart = framework->getTickCount();
                 frameCount = 0;
         }
@@ -727,11 +770,75 @@ void GameEngine::renderRotatingQuad(View *view, Game::Surface *texture)
 	view->endPolygon();
 }
 
+void GameEngine::renderEnergyBar(Game::Surface *screen, scalar energy, int y) const
+{
+	Game::Pixel16 mask = 
+		(screen->format.rmask & (screen->format.rmask>>1)) +
+		(screen->format.gmask & (screen->format.gmask>>1)) +
+		(screen->format.bmask & (screen->format.bmask>>1));
+	Game::Pixel16 border = screen->format.makePixel(0,0,0);
+
+	const int scale = 1;
+	int c = 31;
+	const int r = 1, g = 0, b = 0;
+    int x, h = 8;
+    int w = (energy>>FP)>>1;
+    int px, py;
+
+	int maxr = ((1<<screen->format.rsize)-1) << screen->format.rshift;
+	int maxg = ((1<<screen->format.gsize)-1) << screen->format.gshift;
+	int maxb = ((1<<screen->format.bsize)-1) << screen->format.bshift;
+	
+	while(h--)
+	{
+		int gradr = ((r*c)>>scale) << screen->format.rshift;
+		int gradg = ((g*c)>>scale) << screen->format.gshift;
+		int gradb = ((b*c)>>scale) << screen->format.bshift;
+		
+		c-=2;
+
+        Game::Pixel16 *p = (Game::Pixel16*)screen->pixels;
+
+       	p+=(y-h-1) * screen->width;
+
+		for(x=4; x<w+4; x++)
+		{
+			int r = (*p) & screen->format.rmask;
+			int g = (*p) & screen->format.gmask;
+			int b = (*p) & screen->format.bmask;
+
+			r += gradr;
+			g += gradg;
+			b += gradb;
+
+			if (r > maxr) r = maxr;
+			if (g > maxg) g = maxg;
+			if (b > maxb) b = maxb;
+
+			*p++ = (r|g|b);
+		}
+	}
+    h = 8;
+
+    for(px = 3; px < (100>>1)+5; px++)
+    {
+        screen->setPixel(px, y-1, border);
+        screen->setPixel(px, y-h-1, border);
+    }
+
+    for(py = y-h-2; py < y; py++)
+    {
+        screen->setPixel(3, py, border);
+        screen->setPixel(3+(100>>1)+1, py, border);
+    }
+}
+
+
 // bootstrap
 extern "C"
 {
 
-Game::Engine* CreateEngine(Game::Framework* framework)
+Game::Engine* CreateEngine(Game::Framework* framework, int argc, char **argv)
 {
 	return new GameEngine(framework);
 }

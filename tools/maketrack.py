@@ -14,8 +14,8 @@ gates = [
         (0,0), (0,0),
         (0,0), (0,0),
 ]
-gateStart = 65
-gateEnd = 72
+gateStart = 64
+gateEnd = 71
 
 aiPath = [(0,0)] * 32
 aiStart = 96

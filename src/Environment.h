@@ -59,6 +59,7 @@ class Car;
 class View;
 class Rasterizer;
 class Menu;
+class Channel;
 
 //! This class contains all the global game related data
 class Environment: public Object
@@ -79,6 +80,11 @@ public:
         Menu                    *getMenu() { return menu; }
         
         void                    initializeSound(Game::SampleChunk *sample);
+        void                    stopSoundEffects();
+        void                    muteSoundEffects(bool mute);
+
+        Channel                 *getEngineSoundChannel() const;
+        Channel                 *getSfxChannel() const;
         
         Track                           *track;
         BitmapFont                      *font, *bigFont;
