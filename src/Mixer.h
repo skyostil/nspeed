@@ -28,7 +28,7 @@
 class Channel
 {
 public:
-	Channel(int _outputFreq);
+	Channel(int _outputFreq = 0);
 
 	bool	isActive();
 	
@@ -72,6 +72,7 @@ public:
 	
 	void	start(Game::SampleChunk *_sample, int _freq, int _loopStart = 0, int _loopLength = 0);
 	void	setFrequency(int _freq);
+	void	setOutputFrequency(int _outputFreq);
 	void	setSample(Game::SampleChunk *_sample);
 	void	setPosition(int _pos);
 	void	setVolume(int _volume);

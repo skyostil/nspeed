@@ -18,23 +18,29 @@ public:
 
     ~CGameAppUi();
     
-	// Framework stuff
-	void exit();
-	unsigned int getTickCount();
-	unsigned int getTicksPerSecond();
+        // Framework stuff
+        void exit();
+        unsigned int getTickCount();
+        unsigned int getTicksPerSecond();
+
+        Game::Surface *loadImage(const char *name, Game::PixelFormat *pf = 0);
+	const char *findResource(const char *name);
 
 private:
-	void DynInitMenuPaneL(TInt aResourceId,CEikMenuPane* aMenuPane);
+        void DynInitMenuPaneL(TInt aResourceId,CEikMenuPane* aMenuPane);
+	TDesC& GetFilenameDes(const char *name);
 
 private:
-	void HandleCommandL(TInt aCommand);
-	virtual TKeyResponse HandleKeyEventL(
-		const TKeyEvent& aKeyEvent,TEventCode aType);
+        void HandleCommandL(TInt aCommand);
+        virtual TKeyResponse HandleKeyEventL(
+        const TKeyEvent& aKeyEvent,TEventCode aType);
 
 private: //Data
     CGameContainer* iAppContainer; 
-	Game::Engine*	iEngine;
-	TInt			iTimerFreq;
+    Game::Engine*   iEngine;
+    TInt            iTimerFreq;
+    TBuf<512>       iResourcePathBuf;
+    char            iResourcePath[256];
 };
 
 #endif

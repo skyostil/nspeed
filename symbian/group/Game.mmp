@@ -23,6 +23,7 @@ SOURCE  framework\symbian\GameAppUi.cpp
 SOURCE  framework\symbian\GameDocument.cpp
 SOURCE  framework\symbian\GameContainer.cpp
 SOURCE  framework\symbian\GameEng.cpp
+SOURCE  framework\symbian\GameImageLoader.cpp
 SOURCE  engine\Engine.cpp
 SOURCE  engine\Audio.cpp
 SOURCE  engine\Video.cpp
@@ -33,6 +34,10 @@ SOURCE  FixedPointVector.cpp
 SOURCE  View.cpp
 SOURCE  Rasterizer.cpp
 SOURCE  World.cpp
+SOURCE  Land.cpp
+SOURCE  Mixer.cpp
+SOURCE  ModPlayer.cpp
+SOURCE  Track.cpp
 
 RESOURCE ..\symbian\data\Game.rss
 RESOURCE ..\symbian\data\Game_caption.rss
@@ -46,6 +51,8 @@ LIBRARY euser.lib apparc.lib cone.lib eikcore.lib
 LIBRARY eikcoctl.lib avkon.lib estlib.lib ws32.LIB hal.lib gdi.lib
 LIBRARY bitgdi.lib fbscli.lib
 LIBRARY mediaclientaudiostream.lib
+LIBRARY mediaclientimage.lib
+LIBRARY ezlib.lib
 
 START WINS
 // ?wins_specific_information

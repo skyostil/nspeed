@@ -69,12 +69,26 @@ void Channel::setVolume(int _volume)
 	volume = _volume;
 }
 
+void Channel::setOutputFrequency(int _outputFreq)
+{
+	outputFreq = _outputFreq;
+}
+
+
 Mixer::Mixer(int _outputFreq, int _channelCount):
 	channelCount(_channelCount),
 	outputFreq(_outputFreq),
 	ticker(0)
 {
+#ifdef __VC32__
+	int ch;
+
+	channel = new Channel[channelCount];
+	for(ch=0; ch<channelCount; ch++)
+		channel[ch].setOutputFrequency(outputFreq);
+#else
 	channel = new Channel[channelCount](outputFreq);
+#endif
 }
 
 Mixer::~Mixer()

@@ -4,7 +4,7 @@
 *  Part of  : Game
 *  Created  : 31.1.2004 by Sami Kyöstilä
 *  Description:
-*	 This file provides the information required for building the
+*        This file provides the information required for building the
 *    whole of a Game.
 *  Version  :
 *  Copyright: Sami Kyöstilä
@@ -61,5 +61,5 @@ PRJ_TESTMMPFILES
 // or "support" is specified.
 // Example:
 /*
-\agnmodel\agtest\T_ATTEND.MMP	manual
+\agnmodel\agtest\T_ATTEND.MMP   manual
 */

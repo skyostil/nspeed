@@ -158,10 +158,14 @@ ModPlayer::~ModPlayer()
 	unload();
 }
 
-#define PACKED __attribute__((packed)) 
-
 bool ModPlayer::load(const char *file)
 {
+#ifdef __VC32__
+#pragma pack(1);
+#define PACKED
+#else
+#define PACKED __attribute__((packed)) 
+#endif
 	typedef struct
 	{
 		char		name[22] PACKED;
@@ -179,7 +183,10 @@ bool ModPlayer::load(const char *file)
 		unsigned char	byte2 PACKED;
 		unsigned char	byte3 PACKED;
 	} Note;
-		
+#ifdef __VC32__
+#pragma pack(0);
+#endif
+
 	FILE *f = fopen(file,"rb");
 	char modType[4];
 	int i, j, k;
@@ -288,6 +295,8 @@ bool ModPlayer::load(const char *file)
 
 	restart();
 	fclose(f);
+
+	return true;
 }
 
 unsigned short ModPlayer::bigEndian16(unsigned short x)

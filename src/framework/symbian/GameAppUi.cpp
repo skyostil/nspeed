@@ -14,11 +14,14 @@
 #include "GameAppUi.h"
 #include "GameContainer.h" 
 #include "GameEng.h"
+#include "GameImageLoader.h"
 #include <Game.rsg>
 #include "game.hrh"
 
 #include <avkon.hrh>
+#include <reent.h>
 #include <hal.h>
+#include <stdio.h>
 
 // ================= MEMBER FUNCTIONS =======================
 //
@@ -29,20 +32,20 @@
 //
 void CGameAppUi::ConstructL()
 {
-    BaseConstructL();
+        BaseConstructL();
 
-	TInt period;
-	User::LeaveIfError(HAL::Get(HALData::ESystemTickPeriod, period));
-	iTimerFreq = 1000000 / period;
+        TInt period;
+        User::LeaveIfError(HAL::Get(HALData::ESystemTickPeriod, period));
+        iTimerFreq = 1000000 / period;
 
-	iEngine = Game::CreateEngine(this);
+        iEngine = Game::CreateEngine(this);
 
-	iAppContainer = new (ELeave) CGameContainer(iEngine);
-	iAppContainer->SetMopParent(this);
-	iAppContainer->ConstructL();
-	AddToStackL(iAppContainer);
+        iAppContainer = new (ELeave) CGameContainer(iEngine);
+        iAppContainer->SetMopParent(this);
+        iAppContainer->ConstructL();
+        AddToStackL(iAppContainer);
 
-	iAppContainer->StartDrawingL();
+        iAppContainer->StartDrawingL();
 }
 
 // ----------------------------------------------------
@@ -53,13 +56,15 @@ void CGameAppUi::ConstructL()
 //
 CGameAppUi::~CGameAppUi()
 {
-	if (iAppContainer)
-	{
-		RemoveFromStack( iAppContainer );
-		delete iAppContainer;
-	}
+        if (iAppContainer)
+        {
+                RemoveFromStack( iAppContainer );
+                delete iAppContainer;
+        }
 
-	delete iEngine;
+        delete iEngine;
+
+	CloseSTDLIB();
  }
 
 // ------------------------------------------------------------------------------
@@ -78,66 +83,108 @@ void CGameAppUi::DynInitMenuPaneL(
 TKeyResponse CGameAppUi::HandleKeyEventL(
     const TKeyEvent& aKeyEvent,TEventCode aType)
 {
-	Game::Event event;
+        Game::Event event;
 
-    if(!iAppContainer->iGameEng->Drawing())
-	{
-		if (aType == EEventKeyDown)
-		{
-			iAppContainer->StartDrawingL();
-			return EKeyWasConsumed;
-		}
+	if (!iAppContainer->iGameEng)
 		return EKeyWasNotConsumed;
-	}
 
-	switch(aType)
-	{
-	case EEventKeyDown:
-		event.type = Game::Event::KeyPressEvent;
-	break;
-	case EEventKeyUp:
-		event.type = Game::Event::KeyReleaseEvent;
-	break;
-	case EEventKey:
-		event.type = Game::Event::KeyEvent;
-	break;
-	}
+        if(!iAppContainer->iGameEng->Drawing())
+        {
+                if (aType == EEventKeyDown)
+                {
+                        iAppContainer->StartDrawingL();
+                        return EKeyWasConsumed;
+                }
+                return EKeyWasNotConsumed;
+        }
 
-	event.key.code = aKeyEvent.iScanCode;
-	iEngine->handleEvent(&event);
+        switch(aType)
+        {
+        case EEventKeyDown:
+                event.type = Game::Event::KeyPressEvent;
+        break;
+        case EEventKeyUp:
+                event.type = Game::Event::KeyReleaseEvent;
+        break;
+        case EEventKey:
+                event.type = Game::Event::KeyEvent;
+        break;
+        }
+
+        event.key.code = aKeyEvent.iScanCode;
+        iEngine->handleEvent(&event);
 
     return EKeyWasConsumed;
 }
 
 void CGameAppUi::HandleCommandL(TInt aCommand)
 {
-	switch ( aCommand )
-	{
-	case EEikCmdExit:
-	{
-		Game::Event event(Game::Event::ExitEvent);
-		iEngine->handleEvent(&event);
-		Exit();
-		break;
-	}
+        switch ( aCommand )
+        {
+        case EEikCmdExit:
+        {
+                Game::Event event(Game::Event::ExitEvent);
+                iEngine->handleEvent(&event);
+                Exit();
+                break;
+        }
     default:
-	break;      
+        break;      
     }
 }
 
 void CGameAppUi::exit()
 {
-	Exit();
+        Exit();
 }
 
 unsigned int CGameAppUi::getTickCount()
 {
-	return User::TickCount();
+        return User::TickCount();
 }
 
 unsigned int CGameAppUi::getTicksPerSecond()
 {
-	return iTimerFreq;
+        return iTimerFreq;
 }
 
+Game::Surface *CGameAppUi::loadImage(const char *name, Game::PixelFormat *pf)
+{
+	return CGameImageLoader::LoadImageL(GetFilenameDes(name),pf);
+}
+
+TDesC& CGameAppUi::GetFilenameDes(const char *name)
+{
+	// hack: convert filename to unicode
+	TText16 unicode[512];
+	TText16 *t = unicode;
+	const TText8 *s = (TText8*)name;
+
+	while (*s)
+		*t++ = (TText16)*s++;
+	*t = 0;
+
+	iResourcePathBuf = (TText*)unicode;
+	return iResourcePathBuf;
+}
+
+const char *CGameAppUi::findResource(const char *name)
+{
+	FILE *f = NULL;
+	int i = 0;
+	const char drive[] = {'c', 'd', 'e', 'z'};
+
+	for(i=0; i<sizeof(drive); i++)
+	{
+		sprintf(iResourcePath, "%c:\\system\\apps\\game\\%s", drive[i], name);
+		f = fopen(iResourcePath,"r");
+
+		if (f)
+		{
+			fclose(f);
+			return iResourcePath;
+		}
+	}
+	return "";
+}
 
