@@ -154,7 +154,7 @@ protected:
 	public:
 		unsigned char	sampleNumber;
 		unsigned short	amigaPeriod;
-		char		note;
+		short		note;
 		unsigned char	effectNumber;
 		unsigned char	effectParameter;
 	};
@@ -167,9 +167,10 @@ protected:
 		ModSample	*sample;
 		char		volume;
 		unsigned short	amigaPeriod;
+		short		note;
 		
-		char		portaSpeed;
-		char		portaTarget;
+		unsigned char	portaSpeed;
+		unsigned short	portaTarget;	// amiga period
 		bool		glissando;
 		
 		char		vibratoWaveform;
@@ -198,7 +199,6 @@ protected:
 private:
 	void	tick();
 	void	playNote(int ch, ModNote *n);
-	void	updateAmigaPeriod(int ch);
 };
 
 #endif

@@ -274,7 +274,7 @@ static const unsigned short periodTable[][36] =
 ModPlayer::ModPlayer(Mixer *_mixer):
 	mixer(_mixer),
 	channels(0),
-	songSpeed(6),
+	songSpeed(7),
 	channel(0),
 	note(0)
 {
@@ -464,7 +464,7 @@ void ModPlayer::tick()
 	int cr = currentRow;
 	int co = currentOrder;
 
-	printf("%d/%d %2d:%02d: ", currentTick, songSpeed, order[currentOrder], currentRow);
+//	printf("%d/%d %2d:%02d: ", currentTick, songSpeed, order[currentOrder], currentRow);
 	
 	for(ch=0; ch<channels; ch++)
 //	ch=3;
@@ -472,33 +472,77 @@ void ModPlayer::tick()
 		ModNote *n = &note[order[co]*(channels*64) + cr*channels + ch];
 		
 		if (currentTick == 0)
+		{
 			if (!patternDelay)
+			{
 				playNote(ch, n);
+			}
+		}
 		else
 		{
-			char x = n->effectNumber >> 4;
-			char y = n->effectNumber & 4;
+			unsigned char x = n->effectParameter >> 4;
+			unsigned char y = n->effectParameter & 4;
+			
+			if (x || y)
+				printf("effect: %x%x%x\n", n->effectNumber, x, y);
+			
 			
 			switch(n->effectNumber)
 			{
 			case 0x0: // arpeggio
-				switch((currentTick+1) % 3)
+				switch(currentTick % 3)
 				{
 				case 0:
-					mixer->getChannel(ch)->setFrequency(amigaToHz(n->amigaPeriod));
+					if (channel[ch].amigaPeriod)
+						mixer->getChannel(ch)->setFrequency(amigaToHz(channel[ch].amigaPeriod));
 				break;
 				case 1:
-					mixer->getChannel(ch)->setFrequency(amigaToHz(periodTable[x][n->note]));
+					mixer->getChannel(ch)->setFrequency(amigaToHz(periodTable[x][channel[ch].note]));
 				break;
 				case 2:
-					mixer->getChannel(ch)->setFrequency(amigaToHz(periodTable[y][n->note]));
+					mixer->getChannel(ch)->setFrequency(amigaToHz(periodTable[y][channel[ch].note]));
 				break;
+				}
+			break;
+			case 0x1: // porta up
+				channel[ch].amigaPeriod += n->effectParameter;
+				if (channel[ch].amigaPeriod > 907)
+					channel[ch].amigaPeriod = 907;
+				mixer->getChannel(ch)->setFrequency(amigaToHz(channel[ch].amigaPeriod));
+			break;
+			case 0x2: // porta down
+				channel[ch].amigaPeriod -= n->effectParameter;
+				if (channel[ch].amigaPeriod < 108)
+					channel[ch].amigaPeriod = 108;
+				mixer->getChannel(ch)->setFrequency(amigaToHz(channel[ch].amigaPeriod));
+			break;
+			case 0x3: // porta to note
+				if (channel[ch].amigaPeriod < channel[ch].portaTarget)
+					channel[ch].amigaPeriod += channel[ch].portaSpeed;
+				else if (channel[ch].amigaPeriod > channel[ch].portaTarget)
+					channel[ch].amigaPeriod -= channel[ch].portaSpeed;
+				mixer->getChannel(ch)->setFrequency(amigaToHz(channel[ch].amigaPeriod));
+			break;
+			case 0xa: // volume slide
+				if (x > 0)
+				{
+					channel[ch].volume += x;
+					if (channel[ch].volume > 64)
+						channel[ch].volume = 64;
+					mixer->getChannel(ch)->setVolume(channel[ch].volume);
+				}
+				else if (y > 0)
+				{
+					channel[ch].volume -= y;
+					if (channel[ch].volume < 0)
+						channel[ch].volume = 0;
+					mixer->getChannel(ch)->setVolume(channel[ch].volume);
 				}
 			break;
 			}
 		}
 	}
-	printf("\n");
+//	printf("\n");
 	
 	if (++currentTick == songSpeed)
 	{
@@ -548,6 +592,7 @@ void ModPlayer::playNote(int ch, ModNote *n)
 //			mixer->getChannel(ch)->setPosition(0);
 			
 			channel[ch].amigaPeriod = n->amigaPeriod;
+			channel[ch].note = n->note;
 			mixer->getChannel(ch)->start(channel[ch].sample->sample, freq, channel[ch].sample->loopStart, channel[ch].sample->loopLength);
 		}
 	}
@@ -556,7 +601,9 @@ void ModPlayer::playNote(int ch, ModNote *n)
 	switch(n->effectNumber)
 	{
 	case 0x3: // porta to note
-	
+		channel[ch].portaSpeed = n->effectParameter;
+		if (n->amigaPeriod)
+			channel[ch].portaTarget = n->amigaPeriod;
 	break;
 	case 0x9: // sample offset
 		mixer->getChannel(ch)->setPosition(n->effectParameter << 8);
@@ -677,7 +724,7 @@ ModPlayer::ModChannel::ModChannel():
 	vibratoWaveformRetrig(0),
 	tremoloWaveform(0),
 	tremoloWaveformRetrig(0),
-	volume(0xff),
+	volume(64),
 	arpeggioCounter(0),
 	loopRow(0),
 	loopCounter(0)
