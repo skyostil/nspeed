@@ -110,6 +110,24 @@ void Track::render(World *world)
 		world->getView()->rasterizer->setTextureTileList(textureTileList);
 		land->render(world);
 	}
+
+	int x, y, scale = 6;
+
+	for(y=0; y<texture->height; y+=scale)
+	for(x=0; x<texture->width; x+=scale)
+	{
+		int px = world->getScreen()->width - texture->width/scale + x/scale;
+		int py = world->getScreen()->height - texture->height/scale + y/scale;
+		if (texture->getPixel((x+128)&0xff,(y+128)&0xff))
+			world->getScreen()->setPixel(px, py, -1);
+		else if (
+			texture->getPixel((x+128)&0xff,(y+128+scale)&0xff) ||
+			texture->getPixel((x+128)&0xff,(y+128-scale)&0xff) ||
+			texture->getPixel((x+128+scale)&0xff,(y+128)&0xff) ||
+			texture->getPixel((x+128-scale)&0xff,(y+128)&0xff)
+			)
+			world->getScreen()->setPixel(px, py, 0);
+	}
 }
 
 
@@ -155,7 +173,7 @@ Vector &Track::getNormal(Vector &pos)
 	
 	normal /= FPInt(size*size);
 	
-	return normal;
+	return normal.normalize();
 }
 
 void Track::project(Vector &pos, unsigned char &x, unsigned char &y)

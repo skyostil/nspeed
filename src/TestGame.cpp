@@ -458,7 +458,7 @@ public:
 		
 //                renderObjectTest(view);
 #endif
-		renderAudioBuffer(screen);
+//		renderAudioBuffer(screen);
 		
 		char hud[32];
 //		sprintf(hud, "%d", t);
@@ -481,51 +481,56 @@ public:
 
         void handleEvent(Game::Event* event)
         {
-                switch(event->type)
-                {
-                case Game::Event::ExitEvent:
-                break;
-                case Game::Event::KeyPressEvent:
-                {
-                        switch(event->key.code)
-                        {
-                        case KEY_EXIT:
-                                framework->exit();
-                        break;
-			case KEY_UP:
-				car->setThrust(true);
-				car->setBrake(false);
+			switch(event->type)
+			{
+			case Game::Event::ExitEvent:
 			break;
-			case KEY_DOWN:
-				car->setThrust(false);
-				car->setBrake(true);
-			break;
-			case KEY_LEFT:
-				car->setSteering(-1);
-			break;
-			case KEY_RIGHT:
-				car->setSteering(1);
-			break;
-                        }
-                }
+			case Game::Event::KeyPressEvent:
+			{
+					switch(event->key.code)
+					{
+					case KEY_EXIT:
+							framework->exit();
+					break;
+					case KEY_UP:
+						car->setThrust(true);
+						car->setBrake(false);
+					break;
+					case KEY_DOWN:
+						car->setThrust(false);
+						car->setBrake(true);
+					break;
+					case KEY_LEFT:
+						car->setSteering(-1);
+					break;
+					case KEY_RIGHT:
+						car->setSteering(1);
+					break;
+				}
+		}
 		break;
-                case Game::Event::KeyReleaseEvent:
-                {
-                        switch(event->key.code)
-                        {
-			case KEY_UP:
-			case KEY_DOWN:
-				car->setThrust(false);
-				car->setBrake(false);
-			break;
-			case KEY_LEFT:
-			case KEY_RIGHT:
-				car->setSteering(0);
-			break;
-                        }
-                }
-                break;
-                }
+		case Game::Event::KeyReleaseEvent:
+		{
+				switch(event->key.code)
+				{
+					case KEY_UP:
+						car->setThrust(false);
+					break;
+					case KEY_DOWN:
+						car->setBrake(false);
+					break;
+					case KEY_LEFT:
+						if (car->getSteering() == -1)
+								car->setSteering(0);
+					break;
+					case KEY_RIGHT:
+						if (car->getSteering() == 1)
+							car->setSteering(0);
+					break;
+				}
+		}
+		break;
+		}
         }
 };
 

@@ -39,6 +39,8 @@ public:
 	void setBrake(bool _brake);
 	void setSteering(int _steering);
 	void render(World *world);
+
+	int getSteering() { return steering; }
 	
 	scalar getAngle();
 	
@@ -46,8 +48,8 @@ public:
 	scalar	angle, angleSpeed, speed;
 
 private:
-	scalar	getAcceleration();
-	scalar	getAngleAcceleration();
+	scalar	getAcceleration(scalar speed);
+	scalar	getAngleAcceleration(scalar speed);
 
 	typedef struct
 	{
