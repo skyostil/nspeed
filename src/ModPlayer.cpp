@@ -32,6 +32,8 @@
 #include "Config.h"
 #include <stdio.h>
 
+//#define USE_FINETUNING
+
 static const unsigned short periodTable[][36] =
 {
         {
@@ -40,7 +42,7 @@ static const unsigned short periodTable[][36] =
                 428,404,381,360,339,320,302,285,269,254,240,226, // C-2 to B-2
                 214,202,190,180,170,160,151,143,135,127,120,113, // C-3 to B-3
         },
-#if 0
+#ifdef USE_FINETUNING
         {
         // Tuning 1
                 850,802,757,715,674,637,601,567,535,505,477,450, // same as above
@@ -149,6 +151,7 @@ ModPlayer::ModPlayer(Mixer *_mixer):
         channel(0),
         note(0),
         order(0),
+        volume(64),
         playing(false)
 {
         int i;
@@ -232,10 +235,12 @@ bool ModPlayer::load(const char *file)
                 if (header.loopLength <= 2)
                         header.loopLength = 0;
                 
-//              if (header.fineTune > 7)
-//                      header.fineTune -= 16;
-                // XXX - disable finetune
+#ifdef USE_FINETUNING
+                 if (header.fineTune > 7)
+                        header.fineTune -= 16;
+#else
                 header.fineTune = 0;
+#endif
                 
                 if (header.length > 1)
                 {
@@ -459,11 +464,11 @@ void ModPlayer::tick()
                                 {
                                 case 0:
                                         vol = channel[ch].volume + tremolo;
-                                        mixer->getChannel(ch)->setVolume((vol>64)?64:vol);
+                                        mixer->getChannel(ch)->setVolume(calcVolume((vol>64)?64:vol));
                                 break;
                                 case 1:
                                         vol = channel[ch].volume - tremolo;
-                                        mixer->getChannel(ch)->setVolume((vol<0)?0:vol);
+                                        mixer->getChannel(ch)->setVolume(calcVolume((vol<0)?0:vol));
                                 break;
                                 };
                                 
@@ -483,14 +488,14 @@ do_volume_slide:
                                         channel[ch].volume += x;
                                         if (channel[ch].volume > 64)
                                                 channel[ch].volume = 64;
-                                        mixer->getChannel(ch)->setVolume(channel[ch].volume);
+                                        mixer->getChannel(ch)->setVolume(calcVolume(channel[ch].volume));
                                 }
                                 else if (y > 0)
                                 {
                                         channel[ch].volume -= y;
                                         if (channel[ch].volume < 0)
                                                 channel[ch].volume = 0;
-                                        mixer->getChannel(ch)->setVolume(channel[ch].volume);
+                                        mixer->getChannel(ch)->setVolume(calcVolume(channel[ch].volume));
                                 }
                         break;
                         case 0xe:
@@ -564,7 +569,7 @@ void ModPlayer::playNote(int ch, ModNote *n)
                         channel[ch].sample = s;
                         channel[ch].volume = s->volume;
                         mixer->getChannel(ch)->setSample(s->sample);
-                        mixer->getChannel(ch)->setVolume(s->volume);
+                        mixer->getChannel(ch)->setVolume(calcVolume(s->volume));
 //                      printf("%d\n", s->volume);
                 }
         }
@@ -620,7 +625,7 @@ void ModPlayer::playNote(int ch, ModNote *n)
                 currentOrder = (n->effectParameter>songLength-1)?(songLength-1):n->effectParameter;
         break;
         case 0xc: // set volume
-                mixer->getChannel(ch)->setVolume(n->effectParameter);
+                mixer->getChannel(ch)->setVolume(calcVolume(n->effectParameter));
         break;
         case 0xd: // pattern break
                 currentRow = n->effectParameter;
@@ -691,13 +696,13 @@ void ModPlayer::playNote(int ch, ModNote *n)
                         channel[ch].volume += x;
                         if (channel[ch].volume > 64)
                                 channel[ch].volume = 64;
-                        mixer->getChannel(ch)->setVolume(channel[ch].volume);
+                        mixer->getChannel(ch)->setVolume(calcVolume(channel[ch].volume));
                 break;
                 case 0xb: // fine volumeslide down
                         channel[ch].volume -= x;
                         if (channel[ch].volume < 0)
                                 channel[ch].volume = 0;
-                        mixer->getChannel(ch)->setVolume(channel[ch].volume);
+                        mixer->getChannel(ch)->setVolume(calcVolume(channel[ch].volume));
                 break;
                 case 0xe: // pattern delay
                         patternDelay = x;
@@ -742,3 +747,16 @@ void ModPlayer::stop()
                 mixer->getChannel(i)->stop();
         }
 }
+
+void ModPlayer::setVolume(int vol)
+{
+    if (vol < 0) vol = 0;
+    if (vol > 64) vol = 64;
+    volume = (signed char)vol;
+}
+
+int ModPlayer::calcVolume(int v)
+{
+    return (v * volume) >> 6;
+}
+

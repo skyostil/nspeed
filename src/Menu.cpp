@@ -312,8 +312,16 @@ Menu::Action Menu::handleEvent(Game::Event* event)
 				deferredAction = GoDown;
 				return deferredAction;
 			break;
-			case KEY_LEFT:
+            case KEY_LEFT:
+				deferredAction = ToggleLeft;
+				return deferredAction;
+                break;
+            case KEY_RIGHT:
+				deferredAction = ToggleRight;
+				return deferredAction;
+                break;
             case KEY_EXIT:
+			case KEY_BRAKE:
 				if (!topLevelMenu)
 				{
 					swooshDirection = 1;
@@ -322,6 +330,7 @@ Menu::Action Menu::handleEvent(Game::Event* event)
 				}
 			break;
 			case KEY_SELECT:
+			case KEY_THRUST:
 				swooshDirection = -1;
 				deferredAction = Select;
 				return deferredAction;
@@ -364,6 +373,7 @@ void Menu::setTopLevelMenu(bool topLevel)
 {
 	topLevelMenu = topLevel;
 }
+
 int Menu::getSwooshAmount() const
 {
 	return swooshAmount;

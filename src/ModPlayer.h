@@ -40,12 +40,16 @@ public:
         void    unload();
         void    play();
         void    stop();
+
+        //! \param vol is in the range [0, 64]
+        void    setVolume(int vol);
         
         Mixer   *mixer;
 
 protected:
         unsigned short  bigEndian16(unsigned short b);
         int             amigaToHz(int period);
+        int             calcVolume(int v);
 
         int     channels;
         
@@ -115,6 +119,7 @@ protected:
         signed char     currentRow;
         signed char     patternDelay;
         bool            playing;
+        signed char     volume;
         
 private:
         void    tick();

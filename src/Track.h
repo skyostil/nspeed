@@ -93,7 +93,7 @@ public:
         bool            tileIsDirt(unsigned char tile) const;
         bool            tileIsTurbo(unsigned char tile) const;
         
-        int             getLapCount() const { return 1; }
+        int             getLapCount() const { return 5; }
         
         // these times are in milliseconds
         int             getBestLapTime(char *name = 0, unsigned int nameSize = 0);
@@ -109,13 +109,14 @@ public:
         int             getNearestGateIndex(const Vector &pos) const;
         
         Game::Surface   *getMap() { return map; }
-protected:
+
         //! Project a world-vector to a pixel
         void            project(const Vector &pos, unsigned char &x, unsigned char &y) const;
         
         //! Project a pixel to a world vector
         Vector          unproject(unsigned char x, unsigned char y) const;
-        
+
+protected:
         void            initializeMap(int scale = 6);
 
         inline Game::Pixel8 lookup(unsigned char x, unsigned char y) const

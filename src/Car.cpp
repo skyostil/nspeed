@@ -99,10 +99,9 @@ Car::Car(World *_world, const char *name):
 
 Car::~Car()
 {
-    world->getEnvironment()->stopSoundEffects();
     world->getEnvironment()->meshPool.remove(mesh);
+    world->getEnvironment()->scheduleSampleDeletion(engineSound);
     delete texture;
-    delete engineSound;
 }
 
 #define DAMPEN(x,amount) if (x) x += (x>(amount))?(-(amount)):(amount)
@@ -327,8 +326,16 @@ void Car::update(Track *track)
 
     //      DAMPEN(speed, brake?32:4);
 
-    DAMPEN(velocity.x, brake?64:8);
-    DAMPEN(velocity.z, brake?64:8);
+    if (airborne)
+    {
+        DAMPEN(velocity.x, 8);
+        DAMPEN(velocity.z, 8);
+    } else
+    {
+        DAMPEN(velocity.x, brake?64:8);
+        DAMPEN(velocity.z, brake?64:8);
+    }
+
     DAMPEN(angleSpeed, 1);
 
     // update the model position
@@ -578,7 +585,7 @@ void Car::updateAi()
     else
     {
         // probe according to current velocity
-        probe = o + (velocity * FPInt(8));
+        probe = o + (velocity * FPInt(10));
     }
 
     // find out the nearest point on the AI path
@@ -593,7 +600,8 @@ void Car::updateAi()
         // avoid emptyness and edges
         if (track->shouldAiAvoidTile(tile))
         {
-            track->getNextPointOnAiPath(o, steerTarget);
+//            track->getNextPointOnAiPath(o, steerTarget);
+            steerTarget = target;
         
             // something's ahead -> slow down and turn toward the path
             setThrust(false);
@@ -710,4 +718,9 @@ int Car::getRank() const
     return rank;
 }
 
+void Car::adjustTimes(int delta)
+{
+    lapStart += delta;
+    raceStart += delta;
+}
 

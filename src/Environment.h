@@ -81,12 +81,21 @@ public:
     void                    initializeSound(Game::SampleChunk *sample);
     void                    stopSoundEffects();
     void                    muteSoundEffects(bool mute);
+    void                    scheduleMusicChange(const char *name);
+    void                    scheduleSampleDeletion(Game::SampleChunk *sample);
+    void                    stopMusic();
+    void                    renderAudio(Game::SampleChunk* sample);
 
+    int                     getSfxVolume() const;
+    int                     getMusicVolume() const;
+    void                    setSfxVolume(int v);
+    void                    setMusicVolume(int v);
     Channel                 *getEngineSoundChannel() const;
     Channel                 *getSfxChannel() const;
 
     Track                   *track;
     BitmapFont              *font, *bigFont;
+    Game::Surface           *carDot, *enemyCarDot;
 
     Mixer                   *mixer;
     ModPlayer               *modplayer;
@@ -110,6 +119,11 @@ private:
     Rasterizer              *rasterizer;
     View                    *view;
     World                   *world;
+
+    Set<Game::SampleChunk*> sampleDeletionQueue;
+    char                    scheduledMusicName[256];
+    bool                    musicChangeScheduled; // use a mutex for these
+    bool                    stopSfxScheduled;
 };
 
 #endif

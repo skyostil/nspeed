@@ -41,6 +41,7 @@
 #include "Environment.h"
 
 #define RACECOUNTDOWN   256
+#define AICOUNT         3
 
 GameEngine::GameEngine(Game::Framework* _framework):
         Object(0),
@@ -60,9 +61,13 @@ GameEngine::GameEngine(Game::Framework* _framework):
         playerNameCounter(0),
         rotateCamera(false),
         menuItemPractice("Single Race"),
+        menuItemSettings("Settings"),
         menuItemQuit("Quit"),
+        menuItemContinue("Continue"),
         menuItemRestart("Restart Race"),
-        menuItemMainMenu("Main Menu")
+        menuItemMainMenu("Main Menu"),
+        menuItemSfxVolume(""),
+        menuItemMusicVolume("")
 {
     debugMessage[0] = 0;
     selectedCar[0] = 0;
@@ -72,7 +77,8 @@ GameEngine::GameEngine(Game::Framework* _framework):
 }
 
 GameEngine::~GameEngine()
-{}
+{
+}
 
 void GameEngine::configureVideo(Game::Surface* screen)
 {
@@ -148,6 +154,18 @@ void GameEngine::renderVideo(Game::Surface* screen)
         if (logo)
             screen->renderTransparentSurface(logo, screen->width/2 - logo->width/2, screen->height/3 - logo->height);
         menu->render(world);
+        break;
+    case SettingsMenuState:
+        screen->clear(0);
+
+        sprintf(text, "Effects Volume: %d%%", (100*env->getSfxVolume())/64);
+        menuItemSfxVolume.setText(text);
+        sprintf(text, "Music Volume: %d%%", (100*env->getMusicVolume())/64);
+        menuItemMusicVolume.setText(text);
+        menu->render(world);
+
+        renderTitle(screen, "Settings");
+
         break;
     case ChooseCarState:
         screen->clear(0);
@@ -261,7 +279,7 @@ void GameEngine::renderVideo(Game::Surface* screen)
             screen->width/2 - env->bigFont->getTextWidth(text)/2,
             screen->height/2 - env->bigFont->getHeight());
 
-        if (framework->getTickCount() - stateChangeTime > 16)
+        if (framework->getTickCount() - stateChangeTime > 1)
             setState(RaceIntroState);
         break;
     case RaceIntroState:
@@ -278,7 +296,6 @@ void GameEngine::renderVideo(Game::Surface* screen)
             Car *playerCar = env->carPool.getItem(0);
 
             // render the world
-
             if (state == RaceOutroState)
                 rotateAroundPosition(playerCar->getOrigin(), FPInt(1)>>1);
             else
@@ -287,15 +304,16 @@ void GameEngine::renderVideo(Game::Surface* screen)
             env->getWorld()->render();
 
             // render the map & OSD
-
             if (state == RaceState)
             {
                 renderOSD(screen);
             }
 
-            if (!playerCar->getEnergy())
+            if (playerCar->getEnergy() <= 0)
             {
                 renderStatic(screen);
+                env->getMenu()->dimScreen(screen, 0, env->bigFont->getHeight()+2);
+                renderTitle(screen, "Wrecked!");
             }
             else if (playerCar->isTakingDamage())
             {
@@ -312,6 +330,10 @@ void GameEngine::renderVideo(Game::Surface* screen)
                     strncpy(text, "1", sizeof(text));
                 else
                 {
+                    // start the clocks
+                    for(i=0; i<env->carPool.getCount(); i++)
+                        env->carPool.getItem(i)->startRace();
+
                     setState(RaceState);
                     strncpy(text, "go!!", sizeof(text));
                 }
@@ -341,7 +363,7 @@ void GameEngine::renderVideo(Game::Surface* screen)
 
 void GameEngine::renderAudio(Game::SampleChunk* sample)
 {
-    env->mixer->render(sample);
+    env->renderAudio(sample);
 }
 
 void GameEngine::setState(State newState)
@@ -354,7 +376,6 @@ void GameEngine::setState(State newState)
     if (state == newState) return;
 
     oldState = state;
-    stateChangeTime = framework->getTickCount();
 
     // clear old state
     switch(state)
@@ -373,9 +394,19 @@ void GameEngine::setState(State newState)
     case RaceState:
         break;
     case RaceMenuState:
-        env->muteSoundEffects(false);
-        break;
+        {
+            // fix lap and race times
+            int delta = framework->getTickCount() - stateChangeTime;
+        
+            for(i=0; i<env->carPool.getCount(); i++)
+                env->carPool.getItem(i)->adjustTimes(delta);
+
+            env->muteSoundEffects(false);
+            break;
+        }
     }
+
+    stateChangeTime = framework->getTickCount();
 
     // set new state
     state = newState;
@@ -417,19 +448,16 @@ void GameEngine::setState(State newState)
     case MainMenuState:
         menu->clear();
         menu->addItem(&menuItemPractice);
+        menu->addItem(&menuItemSettings);
         menu->addItem(&menuItemQuit);
         menu->setTopLevelMenu(true);
 
         env->track->unload();
         env->stopSoundEffects();
 
-        if (oldState != ChooseCarState)
+        if (oldState != ChooseCarState && oldState != SettingsMenuState)
         {
-            if (env->modplayer)
-            {
-                env->modplayer->load(framework->findResource("music/menu.mod"));
-                env->modplayer->play();
-            }
+            env->scheduleMusicChange(framework->findResource("music/menu.mod"));
         }
 
         for(i=0; i<env->carPool.getCount(); i++)
@@ -443,6 +471,11 @@ void GameEngine::setState(State newState)
 
         logo = env->loadImage("logo.png");
         break;
+    case SettingsMenuState:
+        menu->clear();
+        menu->addItem(&menuItemSfxVolume);
+        menu->addItem(&menuItemMusicVolume);
+        break;
     case ChooseCarState:
         menu->clear();
         fillMenuWithDirectories(menu, framework->findResource("cars"));
@@ -455,10 +488,8 @@ void GameEngine::setState(State newState)
         menu->setTopClipping(screen->height - 64);
         break;
     case RaceLoadingState:
-        if (env->modplayer)
-        {
-            env->modplayer->stop();
-        }
+        env->stopMusic();
+        env->muteSoundEffects(true);
         //                setState(RaceCountDownState);
         break;
     case RaceIntroState:
@@ -467,40 +498,27 @@ void GameEngine::setState(State newState)
             setState(MainMenuState);
             return;
         }
-        env->carPool.add(new Car(env->getWorld(), selectedCar));
-        env->carPool.add(new Car(env->getWorld(), selectedCar));
-        //                env->carPool.getItem(1)->setAiState(true);
 
-        if (env->modplayer)
-        {
-            char song[128];
-            sprintf(song, "tracks/%.32s/music.mod", selectedTrack);
-            if (env->modplayer->load(framework->findResource(song)))
-            {
-                env->modplayer->play();
-            }
-        }
+        spawnCars();
 
-        env->muteSoundEffects(false);
-
-        // reset the cars to the starting grid
-        for(i=0; i<env->carPool.getCount(); i++)
-            env->carPool.getItem(i)->prepareForRace(i);
+        char song[128];
+        sprintf(song, "tracks/%.32s/music.mod", selectedTrack);
+        env->scheduleMusicChange(framework->findResource(song));
 
         renderableSet->add(env->track);
         renderableSet->add(&env->meshPool);
         break;
     case RaceCountDownState:
+        env->muteSoundEffects(false);
         for(i=0; i<env->carPool.getCount(); i++)
             env->carPool.getItem(i)->prepareForRace(i);
         raceCountDown = RACECOUNTDOWN;
         preventWarping();
         break;
     case RaceState:
-        for(i=0; i<env->carPool.getCount(); i++)
-            env->carPool.getItem(i)->startRace();
         break;
     case RaceOutroState:
+        env->muteSoundEffects(true);
         playerNameIndex = 0;
         madeRecord = false;
     break;
@@ -510,7 +528,9 @@ void GameEngine::setState(State newState)
     case RaceMenuState:
         env->muteSoundEffects(true);
         menu->clear();
+        menu->addItem(&menuItemContinue);
         menu->addItem(&menuItemRestart);
+        menu->addItem(&menuItemSettings);
         menu->addItem(&menuItemMainMenu);
         break;
     }
@@ -534,6 +554,9 @@ void GameEngine::handleMenuAction(Menu::Action action)
         case RaceMenuState:
             setState(oldState);
             break;
+        case SettingsMenuState:
+            setState(oldState);
+            break;
         }
         break;
     case Menu::Select:
@@ -542,6 +565,8 @@ void GameEngine::handleMenuAction(Menu::Action action)
         case MainMenuState:
             if (menu->getSelection() == &menuItemPractice)
                 setState(ChooseCarState);
+            else if (menu->getSelection() == &menuItemSettings)
+                setState(SettingsMenuState);
             else if (menu->getSelection() == &menuItemQuit)
                 setState(QuitState);
             break;
@@ -557,8 +582,37 @@ void GameEngine::handleMenuAction(Menu::Action action)
         case RaceMenuState:
             if (menu->getSelection() == &menuItemRestart)
                 setState(RaceCountDownState);
+            else if (menu->getSelection() == &menuItemContinue)
+                setState(RaceState);
+            else if (menu->getSelection() == &menuItemSettings)
+                setState(SettingsMenuState);
             else if (menu->getSelection() == &menuItemMainMenu)
                 setState(MainMenuState);
+            break;
+        case SettingsMenuState:
+            setState(oldState);
+            break;
+        }
+        break;
+    case Menu::ToggleLeft:
+        switch(state)
+        {
+        case SettingsMenuState:
+            if (menu->getSelection() == &menuItemSfxVolume)
+                env->setSfxVolume(env->getSfxVolume() - 8);
+            else if (menu->getSelection() == &menuItemMusicVolume)
+                env->setMusicVolume(env->getMusicVolume() - 8);
+            break;
+        }
+        break;
+    case Menu::ToggleRight:
+        switch(state)
+        {
+        case SettingsMenuState:
+            if (menu->getSelection() == &menuItemSfxVolume)
+                env->setSfxVolume(env->getSfxVolume() + 8);
+            else if (menu->getSelection() == &menuItemMusicVolume)
+                env->setMusicVolume(env->getMusicVolume() + 8);
             break;
         }
         break;
@@ -598,7 +652,9 @@ void GameEngine::handleEvent(Game::Event* event)
             framework->exit();
         break;
     case RaceIntroState:
-        if (event->type == Game::Event::KeyPressEvent && event->key.code == KEY_SELECT)
+        if (event->type == Game::Event::KeyPressEvent && 
+            (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST)
+            )
             setState(RaceCountDownState);
         break;
     case RaceCountDownState:
@@ -622,6 +678,7 @@ void GameEngine::handleRaceOutroEvent(Game::Event* event)
             switch(event->key.code)
             {
             case KEY_SELECT:
+            case KEY_THRUST:
             case KEY_EXIT:
                 {            
                     int l = car->getBestLapTime();
@@ -800,7 +857,7 @@ void GameEngine::atomicStep()
                 
             if (madeRecord)
             {
-                if (++playerNameCounter > 7)
+                if (++playerNameCounter > 16)
                 {
                     char *c = &env->playerName[playerNameIndex];
                     
@@ -810,15 +867,15 @@ void GameEngine::atomicStep()
                     {
                         (*c)++;
                         
-                        if (*c == 1 || *c == 127)
-                            *c = 48;
+                        if (*c > 126)
+                            *c = 46;
                     }
                     
                     if (buttonDown)
                     {
                         (*c)--;
                         
-                        if (*c == -1 || *c == 31 || *c == 47)
+                        if (*c < 46)
                             *c = 126;
                     }
                 }
@@ -1065,7 +1122,6 @@ void GameEngine::renderLapTimes(Game::Surface *screen)
         else
             mask = normalMask;
         font->renderText(env->getScreen(), text, 108, y, mask);
-        madeRecord = true;
     }
 
     sprintf(text, "Finished %d", car->getRank());
@@ -1097,11 +1153,28 @@ void GameEngine::renderOSD(Game::Surface *screen)
     BitmapFont *font = env->font;
     char text[64];
 
+    // render map
     if (map)
     {
         int mapX = env->getScreen()->width - env->track->getMap()->width - 2;
         int mapY = env->getScreen()->height - env->track->getMap()->height - 2;
         env->getScreen()->renderTransparentSurface(env->track->getMap(), mapX, mapY);
+
+        if (env->carDot && env->enemyCarDot)
+        {
+            for(i=0; i<env->carPool.getCount(); i++)
+            {
+                Vector origin = env->carPool.getItem(i)->getOrigin();
+
+                x = mapX + map->width / 2 +   ((origin.x << 3) >> FP) / 6 - env->carDot->width / 2;
+                y = mapY + map->height / 2  + ((origin.z << 3) >> FP) / 6 - env->carDot->height / 2;
+
+                if (i == 0)
+                    env->getScreen()->renderTransparentSurface(env->carDot, x, y);
+                else
+                    env->getScreen()->renderTransparentSurface(env->enemyCarDot, x, y);
+            }
+        }
     }
 
     x = 4;
@@ -1111,13 +1184,16 @@ void GameEngine::renderOSD(Game::Surface *screen)
     if (speed <= (32<<2))
         speed = 0;
 
+    // render speed
     sprintf(text, "%3d km/h", speed >> 5);
     font->renderText(env->getScreen(), text, x, y);
 
+    // render lap
     y -= font->getHeight() - 2;
     sprintf(text, "lap %d of %d", car->getLapCount()+1, env->track->getLapCount());
     font->renderText(env->getScreen(), text, x, y);
 
+    // render times
     i = car->getRaceTime();
     formatTime(text, i);
     font->renderText(env->getScreen(), text, 4, 4);
@@ -1126,6 +1202,7 @@ void GameEngine::renderOSD(Game::Surface *screen)
     formatTime(text, i);
     font->renderText(env->getScreen(), text, 4, 4 + font->getHeight());
 
+    // render energy
     renderEnergyBar(screen, car->getEnergy(), screen->width - 54, 4, 8);
 }
 
@@ -1159,6 +1236,46 @@ void GameEngine::renderTextEntryDialog(Game::Surface *screen, const char *text, 
 void GameEngine::formatTime(char *out, int milliseconds) const
 {
     sprintf(out, "%02d:%02d'%02d", (milliseconds/1000)/60, (milliseconds/1000)%60, (milliseconds/10)%100);
+}
+
+void GameEngine::spawnCars()
+{
+    int i;
+    Menu *menu = env->getMenu();
+    int q = framework->getTickCount();
+
+    env->carPool.clear();
+
+    // player
+    env->carPool.add(new Car(env->getWorld(), selectedCar));
+
+    // get a list of all cars
+    menu->clear();
+    fillMenuWithDirectories(menu, framework->findResource("cars"));
+
+    for(i=0; i<menu->getItemCount(); i++)
+    {
+        Car *car = new Car(env->getWorld(), menu->getItem(i)->getText());
+        if (car)
+            allCars.add(car);
+    }
+
+    // randomly select the AI cars
+    for(i=0; i<AICOUNT; i++)
+    {
+        env->carPool.add(
+            new Car(
+                env->getWorld(), menu->getItem(q % menu->getItemCount())->getText()
+                )
+            );
+        q ^= 52135123;
+        q += (q>>1);
+        q += 13421;
+    }
+
+    // reset all the cars to the starting grid
+    for(i=0; i<env->carPool.getCount(); i++)
+        env->carPool.getItem(i)->prepareForRace(i);
 }
 
 // bootstrap

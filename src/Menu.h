@@ -56,6 +56,8 @@ public:
 		GoUp,
 		GoDown,
 		GoBack,
+		ToggleLeft,
+		ToggleRight,
 	};
 	
 	void clear();

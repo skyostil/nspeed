@@ -28,7 +28,6 @@
 #include "TagFile.h"
 #include <string.h>
 
-//Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen, View *_view):
 Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen):
         Object(parent),
         framework(_framework),
@@ -41,6 +40,8 @@ Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surf
         modplayer(0),
         menu(0),
         sfxVolume(16), musicVolume(16),
+        musicChangeScheduled(false),
+        stopSfxScheduled(false),
         texturePool(0, true)
 {
     Game::Surface *img;
@@ -70,8 +71,12 @@ Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surf
 
     // clear the player name
     memset(playerName, ' ', sizeof(playerName));
+
+    // load graphics
+    carDot = loadImage("reddot.png");
+    enemyCarDot = loadImage("bluedot.png");
         
-    loadSettings();
+    scheduledMusicName[0] = 0;
 }
 
 void Environment::initializeSound(Game::SampleChunk *sample)
@@ -80,6 +85,8 @@ void Environment::initializeSound(Game::SampleChunk *sample)
     modplayer = new ModPlayer(mixer);
 
     muteSoundEffects(false);
+
+    loadSettings();
 }
 
 void Environment::muteSoundEffects(bool mute)
@@ -115,6 +122,9 @@ Environment::~Environment()
 
     delete track;
     delete menu;
+
+    delete carDot;
+    delete enemyCarDot;
 }
 
 Game::Surface *Environment::loadImage(const char *name)
@@ -140,11 +150,7 @@ Channel *Environment::getSfxChannel() const
 
 void Environment::stopSoundEffects()
 {
-    if (mixer)
-    {
-        getEngineSoundChannel()->stop();
-        getSfxChannel()->stop();
-    }
+    stopSfxScheduled = true;
 }
 
 void Environment::loadSettings()
@@ -165,6 +171,9 @@ void Environment::loadSettings()
         default:
             return;
         }
+
+    setSfxVolume(sfxVolume);
+    setMusicVolume(musicVolume);
 }
 
 void Environment::saveSettings()
@@ -174,5 +183,90 @@ void Environment::saveSettings()
     file.writeTag(0, (unsigned char*)playerName, sizeof(playerName));
     file.writeTag(1, (unsigned char*)&sfxVolume, sizeof(sfxVolume));
     file.writeTag(2, (unsigned char*)&musicVolume, sizeof(musicVolume));
+}
+
+void Environment::scheduleMusicChange(const char *name)
+{
+    if (mixer && !musicChangeScheduled)
+    {
+        // don't schedule the music if we're already playing it
+        if (strcmp(scheduledMusicName, name))
+        {
+            strncpy(scheduledMusicName, name, sizeof(scheduledMusicName));
+            musicChangeScheduled = true;
+        }
+    }
+}
+
+void Environment::renderAudio(Game::SampleChunk* sample)
+{
+    if (!mixer)
+        return;
+
+    if (musicChangeScheduled)
+    {
+        modplayer->stop();
+        if (strlen(scheduledMusicName))
+        {
+            modplayer->load(scheduledMusicName);
+            modplayer->play();
+        }
+
+        musicChangeScheduled = false;
+    }
+
+    if (sampleDeletionQueue.getCount())
+    {
+        int i;
+        for(i=0; i<sampleDeletionQueue.getCount(); i++)
+            delete(sampleDeletionQueue.getItem(i));
+        sampleDeletionQueue.clear();
+    }
+
+    if (stopSfxScheduled)
+    {
+        getEngineSoundChannel()->stop();
+        getSfxChannel()->stop();
+        stopSfxScheduled = false;
+    }
+
+    mixer->render(sample);
+}
+
+void Environment::stopMusic()
+{
+    scheduleMusicChange("");
+}
+
+void Environment::scheduleSampleDeletion(Game::SampleChunk *sample)
+{
+    sampleDeletionQueue.add(sample);
+}
+
+int Environment::getSfxVolume() const
+{
+    return sfxVolume;
+}
+
+int Environment::getMusicVolume() const
+{
+    return musicVolume;
+}
+
+void Environment::setSfxVolume(int v)
+{
+    if (v < 0) v = 0;
+    if (v > 64) v = 64;
+    sfxVolume = v;
+    getEngineSoundChannel()->setVolume(sfxVolume);
+    getSfxChannel()->setVolume(sfxVolume);
+}
+
+void Environment::setMusicVolume(int v)
+{
+    if (v < 0) v = 0;
+    if (v > 64) v = 64;
+    musicVolume = v;
+    modplayer->setVolume(musicVolume);
 }
 

@@ -401,7 +401,8 @@ Vector Track::unproject(unsigned char x, unsigned char y) const
 LineSegment::LineSegment():
         valid(false),
         angle(0)
-{}
+{
+}
 
 bool LineSegment::isInside(const Vector &pos) const
 {

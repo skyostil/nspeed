@@ -49,6 +49,7 @@ public:
         int getGateIndex() const { return gateIndex; }
         void setGateIndex(int i) { gateIndex = i; }
         int getLapCount() const { return lapCount; }
+        void adjustTimes(int delta);
 
          // the times are in milliseconds
         int getLapTime() const;

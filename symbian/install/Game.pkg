@@ -24,6 +24,8 @@
 
 ; graphics
 "..\..\data\logo.png"                   -"!:\system\apps\Game\logo.png"
+"..\..\data\reddot.png"                 -"!:\system\apps\Game\reddot.png"
+"..\..\data\bluedot.png"                -"!:\system\apps\Game\bluedot.png"
 
 ; fonts
 "..\..\data\fonts\default.png"          -"!:\system\apps\Game\fonts\default.png"

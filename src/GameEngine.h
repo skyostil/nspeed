@@ -35,6 +35,7 @@ public:
         IdleState,
         LoadingState,
         MainMenuState,
+        SettingsMenuState,
         ChooseCarState,
         ChooseTrackState,
         RaceLoadingState,
@@ -70,6 +71,7 @@ private:
     void renderTitle(Game::Surface *s, const char *title);
     void preventWarping();
     void formatTime(char *out, int milliseconds) const;
+    void spawnCars();
     
     void renderRotatingQuad(View *view, Game::Surface *texture);
     void renderEnergyBar(Game::Surface *screen, int energy, int x, int y, int h) const;
@@ -90,6 +92,7 @@ private:
 
     // main menu
     MenuItem        menuItemPractice;
+    MenuItem        menuItemSettings;
     MenuItem        menuItemQuit;
     Game::Surface   *logo;
 
@@ -103,8 +106,13 @@ private:
     int             raceCountDown, stateChangeTime;
 
     // race menu
+    MenuItem        menuItemContinue;
     MenuItem        menuItemRestart;
     MenuItem        menuItemMainMenu;
+
+    // settings menu
+    MenuItem        menuItemSfxVolume;
+    MenuItem        menuItemMusicVolume;
 
     Set<MenuItem*>  menuItemList;
 
