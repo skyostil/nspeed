@@ -28,6 +28,23 @@
 
 class View;
 
+class Gate
+{
+public:
+	Gate();
+
+	void set(const Vector &_left, const Vector &_right);
+
+	bool isInside(const Vector &pos) const;
+	bool isValid() const { return valid; }
+	const Vector &getCenter() const { return center; }
+	const Vector &getNormal() const { return normal; }
+private:
+	Vector left, right, leftToRight, center, normal;
+	scalar lengthSquared;
+	bool valid;
+};
+
 class Track: public Renderable, public Object
 {
 public:
@@ -41,12 +58,22 @@ public:
 	int			getCell(const Vector &pos) const;
 	void		setCell(const Vector &pos);
 	
+	Vector		getStartingPosition(int carNumber) const;
+	
 	//! Returns approximate the 2D normal (x,z) of the track at the given position
 	Vector		getNormal(const Vector &pos) const;
 	
+	Gate		*getGate(unsigned int index);
+	int			getGateCount() { return sizeof(gate)/sizeof(gate[0]); }
+	
 	Game::Surface	*getMap() { return map; }
 protected:
+	//! Project a world-vector to a pixel
 	void		project(const Vector &pos, unsigned char &x, unsigned char &y) const;
+	
+	//! Project a pixel to a world vector
+	Vector		unproject(unsigned char x, unsigned char y) const;
+	
 	void		initializeMap(int scale = 6);
 
 	inline Game::Pixel8 lookup(unsigned char x, unsigned char y) const
@@ -59,6 +86,7 @@ protected:
 	Game::Surface   *textureTileList[256];
 	Game::Surface	*map;
 	Environment		*env;
+	Gate			gate[4];
 };
 
 #endif

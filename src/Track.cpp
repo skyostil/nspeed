@@ -22,20 +22,13 @@
 #include "Track.h"
 #include "Car.h"
 #include "Environment.h"
-
-#ifdef EPOC
-#include <ezlib.h>
-#else
-#include <zlib.h>
-#endif
+#include "TagFile.h"
 
 #include <stdio.h>
 
 Track::Track(Object *parent, Environment *_env):
 	Object(parent),
 	env(_env),
-//	framework(_framework),
-//	screen(_screen),
 	texture(0),
 	groundTexture(0),
 	skyTexture(0),
@@ -56,49 +49,73 @@ Track::~Track()
 	unload();
 }
 
+#ifdef _MSC_VER
+#pragma pack(push, 1)
+#endif
+typedef struct
+{
+	unsigned short w, h;
+	signed short gate1LeftX, gate1LeftY, gate1RightX, gate1RightY;
+	signed short gate2LeftX, gate2LeftY, gate2RightX, gate2RightY;
+	signed short gate3LeftX, gate3LeftY, gate3RightX, gate3RightY;
+	signed short gate4LeftX, gate4LeftY, gate4RightX, gate4RightY;
+} PACKED MapHeader;
+#ifdef _MSC_VER
+#pragma pack(pop)
+#endif
+
 bool Track::load(const char *name)
 {
-	FILE *f = fopen(name, "rb");
-	unsigned short w, h;
-	unsigned char *cdata;
-	unsigned long len;
+	TagFile file(name);
+	unsigned short w=0, h=0;
 	Game::PixelFormat pf(8);
-
+	
 	unload();
-
-	if (!f)
-		return false;
-
-	fread(&w, sizeof(w), 1, f);
-	fread(&h, sizeof(h), 1, f);
-
-	len = w * h;
-
-	texture = new Game::Surface(&pf, w, h);
-	land = new Land(texture);
-	cdata = new unsigned char[w * h];
-
-	fread(cdata, w * h, 1, f);
-	if (uncompress((Bytef*)texture->pixels, &len, cdata, len) != Z_OK)
+		
+	while(1) switch(file.readTag())
 	{
-		delete[] cdata;
-		unload();
-		return false;
+	case 0: // map dimensions
+	{
+		MapHeader header;
+		
+		file.readData((unsigned char*)&header, sizeof(header));
+		w = header.w;
+		h = header.h;
+		
+		gate[0].set(unproject(header.gate1LeftX, header.gate1LeftY), unproject(header.gate1RightX, header.gate1RightY));
+		gate[1].set(unproject(header.gate2LeftX, header.gate2LeftY), unproject(header.gate2RightX, header.gate2RightY));
+		gate[2].set(unproject(header.gate3LeftX, header.gate3LeftY), unproject(header.gate3RightX, header.gate3RightY));
+		gate[3].set(unproject(header.gate4LeftX, header.gate4LeftY), unproject(header.gate4RightX, header.gate4RightY));
 	}
-	delete[] cdata;
-
-	textureTileList[1] = env->loadImage("test.png");
-	textureTileList[2] = env->loadImage("test2.png");
-
-	groundTexture = env->loadImage("ground.png");
-	skyTexture = env->loadImage("sky.png");
-	ground = new Land(groundTexture, skyTexture, Rasterizer::FlagPerspectiveCorrection, 2 /* textureScale */, FPInt(6));
+	break;
+	case 1: // map data
+	{
+		if (w && h)
+		{
+			texture = new Game::Surface(&pf, w, h);
+			land = new Land(texture);
+			file.readData((unsigned char*)texture->pixels, texture->bytes);
+		} else
+		{
+			unload();
+			return false;
+		}
+	}
+	break;
+	default:
+	{
+		textureTileList[1] = env->loadImage("test2.png");
+		textureTileList[2] = env->loadImage("test.png");
 	
-	fclose(f);
-	
-	initializeMap();
-	
-	return true;
+		groundTexture = env->loadImage("ground.png");
+		skyTexture = env->loadImage("sky.png");
+		ground = new Land(groundTexture, skyTexture, Rasterizer::FlagPerspectiveCorrection, 2 /* textureScale */, FPInt(6));
+		
+		initializeMap();
+		
+		return true;
+	}
+	}
 }
 
 void Track::unload()
@@ -147,6 +164,9 @@ void Track::render(World *world)
 void Track::initializeMap(int scale)
 {
 	unsigned int x, y;
+	
+	if (!texture)
+		return;
 	
 	map = new Game::Surface(&env->getScreen()->format, texture->width/scale, texture->height/scale);
 
@@ -245,3 +265,70 @@ void Track::project(const Vector &pos, unsigned char &x, unsigned char &y) const
 	x = (pos.x << 3) >> FP;
 	y = (pos.z << 3) >> FP;
 }
+
+Vector Track::unproject(unsigned char x, unsigned char y) const
+{
+	return Vector(((x-128) << FP) >> 3, 0, ((y-128) << FP) >> 3);
+}
+
+Gate::Gate():
+	valid(false)
+{
+}
+
+bool Gate::isInside(const Vector &pos) const
+{
+	if (!valid) return false;
+
+	Vector planarPos(pos.x, 0, pos.z);
+	scalar t = FPDiv((planarPos - left).dot(leftToRight), lengthSquared);
+	const scalar epsilon = 1<<(FP-4);
+	
+	if (t >= 0 && t <= FP_ONE)
+	{
+		Vector p = left + leftToRight * t;
+		if ((planarPos - p).lengthSquared() < epsilon)
+			return true;
+	}
+	return false;
+}
+
+void Gate::set(const Vector &_left, const Vector &_right)
+{
+	left = _left;
+	right = _right;
+	center = (left + right) * (FP_ONE/2);
+	leftToRight = right - left;
+	lengthSquared = leftToRight.lengthSquared();
+	normal.set(-leftToRight.z, 0, leftToRight.x);
+	normal.normalize();
+	
+	if (lengthSquared == 0)
+		valid = false;
+	else
+		valid = true;
+}
+
+Gate *Track::getGate(unsigned int index)
+{
+	if (index < sizeof(gate)/sizeof(gate[0]))
+		return gate[index].isValid() ? (&gate[index]) : NULL;
+	return NULL;
+}
+
+Vector Track::getStartingPosition(int carNumber) const
+{
+	unsigned char x, y;
+	
+	project(gate[0].getCenter(), x, y);
+	
+	printf("%d, %d\n", x, y);
+	
+	return gate[0].getCenter();
+/*
+	const scalar startinglineOffset = FPInt(1);
+	const scalar startinglineOffset = FPInt(1);
+	const scalar startinglineOffset = FPInt(1);
+*/	
+}
+

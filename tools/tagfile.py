@@ -13,6 +13,7 @@ flags: [reserved:3] [compressed:1]
 
 import struct
 import zlib
+import sys
 
 FLAG_COMPRESSED = 0x1
 
@@ -76,7 +77,10 @@ if __name__=="__main__":
 #	f.writeTag(0, "abcd\0")
 #	f.writeTag(1, "abcdefgh\0")
 
-	f = ReadTagFile("car.mesh")
+#	f = ReadTagFile("car.mesh")
+	import binascii
+	f = ReadTagFile(sys.argv[1])
 	while f.readTag() != -1:
-		print len(f.getData())
+		data = f.getData()
+		print len(data), binascii.hexlify(data)[:40]
 			

@@ -180,14 +180,15 @@ void GameEngine::setState(State newState)
 	switch(newState)
 	{
 	case RaceState:
-		if (!env->track->load(framework->findResource("track3.trk")))
+		if (!env->track->load(framework->findResource("track4.trk")))
 		{
 			setState(IdleState);
 			return;
 		}
 
 		env->carPool.add(new Car(env->getWorld(), "default"));
-
+		env->carPool.getItem(0)->prepareForRace(0);
+		
 		if (env->modplayer)
 		{
 			env->modplayer->load(framework->findResource("dallas.mod"));
@@ -287,7 +288,8 @@ void GameEngine::step()
 	
 	if (framework->getTickCount() - fpsCountStart > framework->getTicksPerSecond() / 4)
 	{
-		sprintf(debugMessage, "%d fps, %d s", frameCount*4, framework->getTickCount() / framework->getTicksPerSecond());
+		Car *car = env->carPool.getItem(0);
+		sprintf(debugMessage, "%d fps, %d s, gate %d", frameCount*4, framework->getTickCount() / framework->getTicksPerSecond(), car?car->getGateIndex():-1);
 		fpsCountStart = framework->getTickCount();
 		frameCount = 0;
 	}

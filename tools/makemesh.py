@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+# WARNING: This is broken.
+
 from Dice3DS import *
 from tagfile import WriteTagFile
 import sys

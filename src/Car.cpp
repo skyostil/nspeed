@@ -39,6 +39,8 @@ Car::Car(World *_world, const char *name):
 	steeringWheelPos(0),
 	thrustPos(0),
 	engineCycle(0),
+	gateIndex(0),
+	lapCount(0),
 	world(_world)
 {
 	char fileName[256];
@@ -291,6 +293,7 @@ void Car::update(Track *track)
 	mesh->transformation *= translation;
 
 	updateSound();
+	updateGate();
 }
 
 scalar Car::getAcceleration(scalar speed)
@@ -318,6 +321,19 @@ void Car::updateSound()
 		world->getEnvironment()->mixer->getChannel(sfxChannel)->setFrequency(freq);
 }
 
+void Car::updateGate()
+{
+	int nextGateIndex = (gateIndex+1) % world->getEnvironment()->track->getGateCount();
+	Gate *nextGate = world->getEnvironment()->track->getGate(nextGateIndex);
+	
+	if (nextGate && nextGate->isInside(getOrigin()))
+	{
+		if (nextGateIndex < gateIndex)
+			lapCount++;
+		gateIndex = nextGateIndex;
+	}
+}
+
 scalar Car::getAngleAcceleration(scalar speed)
 {
 	int i = 0;
@@ -343,3 +359,22 @@ void Car::setSteering(int _steering)
 {
 	steering = _steering;
 }
+
+void Car::setOrigin(const Vector &o)
+{
+	origin = o * (FP_ONE<<CAR_COORDINATE_SCALE);
+}
+
+void Car::prepareForRace(int position)
+{
+	velocity.set(0,0,0);
+	steeringWheelPos = 0;
+	thrustPos = 0;
+	lapCount = 0;
+	gateIndex = 0;
+	angleSpeed = 0;
+	angle = 0;
+	
+	setOrigin(world->getEnvironment()->track->getStartingPosition(position));
+}
+

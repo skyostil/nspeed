@@ -98,7 +98,7 @@ unsigned int TagFile::readData(unsigned char *data, unsigned int size)
 		return len;
 	}
 	
-	return fread(&data, tag.size, 1, file);
+	return fread(data, tag.size, 1, file);
 }
 
 

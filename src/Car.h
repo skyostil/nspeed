@@ -46,12 +46,17 @@ public:
 	int getSteering() { return steering; }
 //	scalar getSpeed() { return FPSqrt(speed); }
 	scalar getSpeed() { return speed; }
+	int getGateIndex() { return gateIndex; }
+	void setGateIndex(int i) { gateIndex = i; }
 	
 	scalar getAngle() { return angle; }
 	Vector getOrigin() { return origin * (FP_ONE>>CAR_COORDINATE_SCALE); }
+	void setOrigin(const Vector &o);
 	
+	void prepareForRace(int position);
 private:
 	void	updateSound();
+	void	updateGate();
 
 	Vector	origin, velocity;
 	scalar	angle, angleSpeed, speed;
@@ -75,7 +80,7 @@ private:
 	Game::Surface	*texture;
 	World			*world;
 	Game::SampleChunk	*engineSound;
-	int				sfxChannel;
+	int				sfxChannel, gateIndex, lapCount;
 };
 
 #endif
