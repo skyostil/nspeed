@@ -30,6 +30,13 @@
 #define MAX_VERTICES		64
 #define MAX_CLIPPING_PLANES	5
 
+// how much to shrink the frustum to avoid drawing outside the screen
+#define VIEW_FRUSTUM_TWEAK	1
+
+// improves clipping accuracy
+#define VIEW_64BIT_CLIPPING
+
+
 /*
 class Object
 {

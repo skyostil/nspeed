@@ -21,6 +21,7 @@
 #include "View.h"
 #include <stdio.h>
 #include <string.h>
+//#include <math.h>
 
 View::View(Rasterizer *_rasterizer):
 	camera(_rasterizer),
@@ -30,7 +31,6 @@ View::View(Rasterizer *_rasterizer):
 
 View::~View()
 {
-	delete rasterizer;
 }
 
 void View::beginPolygon()
@@ -99,8 +99,8 @@ void Camera::configure()
 {
 	scalar halfFOV = FPMul(FPDiv(fov,FPInt(2)), (PI/180));
 
-	scalar s = FPSin(halfFOV - 0*(1<<FP)/128);
-	scalar c = FPCos(halfFOV - 0*(1<<FP)/128);
+	scalar s = FPSin(halfFOV - VIEW_FRUSTUM_TWEAK*(1<<FP)/128);
+	scalar c = FPCos(halfFOV - VIEW_FRUSTUM_TWEAK*(1<<FP)/128);
 	
 	// left
 	clipStack[0].normal.x = c;
@@ -248,10 +248,21 @@ int Camera::clipToPlane(ClippingPlane *plane, Vertex *in, int inCount, Vertex *o
 			}
 		
 			// XXX - custom division here!
+#if not defined(VIEW_64BIT_CLIPPING)
 			scalar t = FPDiv(d1, d);
-//			scalar t = ((d1<<10) / (d>>4))<<2;
-			
-			if (d1>0)
+#else
+			scalar t = (((long long)(d1))<<16) / d;
+#endif
+/*
+			double real_t = 65536 * (double)d1 / (double)d;
+			static double cum_error = 0, cycles = 0;
+
+			cum_error += (fabs(real_t - t) / real_t);
+			cycles++;
+						
+			printf("Error: %16f, avg %16f\n", fabs(real_t - t) / real_t, cum_error / cycles);
+*/
+			if (d1 > 0)
 			{
 				*out++ = *v1;
 				outCount++;
@@ -263,7 +274,7 @@ int Camera::clipToPlane(ClippingPlane *plane, Vertex *in, int inCount, Vertex *o
 			out++;
 			outCount++;
 		
-			if (d2>0)
+			if (d2 > 0)
 			{
 				*out++ = *v2;
 				outCount++;

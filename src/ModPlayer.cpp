@@ -158,8 +158,6 @@ ModPlayer::~ModPlayer()
 	unload();
 }
 
-#include <e32def.h>
-
 bool ModPlayer::load(const char *file)
 {
 #ifdef __VC32__
@@ -293,10 +291,6 @@ bool ModPlayer::load(const char *file)
 		if (sample[i])
 		{
 			fread(sample[i]->sample->data, sizeof(char), sample[i]->sample->bytes, f); 
-			for(j=0; j<sample[i]->sample->length; j++)
-			{
-				((signed char*)(sample[i]->sample->data))[j] -= 0x80;
-			}
 		}
 	}
 	restart();
@@ -359,7 +353,7 @@ void ModPlayer::tick()
 //	printf("%d/%d %2d:%02d\n", currentTick, songSpeed, order[currentOrder], currentRow);
 	
 	for(ch=0; ch<channels; ch++)
-//	ch=3;
+//	ch=0;
 	{
 		ModNote *n = &note[order[co]*(channels*64) + cr*channels + ch];
 		

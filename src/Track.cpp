@@ -23,7 +23,7 @@
 #ifdef EPOC
 #include <ezlib.h>
 #else
-//#include <zlib.h>
+#include <zlib.h>
 #endif
 
 #include <stdio.h>

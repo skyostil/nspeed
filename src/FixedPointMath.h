@@ -52,6 +52,18 @@ inline scalar FPDiv(scalar a, scalar b)
 //	return (a / b)<<FP;
 }
 
+inline scalar SafeFPDiv(scalar a, scalar b)
+{
+	// don't crash on zero division
+	if (b < (1<<6) && b > -(1<<6))
+	{
+		return 0x80000000;
+	}
+	return ((a<<6) / (b>>6))<<4;
+//	return ((a<<7) / (b>>5))<<4;
+//	return (a / b)<<FP;
+}
+
 inline scalar FPSqrt(scalar a)
 {
 	int r = (a + (1<<FP))>>1;

@@ -145,12 +145,6 @@ void Rasterizer::addEdge(ScreenVertex *v1, ScreenVertex *v2)
 	scalar y1 = v1->sy>>FP;
 	scalar y2 = v2->sy>>FP;
 
-	// update vertical limits
-	if (y1 < minY)
-		minY = y1;
-	if (y2 > maxY)
-		maxY = y2;
-		
 //	printf("scanline: %3d - %3d\n", v1->sx>>FP, v2->sx>>FP);
 	
 /*	
@@ -172,6 +166,7 @@ void Rasterizer::addEdge(ScreenVertex *v1, ScreenVertex *v2)
 	v += FPMul(subpixFix, dv);
 
 	h = (v2->sy>>FP) - (v1->sy>>FP);
+//	h = (v2->sy - v1->sy + 0x8000) >> FP;
 
 #ifdef RASTERIZER_2D_CLIPPING
 	if (y1 < 0)
@@ -180,16 +175,24 @@ void Rasterizer::addEdge(ScreenVertex *v1, ScreenVertex *v2)
 		z += FPMul(dz,-v1->sy);
 		u += FPMul(du,-v1->sy);
 		v += FPMul(dv,-v1->sy);
-		y1 = 0;
 		h += y1;
+		y1 = 0;
 	}
 
-	if (y2 >= screen->height)
+	if (y2 >= screen->height-1)
 	{
-		h -= y2 - (screen->height-1);
+		h -= y2 - (screen->height-2);
+		y2 = screen->height-1;
 	}
 #endif
+//	h = y2 - y1;
 
+	// update vertical limits
+	if (y1 < minY)
+		minY = y1;
+	if (y2 > maxY)
+		maxY = y2;
+		
 	Scanline *scanline = &edge[y1];
 
 //	h = ((v2->sy+FP_ONE) & FP_INTMASK) - ((v1->sy + FP_ONE) & FP_INTMASK);
@@ -283,6 +286,7 @@ void Rasterizer::flatRasterizer()
 #ifdef RASTERIZER_2D_CLIPPING
 			if (edge[y].x1 < 0)
 			{
+				len += (edge[y].x1>>FP);
 				edge[y].x1 = 0;
 			}
 
@@ -336,6 +340,7 @@ void Rasterizer::textureRasterizer()
 			{
 				u1 += FPMul(du, -edge[y].x1);
 				v1 += FPMul(dv, -edge[y].x1);
+				len += (edge[y].x1>>FP);
 				edge[y].x1 = 0;
 			}
 
@@ -376,10 +381,10 @@ void Rasterizer::perspectiveTextureRasterizer()
 			scalar u2 = FPDiv(edge[y].u2z, edge[y].invz2?edge[y].invz2>>INVZ_SCALE:1);
 			scalar v2 = FPDiv(edge[y].v2z, edge[y].invz2?edge[y].invz2>>INVZ_SCALE:1);
 			*/
-			scalar u1 = FPDiv(edge[y].u1z,edge[y].invz1>>INVZ_SCALE);
-			scalar v1 = FPDiv(edge[y].v1z,edge[y].invz1>>INVZ_SCALE);
-			scalar u2 = FPDiv(edge[y].u2z,edge[y].invz2>>INVZ_SCALE);
-			scalar v2 = FPDiv(edge[y].v2z,edge[y].invz2>>INVZ_SCALE);
+			scalar u1 = SafeFPDiv(edge[y].u1z,edge[y].invz1>>INVZ_SCALE);
+			scalar v1 = SafeFPDiv(edge[y].v1z,edge[y].invz1>>INVZ_SCALE);
+			scalar u2 = SafeFPDiv(edge[y].u2z,edge[y].invz2>>INVZ_SCALE);
+			scalar v2 = SafeFPDiv(edge[y].v2z,edge[y].invz2>>INVZ_SCALE);
 								
 			scalar du = FPDiv(u2 - u1, len);
 			scalar dv = FPDiv(v2 - v1, len);
@@ -395,6 +400,7 @@ void Rasterizer::perspectiveTextureRasterizer()
 			{
 				u1 += FPMul(du, -edge[y].x1);
 				v1 += FPMul(dv, -edge[y].x1);
+				len += (edge[y].x1>>FP);
 				edge[y].x1 = 0;
 			}
 
@@ -430,10 +436,10 @@ void Rasterizer::tileTextureRasterizer()
 			if (len < (1<<FP))
 				continue;
 				
-			scalar u1 = FPDiv(edge[y].u1z,edge[y].invz1>>INVZ_SCALE);
-			scalar v1 = FPDiv(edge[y].v1z,edge[y].invz1>>INVZ_SCALE);
-			scalar u2 = FPDiv(edge[y].u2z,edge[y].invz2>>INVZ_SCALE);
-			scalar v2 = FPDiv(edge[y].v2z,edge[y].invz2>>INVZ_SCALE);
+			scalar u1 = SafeFPDiv(edge[y].u1z,edge[y].invz1>>INVZ_SCALE);
+			scalar v1 = SafeFPDiv(edge[y].v1z,edge[y].invz1>>INVZ_SCALE);
+			scalar u2 = SafeFPDiv(edge[y].u2z,edge[y].invz2>>INVZ_SCALE);
+			scalar v2 = SafeFPDiv(edge[y].v2z,edge[y].invz2>>INVZ_SCALE);
 								
 			scalar du = FPDiv(u2 - u1, len);
 			scalar dv = FPDiv(v2 - v1, len);
@@ -449,6 +455,7 @@ void Rasterizer::tileTextureRasterizer()
 			{
 				u1 += FPMul(du, -edge[y].x1);
 				v1 += FPMul(dv, -edge[y].x1);
+				len += (edge[y].x1>>FP);
 				edge[y].x1 = 0;
 			}
 

@@ -24,11 +24,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-int main(int argc, char **argv)
+int main(int argc, const char **argv)
 {
 	SDLFramework fw;
 	
-	return fw.run();
+	return fw.run(argc, argv);
 }
 
 SDLFramework::SDLFramework():
@@ -47,72 +47,127 @@ SDLFramework::~SDLFramework()
 	delete gameScreen;
 	delete gameAudio;
 	delete engine;
+	
+	SDL_Quit();
 }
 
-int SDLFramework::run()
+void SDLFramework::printUsage()
 {
+	printf("Usage:\n"
+	       "-ns, --nosound          Disable audio\n"
+	       "-nv, --novideo          Disable video\n"
+	       "--xres n                Set horizontal resolution\n"
+	       "--yres n                Set vertical resolution\n"
+	       );
+}
+
+int SDLFramework::run(int argc, const char **argv)
+{
+	int i;
+	bool useSound = true, useVideo = true;
+	int xres = 176, yres = 208;
+	
+	done = false;
+	
+	for(i=1; i<argc; i++)
+	{
+		if (!strcmp(argv[i], "-ns") || !strcmp(argv[i], "--nosound"))
+		{
+			useSound = false;
+		}
+		else if (!strcmp(argv[i], "-nv") || !strcmp(argv[i], "--novideo"))
+		{
+			useVideo = false;
+		}
+		else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help"))
+		{
+			printUsage();
+			return 0;
+		}
+		else if (!strcmp(argv[i], "--xres"))
+		{
+			xres = atoi(argv[++i]);
+		}
+		else if (!strcmp(argv[i], "--yres"))
+		{
+			yres = atoi(argv[++i]);
+		}
+		else
+		{
+			printf("Unknown argument: %s\n", argv[i]);
+			printUsage();
+			return 1;
+		}
+	}
+	
 	engine = CreateEngine(this);
 	
 	if (!engine)
 		return 1;
 
-	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE))
+	if (useVideo)
 	{
-		fprintf(stderr, "SDLFramework: Unable to init video.\n");
-	} else
-	{
-//		screen = SDL_SetVideoMode(640, 480, 16, SDL_RESIZABLE*0);
-		screen = SDL_SetVideoMode(176, 208, 16, SDL_RESIZABLE*0);
-		
-		if (!screen)
+		if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE))
 		{
-			fprintf(stderr, "SDLFramework: Unable to set video mode.\n");
+			fprintf(stderr, "SDLFramework: Unable to init video.\n");
 		} else
 		{
-			printf("SDLFramework: %dx%d framebuffer, %d bits per pixel.\n", screen->w, screen->h, screen->format->BitsPerPixel);
-		
-			Game::PixelFormat pf(
-				screen->format->BitsPerPixel,
-				screen->format->Rmask, screen->format->Rshift,
-				screen->format->Gmask, screen->format->Gshift,
-				screen->format->Bmask, screen->format->Bshift
-				);
-			gameScreen = new Game::Surface(&pf, (Game::Pixel*)screen->pixels, screen->w, screen->h);
-			engine->configureVideo(gameScreen);
-		}
-	}
-	
-	if (SDL_Init(SDL_INIT_AUDIO))
-	{
-		fprintf(stderr, "SDLFramework: Unable to init audio.\n");
-	} else
-	{
-		SDL_AudioSpec audio, audioResult;
-		
-		memset(&audio, 0, sizeof(SDL_AudioSpec));
-		audio.freq = 22050;
-		audio.format = AUDIO_S16;
-		audio.channels = 1;
-		audio.samples = 512;
-		audio.callback = audioCallback;
-		audio.userdata = this;
-		
-		if (SDL_OpenAudio(&audio, &audioResult))
-		{
-			fprintf(stderr, "SDLFramework: Unable to open audio device.\n");
-		} else
-		{
-			printf("SDLFramework: %d sample audio buffer at %d Hz, %d channels, 16 bits.\n", audioResult.samples, audioResult.freq, audioResult.channels);
+	//		screen = SDL_SetVideoMode(640, 480, 16, SDL_RESIZABLE*0);
+			screen = SDL_SetVideoMode(xres, yres, 16, SDL_RESIZABLE*0);
 			
-			Game::SampleFormat sf(16, audioResult.channels);
-			gameAudio = new Game::SampleChunk(&sf, NULL, audioResult.samples, audioResult.freq);
-			gameAudio->autoDelete = false;
-			engine->configureAudio(gameAudio);
-			SDL_PauseAudio(0);
+			if (!screen)
+			{
+				fprintf(stderr, "SDLFramework: Unable to set video mode.\n");
+			} else
+			{
+				printf("SDLFramework: %dx%d framebuffer, %d bits per pixel.\n", screen->w, screen->h, screen->format->BitsPerPixel);
+			
+				Game::PixelFormat pf(
+					screen->format->BitsPerPixel,
+					screen->format->Rmask, screen->format->Rshift,
+					screen->format->Gmask, screen->format->Gshift,
+					screen->format->Bmask, screen->format->Bshift
+					);
+				gameScreen = new Game::Surface(&pf, (Game::Pixel*)screen->pixels, screen->w, screen->h);
+				engine->configureVideo(gameScreen);
+			}
 		}
 	}
 	
-	while(1)
+	if (useSound)
+	{
+		if (SDL_Init(SDL_INIT_AUDIO))
+		{
+			fprintf(stderr, "SDLFramework: Unable to init audio.\n");
+		} else
+		{
+			SDL_AudioSpec audio, audioResult;
+			
+			memset(&audio, 0, sizeof(SDL_AudioSpec));
+			audio.freq = 22050;
+			audio.format = AUDIO_S16;
+			audio.channels = 1;
+			audio.samples = 512;
+			audio.callback = audioCallback;
+			audio.userdata = this;
+			
+			if (SDL_OpenAudio(&audio, &audioResult))
+			{
+				fprintf(stderr, "SDLFramework: Unable to open audio device.\n");
+			} else
+			{
+				printf("SDLFramework: %d sample audio buffer at %d Hz, %d channels, 16 bits.\n", audioResult.samples, audioResult.freq, audioResult.channels);
+				
+				Game::SampleFormat sf(16, audioResult.channels);
+				gameAudio = new Game::SampleChunk(&sf, NULL, audioResult.samples, audioResult.freq);
+				gameAudio->autoDelete = false;
+				engine->configureAudio(gameAudio);
+				SDL_PauseAudio(0);
+			}
+		}
+	}
+	
+	while(!done)
 	{
 		SDL_Event event;
 		Game::Event gameEvent;
@@ -164,16 +219,18 @@ int SDLFramework::run()
 			}
 		}
 		
-		engine->renderVideo(gameScreen);
-		SDL_Flip(screen);
+		if (screen)
+		{
+			engine->renderVideo(gameScreen);
+			SDL_Flip(screen);
+		}
 	}
 	return 0;
 }
 
 void SDLFramework::exit()
 {
-	SDL_Quit();
-	::exit(0);
+	done = true;
 }
 
 unsigned int SDLFramework::getTickCount()
@@ -190,7 +247,7 @@ void SDLFramework::audioCallback(void *userdata, Uint8 *stream, int len)
 {
 	SDLFramework *fw = (SDLFramework*)userdata;
 	
-	fw->gameAudio->data = stream;
+	fw->gameAudio->data = (Game::Sample8*)stream;
 	fw->gameAudio->length = len / (fw->gameAudio->format.bytesPerSample * fw->gameAudio->format.channels);
 	fw->engine->renderAudio(fw->gameAudio);
 }
@@ -222,11 +279,6 @@ Game::Surface *SDLFramework::loadImage(const char *name, Game::PixelFormat *pf)
 			{
 				// memcpy hack for 8-bit palette images
 				memcpy(surface->pixels, img->pixels, img->h * img->pitch);
-				
-//				for(x=0; x<img->h*img->pitch; x++)
-//					printf("%d\n", ((char*)img->pixels)[x]);
-//				for(x=0; x<img->h*img->pitch; x++)
-//					printf("%d\n", ((char*)surface->pixels)[x]);
 			}
 			else
 				for(y=0; y<img->h; y++)
@@ -245,6 +297,7 @@ Game::Surface *SDLFramework::loadImage(const char *name, Game::PixelFormat *pf)
 			for(y=0; y<img->h; y++)
 			for(x=0; x<img->w; x++)
 			{
+				// here we might go beyond the image
 				Uint32 srcpixel = *(Uint32*)(((Uint8*)img->pixels) + y*img->pitch + x*img->format->BytesPerPixel);
 				Uint8 r,g,b;
 				
@@ -252,6 +305,7 @@ Game::Surface *SDLFramework::loadImage(const char *name, Game::PixelFormat *pf)
 				surface->setPixel(x, y, surface->format.makePixel(r,g,b));
 			}
 		}
+		SDL_FreeSurface(img);
 		
 		// perform pixel format conversion
 		if (pf && surface->format.bitsPerPixel!=8)
@@ -260,33 +314,39 @@ Game::Surface *SDLFramework::loadImage(const char *name, Game::PixelFormat *pf)
 			delete surface;
 			return converted;
 		}
-		SDL_FreeSurface(img);
 	}
 	return surface;
 }
 #endif
 
-#define PACKED __attribute__((packed)) 
-
 #ifdef USE_WAVE_LOADER
 Game::SampleChunk *SDLFramework::loadSample(const char *name, Game::SampleFormat *sf)
 {
+#ifdef __VC32__
+#pragma pack(1);
+#define PACKED
+#else
+#define PACKED __attribute__((packed)) 
+#endif
 	typedef struct
 	{
-		unsigned int chunkID PACKED;
-		unsigned int chunkSize PACKED;
-		unsigned int format PACKED;
-		unsigned int subChunk1ID PACKED;
-		unsigned int subChunk1Size PACKED;
-		unsigned short audioFormat PACKED;
-		unsigned short numChannels PACKED;
-		unsigned int sampleRate PACKED;
-		unsigned int byteRate PACKED;
-		unsigned short blockAlign PACKED;
-		unsigned short bitsPerSample PACKED;
-		unsigned int subChunk2ID PACKED;
-		unsigned int subChunk2Size PACKED;
-	} WaveHeader;
+		unsigned int chunkID;
+		unsigned int chunkSize;
+		unsigned int format;
+		unsigned int subChunk1ID;
+		unsigned int subChunk1Size;
+		unsigned short audioFormat;
+		unsigned short numChannels;
+		unsigned int sampleRate;
+		unsigned int byteRate;
+		unsigned short blockAlign;
+		unsigned short bitsPerSample;
+		unsigned int subChunk2ID;
+		unsigned int subChunk2Size;
+	} PACKED WaveHeader;
+#ifdef __VC32__
+#pragma pack(0);
+#endif
 
 	FILE *f = fopen(name, "rb");
 	Game::SampleChunk *sample = NULL;
@@ -324,7 +384,6 @@ Game::SampleChunk *SDLFramework::loadSample(const char *name, Game::SampleFormat
 				{
 					Game::Sample16 s;
 					fread(&s, sizeof(s), 1, f);
-					s-=0x8000;
 					sample->setSample(n,ch,sample->format.makeSample(s));
 				}
 				break;
@@ -337,3 +396,10 @@ Game::SampleChunk *SDLFramework::loadSample(const char *name, Game::SampleFormat
 	return sample;
 }
 #endif
+
+const char *SDLFramework::findResource(const char *name)
+{
+	snprintf(resourcePath, sizeof(resourcePath), "../../data/%s", name);
+	return resourcePath;
+}
+

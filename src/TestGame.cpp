@@ -8,7 +8,7 @@
 #else
 #include <stdlib.h>
 #include <stdio.h>
-//#include <SDL/SDL.h>
+#include <SDL/SDL.h>
 #endif
 
 #include "FixedPointMath.h"
@@ -56,8 +56,8 @@ public:
                 delete texture;
                 delete texture2;
                 delete track;
-                delete ground;
                 delete sky;
+                delete ground;
                 delete view;
                 delete mixer;
                 delete modplayer;
@@ -323,16 +323,16 @@ public:
                                 
                 view->camera.update();
         }
-#if 0        
+#if 1
         void renderRasterizerTest()
         {
-                scalar angle = (FPInt(framework->getTickCount()) / 10000);
+                scalar angle = (FPInt(framework->getTickCount()) / 1000);
                 scalar angle_l = FPMod(angle - FPInt(1), 2*PI);
                 scalar angle_r = FPMod(angle + FPInt(1), 2*PI);
                 
                 angle = FPMod(angle,2*PI);
                 
-                scalar r = FPInt(60);
+                scalar r = FPInt(120);
                 scalar rs = FPInt(28);
                 scalar cx = FPInt(rasterizer->screen->width >> 1);
                 scalar cy = FPInt(rasterizer->screen->height >> 1);
@@ -343,6 +343,8 @@ public:
                 scalar rx = FPMul(FPSin(angle_r), rs);
                 scalar ry = FPMul(FPCos(angle_r), rs);
                 
+                rasterizer->setTexture(0);
+		
                 rasterizer->beginPolygon();
                 rasterizer->setInvZ(FPInt(1));
                 rasterizer->setTexCoord(FPInt(0x7f), FPInt(0));
@@ -415,7 +417,7 @@ public:
 			if (y<0) y=0;
 			if (y>screen->height-1) y=screen->height-1;
 
-			screen->setPixel(x, y, -1);
+			screen->setPixel(x, y, screen->getPixel(x,y)^0xffff);
 		}
 	}
         
@@ -428,15 +430,17 @@ public:
 		setupView();
 
 //              renderBackground(screen);
-//              renderRasterizerTest();
 //              renderLand();
                 sky->render(view);
                 ground->render(view);
                 track->render(view);
 
-                rasterizer->flags &= ~Rasterizer::FlagPerspectiveCorrection;
-                object->render(view);
-                rasterizer->flags |= Rasterizer::FlagPerspectiveCorrection;
+		rasterizer->flags &= ~Rasterizer::FlagPerspectiveCorrection;
+		object->render(view);
+		rasterizer->flags |= Rasterizer::FlagPerspectiveCorrection;
+		
+//                renderRasterizerTest();
+		
 //                renderObjectTest(view);
 #endif
 		renderAudioBuffer(screen);

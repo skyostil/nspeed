@@ -36,7 +36,7 @@ public:
 	SDLFramework();
 	~SDLFramework();
 
-	int run();
+	int run(int argc, const char **argv);
 	
 	// framework services
 	void exit();
@@ -51,14 +51,19 @@ public:
 	Game::SampleChunk	*loadSample(const char *name, Game::SampleFormat *sf = NULL);
 #endif
 
-protected:
+	const char *findResource(const char *name);
 
+protected:
+	void printUsage();
+	
 	static void audioCallback(void *userdata, Uint8 *stream, int len);
 
 	SDL_Surface		*screen;
 	Game::Surface		*gameScreen;
 	Game::SampleChunk	*gameAudio;
 	Game::Engine		*engine;
+	char			resourcePath[512];
+	bool			done;
 };
 
 #endif

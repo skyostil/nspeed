@@ -133,7 +133,7 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 bin_PROGRAMS = fixedpoint3d
-fixedpoint3d_SOURCES = TestGame.cpp FixedPointMath.cpp FixedPointMatrix.cpp FixedPointVector.cpp Rasterizer.cpp View.cpp World.cpp Land.cpp Mixer.cpp ModPlayer.cpp
+fixedpoint3d_SOURCES = TestGame.cpp FixedPointMath.cpp FixedPointMatrix.cpp FixedPointVector.cpp Rasterizer.cpp View.cpp World.cpp Land.cpp Mixer.cpp ModPlayer.cpp Track.cpp Track.h
 
 # set the include path found by configure
 INCLUDES = $(all_includes)
@@ -158,7 +158,8 @@ am_fixedpoint3d_OBJECTS = fixedpoint3d-TestGame.$(OBJEXT) \
 	fixedpoint3d-FixedPointVector.$(OBJEXT) \
 	fixedpoint3d-Rasterizer.$(OBJEXT) fixedpoint3d-View.$(OBJEXT) \
 	fixedpoint3d-World.$(OBJEXT) fixedpoint3d-Land.$(OBJEXT) \
-	fixedpoint3d-Mixer.$(OBJEXT) fixedpoint3d-ModPlayer.$(OBJEXT)
+	fixedpoint3d-Mixer.$(OBJEXT) fixedpoint3d-ModPlayer.$(OBJEXT) \
+	fixedpoint3d-Track.$(OBJEXT)
 fixedpoint3d_OBJECTS = $(am_fixedpoint3d_OBJECTS)
 fixedpoint3d_DEPENDENCIES = \
 	$(top_builddir)/src/framework/sdl/libsdlframework.a \
@@ -175,6 +176,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-ModPlayer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-Rasterizer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-TestGame.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-Track.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-View.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/fixedpoint3d-World.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
@@ -184,6 +186,13 @@ LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
 	$(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
+	$(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES = $(fixedpoint3d_SOURCES)
 HEADERS = $(noinst_HEADERS)
@@ -254,6 +263,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-ModPlayer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-Rasterizer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-TestGame.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-Track.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-View.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixedpoint3d-World.Po@am__quote@
 
@@ -619,6 +629,39 @@ fixedpoint3d-ModPlayer.lo: ModPlayer.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/fixedpoint3d-ModPlayer.Plo' tmpdepfile='$(DEPDIR)/fixedpoint3d-ModPlayer.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -c -o fixedpoint3d-ModPlayer.lo `test -f 'ModPlayer.cpp' || echo '$(srcdir)/'`ModPlayer.cpp
+
+fixedpoint3d-Track.o: Track.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -MT fixedpoint3d-Track.o -MD -MP -MF "$(DEPDIR)/fixedpoint3d-Track.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o fixedpoint3d-Track.o `test -f 'Track.cpp' || echo '$(srcdir)/'`Track.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/fixedpoint3d-Track.Tpo" "$(DEPDIR)/fixedpoint3d-Track.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/fixedpoint3d-Track.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Track.cpp' object='fixedpoint3d-Track.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/fixedpoint3d-Track.Po' tmpdepfile='$(DEPDIR)/fixedpoint3d-Track.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -c -o fixedpoint3d-Track.o `test -f 'Track.cpp' || echo '$(srcdir)/'`Track.cpp
+
+fixedpoint3d-Track.obj: Track.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -MT fixedpoint3d-Track.obj -MD -MP -MF "$(DEPDIR)/fixedpoint3d-Track.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o fixedpoint3d-Track.obj `if test -f 'Track.cpp'; then $(CYGPATH_W) 'Track.cpp'; else $(CYGPATH_W) '$(srcdir)/Track.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/fixedpoint3d-Track.Tpo" "$(DEPDIR)/fixedpoint3d-Track.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/fixedpoint3d-Track.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Track.cpp' object='fixedpoint3d-Track.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/fixedpoint3d-Track.Po' tmpdepfile='$(DEPDIR)/fixedpoint3d-Track.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -c -o fixedpoint3d-Track.obj `if test -f 'Track.cpp'; then $(CYGPATH_W) 'Track.cpp'; else $(CYGPATH_W) '$(srcdir)/Track.cpp'; fi`
+
+fixedpoint3d-Track.lo: Track.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -MT fixedpoint3d-Track.lo -MD -MP -MF "$(DEPDIR)/fixedpoint3d-Track.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o fixedpoint3d-Track.lo `test -f 'Track.cpp' || echo '$(srcdir)/'`Track.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/fixedpoint3d-Track.Tpo" "$(DEPDIR)/fixedpoint3d-Track.Plo"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/fixedpoint3d-Track.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Track.cpp' object='fixedpoint3d-Track.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/fixedpoint3d-Track.Plo' tmpdepfile='$(DEPDIR)/fixedpoint3d-Track.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fixedpoint3d_CXXFLAGS) $(CXXFLAGS) -c -o fixedpoint3d-Track.lo `test -f 'Track.cpp' || echo '$(srcdir)/'`Track.cpp
 
 mostlyclean-libtool:
 	-rm -f *.lo
