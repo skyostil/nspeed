@@ -143,52 +143,28 @@ dump_m_file(Lib3dsFile *f, const char *o)
 
     if (!classname)
       classname = m->name;
-    /*
-        fprintf(o, "// Generated with 3ds2h.\n");
-        fprintf(o, "#ifndef %s_H\n", classname);
-        fprintf(o, "#define %s_H\n", classname);
-        fprintf(o, "#include \"engine/Engine.h\"\n");
-        fprintf(o, "#include \"World.h\"\n");
-        fprintf(o, "#include \"FixedPointMath.h\"\n");
-        fprintf(o, "\n");
-        fprintf(o, "class %s: public Object\n", classname);
-        fprintf(o, "{\n");
-        fprintf(o, "public:\n");
-        fprintf(o, "	%s(scalar s = FP_ONE, Game::Surface *t = 0): Object(%d, %d)\n", classname, m->points, m->faces);
-        fprintf(o, "	{\n");
-        fprintf(o, "		Vector v;\n");
-        fprintf(o, "		beginMesh();\n");
-    */
+	  
 	SerializedVertex *vertex = new SerializedVertex[m->points];
-	const float scale = 1.0/256.0;
+//	const float scale = 1.0/256.0;
+	const float scale = 1.0;
+	
+	printf("%d vertices, %d faces.\n", m->points, m->faces);
 	
     for (i=0; i<m->points; ++i)
     {
-      lib3ds_vector_transform(pos, m->matrix, m->pointL[i].pos);
-	  
-	  vertex[i].x = (int)(pos[0]*65536.0*scale);
-	  vertex[i].y = (int)(pos[1]*65536.0*scale);
-	  vertex[i].z = (int)(pos[2]*65536.0*scale);
-	  vertex[i].u = 
-	  vertex[i].v = 0;
+		lib3ds_vector_transform(pos, m->matrix, m->pointL[i].pos);
+		
+		vertex[i].x = (int)(pos[0]*65536.0*scale);
+		vertex[i].y = (int)(pos[1]*65536.0*scale);
+		vertex[i].z = (int)(pos[2]*65536.0*scale);
+		vertex[i].u = 
+		vertex[i].v = 0;
 	  
 		if (m->texelL)
 		{
 			vertex[i].u = (int)((1.0-m->texelL[i][0])*256.0*65536.0);
 			vertex[i].v = (int)((1.0-m->texelL[i][1])*256.0*65536.0);
 		}
-	  
-      /*
-            if (m->texelL) {
-              fprintf(o, "		setTexCoord(%d, %d);\n",
-                (int)((1.0-m->texelL[i][0])*256.0*65536.0),
-                (int)((1.0-m->texelL[i][1])*256.0*65536.0));
-            }
-            
-            fprintf(o, "		v.set(FPMul(%d,s), FPMul(%d,s), FPMul(%d,s)); addVertex(v);\n",
-              (int)(pos[0]*65536.0), (int)(pos[1]*65536.0), (int)(pos[2]*65536.0));
-      */
-      /*        (int)(m->pointL[i].pos[0]*65536.0), (int)(m->pointL[i].pos[1]*65536.0), (int)(m->pointL[i].pos[2]*65536.0)); */
     }
 	
 	output.writeTag(0, (const char*)vertex, sizeof(SerializedVertex)*m->points);
@@ -201,23 +177,11 @@ dump_m_file(Lib3dsFile *f, const char *o)
 		face[i].a = points+m->faceL[i].points[0];
 		face[i].b = points+m->faceL[i].points[1];
 		face[i].c = points+m->faceL[i].points[2];
-      /*
-            fprintf(o, "		beginFace(3);\n");
-            fprintf(o, "		setTexture(t);\n");
-            fprintf(o, "		addFaceVertex(%d);\n", points+m->faceL[i].points[0]);
-            fprintf(o, "		addFaceVertex(%d);\n", points+m->faceL[i].points[1]);
-            fprintf(o, "		addFaceVertex(%d);\n", points+m->faceL[i].points[2]);
-            fprintf(o, "		endFace();\n");
-      */
     }
 	
 	output.writeTag(1, (const char*)face, sizeof(SerializedTriangle)*m->faces);
 	delete[] face;
-    /*
-        fprintf(o, "	}\n");
-        fprintf(o, "};\n");
-        fprintf(o, "#endif\n");
-    */
+	
     points+=m->points;
     faces+=m->faces;
   }

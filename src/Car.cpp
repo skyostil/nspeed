@@ -42,7 +42,6 @@ Car::Car(World *_world, const char *name):
 //	mesh = new CarModel(FPInt(1)>>8, world->getFramework()->loadImage(world->getFramework()->findResource("car.png"), &world->getScreen()->format));
 //	mesh = new Mesh(0, 0);
 	texture = world->getEnvironment()->loadImage("car.png");
-	printf("%p\n", texture);
 	mesh = new Mesh(world, world->getEnvironment()->getFramework()->findResource("car.mesh"), texture);
 	world->getEnvironment()->meshPool.add(mesh);
 

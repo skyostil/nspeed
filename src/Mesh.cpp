@@ -79,8 +79,6 @@ Mesh::Mesh(Object *parent, const char *fileName, Game::Surface *texture, int _fl
 		vertexCount = file.getDataSize() / sizeof(SerializedVertex);
 		SerializedVertex *v = new SerializedVertex[vertexCount];
 		
-		printf("%d vertices (%d bytes)\n", vertexCount, file.getDataSize());
-		
 		vertex = new Vertex[vertexCount];
 		transformedVertex = new Vertex[vertexCount];
 		
@@ -88,7 +86,6 @@ Mesh::Mesh(Object *parent, const char *fileName, Game::Surface *texture, int _fl
 		
 		for(i=0; i<vertexCount; i++)
 		{
-			printf("u: %8d, v: %8d\n", v[i].u, v[i].v);
 			setTexCoord(v[i].u, v[i].v);
 			addVertex(Vector(v[i].x, v[i].y, v[i].z));
 		}
@@ -100,8 +97,6 @@ Mesh::Mesh(Object *parent, const char *fileName, Game::Surface *texture, int _fl
 	{
 		faceCount = file.getDataSize() / sizeof(SerializedTriangle);		
 		SerializedTriangle *t = new SerializedTriangle[faceCount];
-
-		printf("%d faces\n", faceCount);
 				
 		face = new Face[faceCount];
 		
