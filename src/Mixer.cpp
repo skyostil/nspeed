@@ -124,7 +124,7 @@ void Mixer::render(Game::SampleChunk *buffer)
                         
 //                      *data++ = a / (channelCount*2);
 //                      *data++ = a / (1);
-                        *data++ = a >> 3;
+                        *data++ = a >> 2;
                         
                         if (ticker)
                         {
