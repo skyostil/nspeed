@@ -24,8 +24,6 @@
 #include "engine/Engine.h"
 #include "FixedPointMath.h"
 
-#include <stdio.h>
-
 // 16 bit internal mixing
 class Channel
 {
@@ -111,94 +109,6 @@ protected:
 	Channel	*channel;
 	Ticker	*ticker;
 	int	tickerCounter, tickerInterval;
-};
-
-// PAL
-#define MOD_FREQ_BASE	(int)(7159090.5)
-
-// NTSC
-//#define MOD_FREQ_BASE	(int)(7093789.2)
-
-
-class ModPlayer: private Ticker
-{
-public:
-	ModPlayer(Mixer *_mixer);
-	~ModPlayer();
-
-	bool	load(const char *file);
-	void	unload();
-	void	restart();
-	
-	Mixer	*mixer;
-
-protected:
-	unsigned short	bigEndian16(unsigned short b);
-	int		amigaToHz(int period);
-
-	int	channels;
-	
-	class ModSample
-	{
-	public:
-		ModSample(int _length, char _fineTune, char _volume, unsigned short _loopStart, unsigned short _loopLength);
-		~ModSample();
-		
-		Game::SampleChunk	*sample;
-		char			fineTune, volume;
-		unsigned short		loopStart, loopLength;
-	};
-	
-	class ModNote
-	{
-	public:
-		unsigned char	sampleNumber;
-		unsigned short	amigaPeriod;
-		short		note;
-		unsigned char	effectNumber;
-		unsigned char	effectParameter;
-	};
-	
-	class ModChannel
-	{
-	public:
-		ModChannel();
-		
-		ModSample	*sample;
-		char		volume;
-		unsigned short	amigaPeriod;
-		short		note;
-		
-		unsigned char	portaSpeed;
-		unsigned short	portaTarget;	// amiga period
-		bool		glissando;
-		
-		char		vibratoWaveform;
-		char		vibratoWaveformRetrig;	// four bits
-
-		char		tremoloWaveform;
-		char		tremoloWaveformRetrig;	// four bits
-		
-		char		arpeggioCounter;
-				
-		char		loopRow;
-		char		loopCounter;
-	};
-
-	ModSample	*sample[31];
-	ModNote		*note;
-	ModChannel	*channel;
-	char		order[128]; // XXX - allocate this dynamically
-	char		songLength, songSpeed;
-	char		patternCount;
-	char		currentOrder;
-	char		currentTick;
-	char		currentRow;
-	char		patternDelay;
-	
-private:
-	void	tick();
-	void	playNote(int ch, ModNote *n);
 };
 
 #endif

@@ -16,6 +16,7 @@
 #include "World.h"
 #include "Land.h"
 #include "Mixer.h"
+#include "ModPlayer.h"
 
 #include "models/Duck.h"
 #include "models/Loop.h"
@@ -434,7 +435,8 @@ public:
 //		Channel *ch = mixer->playSample(this->sample, this->sample->rate, true);
 		
 		modplayer = new ModPlayer(mixer);
-		modplayer->load("../../data/commando.mod");
+//		modplayer->load("../../data/commando.mod");
+		modplayer->load("/mnt/d/Documents and Settings/Sami.SPAM/My Documents/Music/Modules/chip/strobo-dallas.mod");
 	}
 
 	void renderAudio(Game::SampleChunk* sample)
