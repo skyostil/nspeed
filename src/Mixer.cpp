@@ -106,26 +106,27 @@ void Mixer::render(Game::SampleChunk *buffer)
 {
         int ch;
         int count = buffer->length;
-        
+
         switch(buffer->format.bytesPerSample)
         {
         case 2:
         {
                 Game::Sample16 *data = (Game::Sample16*)buffer->data;
-                
+
+                count *= 2;
                 while(count--)
                 {
                         Game::Sample32 a = 0;
-                        
+
                         for(ch=0; ch<channelCount; ch++)
                         {
                                 a+=channel[ch].play();
                         }
-                        
+
 //                      *data++ = a / (channelCount*2);
 //                      *data++ = a / (1);
                         *data++ = a >> 2;
-                        
+
                         if (ticker)
                         {
                                 if (++tickerCounter == tickerInterval)
@@ -140,11 +141,11 @@ void Mixer::render(Game::SampleChunk *buffer)
         case 1:
         {
                 Game::Sample8 *data = (Game::Sample8*)buffer->data;
-                
+
                 while(count--)
                 {
                         Game::Sample32 a = 0;
-                        
+
                         for(ch=0; ch<channelCount; ch++)
                         {
                                 if (channel[ch].isActive())
@@ -152,10 +153,10 @@ void Mixer::render(Game::SampleChunk *buffer)
                                         a+=channel[ch].play();
                                 }
                         }
-                        
+
 //                      *data++ = (a/(channelCount*2))>>8;
                         *data++ = a>>8;
-                        
+
                         if (ticker)
                         {
                                 if (++tickerCounter == tickerInterval)
@@ -179,7 +180,7 @@ Channel *Mixer::playSample(Game::SampleChunk *sample, int freq, bool loop, int c
                                 break;
         }
         channel[ch].start(sample, freq, 0, loop?sample->length:0);
-        
+
         return &channel[ch];
 }
 
