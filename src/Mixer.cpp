@@ -113,7 +113,6 @@ void Mixer::render(Game::SampleChunk *buffer)
         {
                 Game::Sample16 *data = (Game::Sample16*)buffer->data;
 
-                count *= 2;
                 while(count--)
                 {
                         Game::Sample32 a = 0;
