@@ -452,8 +452,14 @@ Game::SampleChunk *SDLFramework::loadSample(const char *name, Game::SampleFormat
 
 const char *SDLFramework::findResource(const char *name, bool mustExist)
 {
-    snprintf(resourcePath, sizeof(resourcePath), "../../data/%s", name);
-    fprintf(stdout, "SDLFramework::findResource(): %s\n", resourcePath);
+    FILE* f;
+    snprintf(resourcePath, sizeof(resourcePath), "../data/%s", name);
+    f = fopen(resourcePath, "r");
+    fprintf(stdout, "SDLFramework::findResource(): %s%s\n", resourcePath, (f == NULL) ? " (not found)" : "");
+    if (f)
+        {
+        fclose(f);
+        }
     return resourcePath;
 }
 
