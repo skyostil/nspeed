@@ -1,1 +1,62 @@
+-------------------------------------------------------------------
+                             >> N-Speed <<
+-------------------------------------------------------------------
 
+  1. Installation
+  2. Instructions
+  3. Credits
+
+-------------------------------------------------------------------
+ >> 1. Installation
+-------------------------------------------------------------------
+
+  The following developemnt libraries should be installed prior 
+  to building N-Speed:
+
+    - libsdl-dev
+    - libsdl-image-dev
+    - lib3ds-dev
+
+  To build and install the game, run the following commands:
+
+    $ ./configure
+    $ make
+    $ make install
+
+-------------------------------------------------------------------
+ >> 2. Instructions
+-------------------------------------------------------------------
+
+  Navigate the menus with the game controller and select entries
+  with the Enter key. Press Escape to go back.
+
+  During the race, the following keys are available:
+
+    Accelerate:       Up arrow
+    Brake:            Down arrow
+    Turn left:        Left arrow
+    Turn right:       Right arrow
+    Bring up menu:    Escape
+
+  If you wreck your car, press the Escape to bring up the
+  menu.
+
+-------------------------------------------------------------------
+ >> 3. Credits
+-------------------------------------------------------------------
+
+  Design, code, graphics, models:
+
+      Sami Kyöstilä <sami.kyostila@gmail.com>
+
+  Tracks, graphics:
+
+      Joonas Kerttula
+
+      Olli Kantola
+
+  Music:
+
+      Tommi Inkilä
+
+-------------------------------------------------------------------
