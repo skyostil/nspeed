@@ -201,7 +201,8 @@ void Camera::project(Vertex *v, scalar *sx, scalar *sy, scalar *uz, scalar *vz, 
         scalar p = FPMul(perspective, *invz);
         
         *sx = FPInt(rasterizer->screen->width>>1) + FPMul(v->pos.x, p);
-        *sy = FPInt(rasterizer->screen->height>>1) + FPMul(v->pos.y, FPMul(p,aspectRatio));
+        //*sy = FPInt(rasterizer->screen->height>>1) + FPMul(v->pos.y, FPMul(p,aspectRatio));
+        *sy = FPInt(rasterizer->screen->height>>1) + FPMul(v->pos.y, p);
         
         *invz = (1<<31) / (v->pos.z>>INVZ_SCALE);
         
@@ -215,7 +216,8 @@ void Camera::unproject(scalar sx, scalar sy, scalar z, Vertex *v)
         scalar p = FPDiv(z, perspective);
 
         v->pos.x = FPMul(sx - FPInt(rasterizer->screen->width>>1), p);
-        v->pos.y = FPMul(sy - FPInt(rasterizer->screen->height>>1), FPDiv(p,aspectRatio));
+        //v->pos.y = FPMul(sy - FPInt(rasterizer->screen->height>>1), FPDiv(p,aspectRatio));
+        v->pos.y = FPMul(sy - FPInt(rasterizer->screen->height>>1), p);
         v->pos.z = z;
         
 //      v->pos = invTransformation * v->pos;
