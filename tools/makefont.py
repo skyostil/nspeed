@@ -4,8 +4,7 @@ import sys
 import Image
 import ImageChops
 
-sys.path.append("pyft")
-
+# Requires PyFT freetype wrapper
 import freetype
 
 characters = "".join([chr(x) for x in range(33,127)])

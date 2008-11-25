@@ -1,2 +1,0 @@
-#[MGW32]swig_options.extend(['-shadow', '-docstring'])
-freetypec freetype_wrap.c -I../../lib -I../../lib/extend -L../../lib -lttf.dll

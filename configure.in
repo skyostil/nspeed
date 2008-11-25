@@ -1,90 +1,53 @@
-AC_INIT(configure.in)
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
 
-AM_CONFIG_HEADER(config.h)
+AC_PREREQ(2.61)
+AC_INIT(nspeed, 1.1, sami.kyostila@gmail.com)
 AM_INIT_AUTOMAKE(nspeed, 1.1)
+AC_CONFIG_SRCDIR([src/AutoConfig.h.in])
+AC_CONFIG_HEADER([src/AutoConfig.h])
 
-AC_LANG_CPLUSPLUS
+# Checks for programs.
 AC_PROG_CXX
+AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+AC_PROG_RANLIB
 AM_PROG_LIBTOOL
 
-dnl KDE_FIND_PATH(programm-name, variable-name, list of directories,
-dnl     if-not-found, test-parameter)
-AC_DEFUN(KDE_FIND_PATH,
-[
-   AC_MSG_CHECKING([for $1])
-   if test -n "$$2"; then
-        kde_cv_path="$$2";
-   else
-        kde_cache=`echo $1 | sed 'y%./+-%__p_%'`
+# Checks for libraries.
+AM_PATH_SDL(1.2.0, , exit)
+AC_CHECK_LIB([SDL_image], [IMG_Load])
+AC_CHECK_LIB([z], [compress])
 
-        AC_CACHE_VAL(kde_cv_path_$kde_cache,
-        [
-        kde_cv_path="NONE"
-        dirs="$3"
-        kde_save_IFS=$IFS
-        IFS=':'
-        for dir in $PATH; do
-          dirs="$dirs $dir"
-        done
-        IFS=$kde_save_IFS
+# Checks for header files.
+AC_HEADER_DIRENT
+AC_HEADER_STDC
+AC_CHECK_HEADERS([stdlib.h string.h])
 
-        for dir in $dirs; do
-          if test -x "$dir/$1"; then
-            if test -n "$5"
-            then
-              evalstr="$dir/$1 $5 2>&1 "
-              if eval $evalstr; then
-                kde_cv_path="$dir/$1"
-                break
-              fi
-            else
-                kde_cv_path="$dir/$1"
-                break
-            fi
-          fi
-        done
+# Checks for typedefs, structures, and compiler characteristics.
+AC_HEADER_STDBOOL
+AC_C_CONST
+AC_C_INLINE
 
-        eval "kde_cv_path_$kde_cache=$kde_cv_path"
+# Checks for library functions.
+AC_FUNC_ERROR_AT_LINE
+AC_FUNC_MALLOC
+AC_FUNC_MEMCMP
+AC_FUNC_REALLOC
+AC_FUNC_STAT
+AC_CHECK_FUNCS([memchr memmove memset])
 
-        ])
+# C++
+AC_LANG_CPLUSPLUS
 
-      eval "kde_cv_path=\"`echo '$kde_cv_path_'$kde_cache`\""
-
-   fi
-
-   if test -z "$kde_cv_path" || test "$kde_cv_path" = NONE; then
-      AC_MSG_RESULT(not found)
-      $4
-   else
-      AC_MSG_RESULT($kde_cv_path)
-      $2=$kde_cv_path
-
-   fi
-])
-
-KDE_FIND_PATH(sdl-config, LIBSDL_CONFIG, [${prefix}/bin ${exec_prefix}/bin /usr/local/bin /opt/local/bin], [
-  AC_MSG_WARN([Could not find libsdl anywhere, check http://www.sdl.org])
-])
-
-if test -n "$LIBSDL_CONFIG"; then
-     LIBSDL_LIBS="`$LIBSDL_CONFIG --libs`"
-     LIBSDL_RPATH=
-     for args in $LIBSDL_LIBS; do
-          case $args in
-            -L*)
-               LIBSDL_RPATH="$LIBSDL_RPATH $args"
-               ;;
-          esac
-     done
-     LIBSDL_RPATH=`echo $LIBSDL_RPATH | sed -e "s/-L/-R/g"`
-     LIBSDL_CFLAGS="`$LIBSDL_CONFIG --cflags`"
-
-     AC_DEFINE_UNQUOTED(HAVE_LIBSDL, 1, [Defines if your system has the LIBSDL library])
-fi
-
-
-AC_SUBST(LIBSDL_LIBS)
-AC_SUBST(LIBSDL_CFLAGS)
-AC_SUBST(LIBSDL_RPATH)
-
-AC_OUTPUT(Makefile src/Makefile src/engine/Makefile src/framework/Makefile src/framework/sdl/Makefile src/3ds2mesh/Makefile)
+AC_CONFIG_FILES([Makefile
+                 tools/3ds2h/Makefile
+                 tools/3ds2mesh/Makefile
+                 src/Makefile
+                 src/engine/Makefile
+                 src/framework/Makefile
+                 src/framework/sdl/Makefile])
+AC_OUTPUT
