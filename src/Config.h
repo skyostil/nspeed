@@ -2,6 +2,9 @@
 #define CONFIG_H
 
 /* Compiler and platform specific settings */
+#if defined(HAVE_CONFIG_H)
+#  include "AutoConfig.h"
+#endif
 
 #if defined(__GNUC__)
 #    define PACKED __attribute__((packed)) 

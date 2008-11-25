@@ -63,14 +63,15 @@ void SDLFramework::printUsage()
            "--yres n                Set vertical resolution\n"
            "--rate n                Set sound sampling rate\n"
            "--joynum n              Use joystick n\n"
+           "-fs, --fullscreen       Use fullscreen mode\n"
           );
 }
 
 int SDLFramework::run(int argc, char **argv)
 {
     int i;
-    bool useSound = true, useVideo = true;
-    int xres = 176, yres = 208, rate = 22050;
+    bool useSound = true, useVideo = true, useFullscreen = false;
+    int xres = 240, yres = 320, rate = 22050;
     int joynum = 0;
 
     done = false;
@@ -89,6 +90,10 @@ int SDLFramework::run(int argc, char **argv)
         else if (!strcmp(argv[i], "-nv") || !strcmp(argv[i], "--novideo"))
         {
             useVideo = false;
+        }
+        else if (!strcmp(argv[i], "-fs") || !strcmp(argv[i], "--fullscreen"))
+        {
+            useFullscreen = true;
         }
         else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help"))
         {
@@ -132,8 +137,7 @@ int SDLFramework::run(int argc, char **argv)
         }
         else
         {
-            //		screen = SDL_SetVideoMode(640, 480, 16, SDL_RESIZABLE*0);
-            screen = SDL_SetVideoMode(xres, yres, 16, SDL_RESIZABLE*0);
+            screen = SDL_SetVideoMode(xres, yres, 16, useFullscreen ? SDL_FULLSCREEN : 0);
 
             if (!screen)
             {
