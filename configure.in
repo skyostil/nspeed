@@ -46,6 +46,7 @@ AC_LANG_CPLUSPLUS
 AC_CONFIG_FILES([Makefile
                  tools/3ds2h/Makefile
                  tools/3ds2mesh/Makefile
+                 data/Makefile
                  src/Makefile
                  src/engine/Makefile
                  src/framework/Makefile
