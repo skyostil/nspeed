@@ -1,0 +1,2 @@
+?package(nspeed):needs="X11|text|vc|wm" section="Applications/Games"\
+  title="nspeed" command="/usr/bin/nspeed"

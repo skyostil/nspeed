@@ -1,0 +1,13 @@
+Source: nspeed
+Section: games
+Priority: extra
+Maintainer: skyostil <sami.kyostila@gmail.com>
+Build-Depends: debhelper (>= 7), autotools-dev
+Standards-Version: 3.8.0
+Homepage: http://unrealvoodoo.org/projects/n-speed
+
+Package: nspeed
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: A futuristic racing game
+ N-Speed is a futuristic racing game.
