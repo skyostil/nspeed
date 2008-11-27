@@ -318,16 +318,11 @@ int SDLFramework::run(int argc, char **argv)
     return 0;
 }
 
-#if defined(__GNUC__)
 template <typename PIXEL, int FACTOR>
-void genericUpscale(PIXEL* __restrict__ dest, const PIXEL* __restrict__ src, int srcW, int srcH)
-#else
-template <typename PIXEL, int FACTOR>
-void genericUpscale(PIXEL* dest, const PIXEL* src, int srcW, int srcH)
-#endif
+void genericUpscale(PIXEL* RESTRICT dest, const PIXEL* RESTRICT src, int srcW, int srcH)
 {
-    PIXEL *d = dest;
-    const PIXEL *s = src;
+    PIXEL* RESTRICT d = dest;
+    const PIXEL* RESTRICT s = src;
     int x, y, i, j;
 
     for (y = 0; y < srcH; y++)
@@ -341,10 +336,8 @@ void genericUpscale(PIXEL* dest, const PIXEL* src, int srcW, int srcH)
                 d[i + j * (srcW * FACTOR)] = *s;
                 }
             }
-#if defined(__GNUC__)
-            __builtin_prefetch(&s[1], 0);
-            __builtin_prefetch(&d[FACTOR], 1, 0);
-#endif
+            PREFETCH(&s[1], 0, 0);
+            PREFETCH(&d[FACTOR], 1, 0);
             s++;
             d += FACTOR;
         }
