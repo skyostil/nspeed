@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 //extern "C"
 //{
@@ -64,7 +65,8 @@ void SDLFramework::printUsage()
            "--rate n                Set sound sampling rate\n"
            "--joynum n              Use joystick n\n"
            "--datadir path          Override path to data files [default: %s]\n"
-           "-fs, --fullscreen       Use fullscreen mode\n",
+           "-fs, --fullscreen       Use fullscreen mode\n"
+           "--scale n               Render at 1/n resolution\n",
           dataDir);
 }
 
@@ -72,7 +74,8 @@ int SDLFramework::run(int argc, char **argv)
 {
     int i;
     bool useSound = true, useVideo = true, useFullscreen = false;
-    int xres = 240, yres = 320, rate = 22050;
+    int scaleFactor = 1;
+    int xres = 320, yres = 240, rate = 22050;
     int joynum = 0;
 
     done = false;
@@ -101,6 +104,10 @@ int SDLFramework::run(int argc, char **argv)
         else if (!strcmp(argv[i], "-fs") || !strcmp(argv[i], "--fullscreen"))
         {
             useFullscreen = true;
+        }
+        else if (!strcmp(argv[i], "--scale"))
+        {
+            scaleFactor = atoi(argv[++i]);
         }
         else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help"))
         {
@@ -148,7 +155,10 @@ int SDLFramework::run(int argc, char **argv)
         }
         else
         {
-            screen = SDL_SetVideoMode(xres, yres, 16, useFullscreen ? SDL_FULLSCREEN : 0);
+            xres -= xres % scaleFactor;
+            yres -= yres % scaleFactor;
+
+            screen = SDL_SetVideoMode(xres, yres, 16, (useFullscreen ? SDL_FULLSCREEN : 0));
 
             if (!screen)
             {
@@ -156,15 +166,24 @@ int SDLFramework::run(int argc, char **argv)
             }
             else
             {
-                printf("SDLFramework: %dx%d framebuffer, %d bits per pixel.\n", screen->w, screen->h, screen->format->BitsPerPixel);
-
                 Game::PixelFormat pf(
                     screen->format->BitsPerPixel,
                     screen->format->Rmask, screen->format->Rshift,
                     screen->format->Gmask, screen->format->Gshift,
                     screen->format->Bmask, screen->format->Bshift
                 );
-                gameScreen = new Game::Surface(&pf, (Game::Pixel*)screen->pixels, screen->w, screen->h);
+
+                printf("SDLFramework: %dx%d framebuffer, %d bits per pixel, scale %dx.\n",
+                       screen->w, screen->h, screen->format->BitsPerPixel, scaleFactor);
+
+                if (scaleFactor == 1)
+                {
+                    gameScreen = new Game::Surface(&pf, (Game::Pixel*)screen->pixels, screen->w, screen->h);
+                }
+                else
+                {
+                    gameScreen = new Game::Surface(&pf, screen->w / scaleFactor, screen->h / scaleFactor);
+                }
                 engine->configureVideo(gameScreen);
             }
         }
@@ -210,10 +229,10 @@ int SDLFramework::run(int argc, char **argv)
         SDL_JoystickEventState(SDL_ENABLE);
         if (SDL_JoystickOpen(joynum))
         {
-            printf("Using joystick '%s'\n", SDL_JoystickName(joynum));
+            printf("SDLFramework: Using joystick '%s'\n", SDL_JoystickName(joynum));
         } else
         {
-            fprintf(stderr, "Unable to open joystick %d.\n", joynum);
+            fprintf(stderr, "SDLFramework: Unable to open joystick %d.\n", joynum);
         }
     }
 
@@ -288,10 +307,130 @@ int SDLFramework::run(int argc, char **argv)
         if (screen)
         {
             engine->renderVideo(gameScreen);
+
+            if (scaleFactor > 1)
+            {
+                upscale(screen, gameScreen, scaleFactor);
+            }
             SDL_Flip(screen);
         }
     }
     return 0;
+}
+
+template <typename PIXEL, int FACTOR>
+void genericUpscale(PIXEL* dest, const PIXEL* src, int srcW, int srcH)
+{
+    PIXEL *d = dest;
+    const PIXEL *s = src;
+    int x, y, i, j;
+
+    for (y = 0; y < srcH; y++)
+    {
+        for (x = 0; x < srcW; x++)
+        {
+            for (i = 0; i < FACTOR; i++)
+            {
+                for (j = 0; j < FACTOR; j++)
+                {
+                d[i + j * (srcW * FACTOR)] = *s;
+                }
+            }
+#if defined(__GNUC__)
+            __builtin_prefetch(&s[1], 0);
+            __builtin_prefetch(&d[FACTOR], 1, 0);
+#endif
+            s++;
+            d += FACTOR;
+        }
+        d += (srcW * FACTOR) * (FACTOR - 1);
+    }
+}
+
+void SDLFramework::upscale(SDL_Surface* target, const Game::Surface* source, int scaleFactor)
+{
+    if (SDL_MUSTLOCK(target))
+    {
+        SDL_LockSurface(target);
+    }
+
+    switch (target->format->BitsPerPixel)
+    {
+    case 16:
+        {
+            const Uint16 *s = (const Uint16*)source->pixels;
+            Uint16 *d = (Uint16*)target->pixels;
+            switch (scaleFactor)
+            {
+            case 2:
+                genericUpscale<Uint16, 2>(d, s, source->width, source->height);
+                break;
+            case 3:
+                genericUpscale<Uint16, 3>(d, s, source->width, source->height);
+                break;
+            case 4:
+                genericUpscale<Uint16, 4>(d, s, source->width, source->height);
+                break;
+            case 5:
+                genericUpscale<Uint16, 5>(d, s, source->width, source->height);
+                break;
+            case 6:
+                genericUpscale<Uint16, 6>(d, s, source->width, source->height);
+                break;
+            case 7:
+                genericUpscale<Uint16, 7>(d, s, source->width, source->height);
+                break;
+            case 8:
+                genericUpscale<Uint16, 8>(d, s, source->width, source->height);
+                break;
+            default:
+                assert(!"Unsupported scaling factor");
+                break;
+            }
+            break;
+        }
+    case 32:
+        {
+            const Uint32 *s = (const Uint32*)source->pixels;
+            Uint32 *d = (Uint32*)target->pixels;
+            switch (scaleFactor)
+            {
+            case 2:
+                genericUpscale<Uint32, 2>(d, s, source->width, source->height);
+                break;
+            case 3:
+                genericUpscale<Uint32, 3>(d, s, source->width, source->height);
+                break;
+            case 4:
+                genericUpscale<Uint32, 4>(d, s, source->width, source->height);
+                break;
+            case 5:
+                genericUpscale<Uint32, 5>(d, s, source->width, source->height);
+                break;
+            case 6:
+                genericUpscale<Uint32, 6>(d, s, source->width, source->height);
+                break;
+            case 7:
+                genericUpscale<Uint32, 7>(d, s, source->width, source->height);
+                break;
+            case 8:
+                genericUpscale<Uint32, 8>(d, s, source->width, source->height);
+                break;
+            default:
+                assert(!"Unsupported scaling factor");
+                break;
+            }
+            break;
+        }
+        break;
+    default:
+        assert(!"Unsupported display bit depth for scaling");
+        break;
+    }
+    if (SDL_MUSTLOCK(target))
+    {
+        SDL_UnlockSurface(target);
+    }
 }
 
 void SDLFramework::exit()
@@ -443,7 +582,7 @@ Game::SampleChunk *SDLFramework::loadSample(const char *name, Game::SampleFormat
                         {
                             Game::Sample8 s;
                             fread(&s, sizeof(s), 1, f);
-							s+=0x80;
+                            s+=0x80;
                             sample->setSample(n,ch,sample->format.makeSample(s<<8));
                         }
                         break;
@@ -451,7 +590,7 @@ Game::SampleChunk *SDLFramework::loadSample(const char *name, Game::SampleFormat
                         {
                             Game::Sample16 s;
                             fread(&s, sizeof(s), 1, f);
-							s+=0x8000;
+                            s+=0x8000;
                             sample->setSample(n,ch,sample->format.makeSample(s));
                         }
                         break;

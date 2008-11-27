@@ -61,16 +61,17 @@ public:
 
 protected:
     void printUsage();
+    void upscale(SDL_Surface* target, const Game::Surface* source, int scaleFactor);
 
     static void audioCallback(void *userdata, Uint8 *stream, int len);
 
-    SDL_Surface		    *screen;
-    Game::Surface		*gameScreen;
-    Game::SampleChunk	*gameAudio;
+    SDL_Surface                 *screen;
+    Game::Surface               *gameScreen;
+    Game::SampleChunk           *gameAudio;
     Game::Engine		*engine;
-    char			    dataDir[512];
-    char			    resourcePath[512];
-    bool			    done;
+    char                        dataDir[512];
+    char                        resourcePath[512];
+    bool                        done;
 };
 
 #endif
