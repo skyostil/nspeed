@@ -30,6 +30,9 @@
 #define MAX_VERTICES            64
 #define MAX_CLIPPING_PLANES     5
 
+// default field of view -- tuned for widescreen layout
+#define VIEW_FOV                120
+
 // how much to shrink the frustum to avoid drawing outside the screen
 #define VIEW_FRUSTUM_TWEAK      4
 

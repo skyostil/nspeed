@@ -171,13 +171,13 @@ void GameEngine::renderVideo(Game::Surface* screen)
     case CreditsState:
         screen->clear(0);
 
-		if (logo)
-		{
-		    scalar angle = FPMod((time<<1), 2*PI);
+	if (logo)
+	{
+            scalar angle = FPMod((time<<1), 2*PI);
             rotateAroundPosition(Vector(0,0,0), FPInt(1));
-			renderRotatingQuad(env->getView(), logo, FPCos(angle) - FPInt(1));
-	        menu->dimScreen(screen, 0, screen->height);
-		}
+            renderRotatingQuad(env->getView(), logo, FPCos(angle) - FPInt(1));
+            menu->dimScreen(screen, 0, screen->height);
+        }
 
         y = 48;
 
@@ -198,7 +198,9 @@ void GameEngine::renderVideo(Game::Surface* screen)
         font->renderText(env->getScreen(), "Tommi Inkila", 16, y, textMask);
         y += font->getHeight() + 2;
 
-        renderTitle(screen, "Credits");
+        y = env->getScreen()->height - font->getHeight() - 2;
+        font->renderText(env->getScreen(), "Version " VERSION " (" __DATE__ ")", 8, y);
+
         break;
     break;
     case HelpState:
@@ -207,7 +209,7 @@ void GameEngine::renderVideo(Game::Surface* screen)
 
         font->renderText(env->getScreen(), "Steering", 8, y);
         y += font->getHeight() + 2;
-		font->renderText(env->getScreen(), "Left and right arrow", 16, y, textMask);
+	font->renderText(env->getScreen(), "Left and right arrow", 16, y, textMask);
         y += font->getHeight() + 2;
 
         font->renderText(env->getScreen(), "Acceleration", 8, y);
@@ -289,7 +291,7 @@ void GameEngine::renderVideo(Game::Surface* screen)
             }
 
             rotateAroundCar(car, 8);
-			car->getMesh()->transformation = Matrix::makeScaling(Vector(FPInt(8), FPInt(8), FPInt(8)));
+            car->getMesh()->transformation = Matrix::makeScaling(Vector(FPInt(8), FPInt(8), FPInt(8)));
             car->getMesh()->render(world);
 //            world->render();
         }
