@@ -318,8 +318,13 @@ int SDLFramework::run(int argc, char **argv)
     return 0;
 }
 
+#if defined(__GNUC__)
+template <typename PIXEL, int FACTOR>
+void genericUpscale(PIXEL* __restrict__ dest, const PIXEL* __restrict__ src, int srcW, int srcH)
+#else
 template <typename PIXEL, int FACTOR>
 void genericUpscale(PIXEL* dest, const PIXEL* src, int srcW, int srcH)
+#endif
 {
     PIXEL *d = dest;
     const PIXEL *s = src;
