@@ -6,6 +6,8 @@
 #  include "AutoConfig.h"
 #endif
 
+#define APPNAME nspeed
+
 #if defined(__GNUC__)
 #    define PACKED __attribute__((packed)) 
 #elif defined(_MSC_VER)

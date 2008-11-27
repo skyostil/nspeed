@@ -68,6 +68,7 @@ protected:
     Game::Surface		*gameScreen;
     Game::SampleChunk	*gameAudio;
     Game::Engine		*engine;
+    char			    dataDir[512];
     char			    resourcePath[512];
     bool			    done;
 };

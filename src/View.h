@@ -36,24 +36,10 @@
 // improves clipping accuracy
 #define VIEW_64BIT_CLIPPING
 
-
-/*
-class Object
-{
-public:
-        Object(): origin(0,0,0)
-        {
-        }
-        
-        Vector origin;
-};
-*/
-        
 typedef struct
 {
         Vector pos;
         scalar u, v;
-        
 } Vertex;
 
 class Plane

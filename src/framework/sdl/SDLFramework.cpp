@@ -63,8 +63,9 @@ void SDLFramework::printUsage()
            "--yres n                Set vertical resolution\n"
            "--rate n                Set sound sampling rate\n"
            "--joynum n              Use joystick n\n"
-           "-fs, --fullscreen       Use fullscreen mode\n"
-          );
+           "--datadir path          Override path to data files [default: %s]\n"
+           "-fs, --fullscreen       Use fullscreen mode\n",
+          dataDir);
 }
 
 int SDLFramework::run(int argc, char **argv)
@@ -75,6 +76,12 @@ int SDLFramework::run(int argc, char **argv)
     int joynum = 0;
 
     done = false;
+
+#if defined(PREFIX) && defined(APPNAME)
+    strncpy(dataDir, PREFIX "/share/games/" APPNAME, sizeof(dataDir));
+#else
+    strncpy(dataDir, "../data", sizeof(dataDir));
+#endif
 
     for(i=1; i<argc; i++)
     {
@@ -115,6 +122,10 @@ int SDLFramework::run(int argc, char **argv)
         else if (!strcmp(argv[i], "--joynum"))
         {
             joynum = atoi(argv[++i]);
+        }
+        else if (!strcmp(argv[i], "--datadir"))
+        {
+            strncpy(dataDir, argv[++i], sizeof(dataDir));
         }
         else
         {
@@ -457,11 +468,7 @@ Game::SampleChunk *SDLFramework::loadSample(const char *name, Game::SampleFormat
 const char *SDLFramework::findResource(const char *name, bool mustExist)
 {
     FILE* f;
-#if defined(PREFIX)
-    snprintf(resourcePath, sizeof(resourcePath), PREFIX "/data/%s", name);
-#else
-    snprintf(resourcePath, sizeof(resourcePath), "../data/%s", name);
-#endif
+    snprintf(resourcePath, sizeof(resourcePath), "%s/%s", dataDir, name);
     f = fopen(resourcePath, "r");
     fprintf(stdout, "SDLFramework::findResource(): %s%s\n", resourcePath, (f == NULL) ? " (not found)" : "");
     if (f)

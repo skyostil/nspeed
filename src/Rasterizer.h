@@ -29,7 +29,7 @@
 #define INVZ_SCALE		7
 
 // This slows things down a bit
-//#define RASTERIZER_2D_CLIPPING
+#define RASTERIZER_2D_CLIPPING
 
 //! Dimensions of a texture tile.
 #define TILE_TEXTURE_BITS	5
