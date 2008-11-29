@@ -171,25 +171,32 @@ void Environment::stopSoundEffects()
 
 void Environment::loadSettings()
 {
-    TagFile file(framework->findResource("settings.tag"));
+    const char* fileName = framework->findResource("settings.tag", false, true);
+
+    if (!fileName)
+    {
+        return;
+    }
+
+    TagFile file(fileName);
 
     while(1) switch(file.readTag())
-        {
-        case 0: // player name
-            file.readData((unsigned char*)playerName, sizeof(playerName));
-            break;
-        case 1: // sfx volume
-            file.readData((unsigned char*)&sfxVolume, sizeof(sfxVolume));
-            break;
-        case 2: // music volume
-            file.readData((unsigned char*)&musicVolume, sizeof(musicVolume));
-            break;
-        case 3: // ai count
-            file.readData((unsigned char*)&aiCount, sizeof(aiCount));
-            break;
-        default:
-            return;
-        }
+    {
+    case 0: // player name
+        file.readData((unsigned char*)playerName, sizeof(playerName));
+        break;
+    case 1: // sfx volume
+        file.readData((unsigned char*)&sfxVolume, sizeof(sfxVolume));
+        break;
+    case 2: // music volume
+        file.readData((unsigned char*)&musicVolume, sizeof(musicVolume));
+        break;
+    case 3: // ai count
+        file.readData((unsigned char*)&aiCount, sizeof(aiCount));
+        break;
+    default:
+        return;
+    }
 
     setVolumes();
 }
@@ -202,7 +209,7 @@ void Environment::setVolumes()
 
 void Environment::saveSettings()
 {
-    WriteTagFile file(framework->findResource("settings.tag", false));
+    WriteTagFile file(framework->findResource("settings.tag", false, true));
 
     file.writeTag(0, (unsigned char*)playerName, sizeof(playerName));
     file.writeTag(1, (unsigned char*)&sfxVolume, sizeof(sfxVolume));

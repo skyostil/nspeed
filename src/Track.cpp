@@ -207,7 +207,7 @@ bool Track::load(const char *name, int mapScale, bool loadOnlyMetadata)
 
                 // load best times
                 sprintf(fileName, "tracks/%.64s/times.tag", name);
-                TagFile timeFile(env->getFramework()->findResource(fileName));
+                TagFile timeFile(env->getFramework()->findResource(fileName, false, true));
                 TimeEntry timeEntry;
 
                 while(1) switch(timeFile.readTag())
@@ -233,7 +233,7 @@ bool Track::saveTimes(const char *name)
     TimeEntry timeEntry;
 
     sprintf(fileName, "tracks/%.64s/times.tag", name);
-    WriteTagFile timeFile(env->getFramework()->findResource(fileName, false));
+    WriteTagFile timeFile(env->getFramework()->findResource(fileName, false, true));
 
     timeEntry.time = getBestLapTime(timeEntry.name, sizeof(timeEntry.name));
     strncpy(timeEntry.name, bestLapName, sizeof(timeEntry.name));

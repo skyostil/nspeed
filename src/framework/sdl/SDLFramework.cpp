@@ -25,6 +25,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <limits.h>
 
 //extern "C"
 //{
@@ -602,10 +606,71 @@ Game::SampleChunk *SDLFramework::loadSample(const char *name, Game::SampleFormat
 }
 #endif
 
-const char *SDLFramework::findResource(const char *name, bool mustExist)
+static bool makedirs(const char* path, int mode = 0700)
+{
+    char tmpPath[PATH_MAX];
+    int i;
+
+    for (i = 0; path[i]; i++)
+    {
+        if (path[i] == '/')
+        {
+            struct stat sb;
+
+            tmpPath[i] = 0;
+            if (stat(tmpPath, &sb) != 0)
+            {
+                if (mkdir(tmpPath, mode) != 0)
+                {
+                    perror("mkdir");
+                    return false;
+                }
+            }
+        }
+        tmpPath[i] = path[i];
+    }
+    return true;
+}
+
+const char *SDLFramework::findResource(const char *name, bool mustExist, bool writable)
 {
     FILE* f;
-    snprintf(resourcePath, sizeof(resourcePath), "%s/%s", dataDir, name);
+
+    if (!writable)
+    {
+        snprintf(resourcePath, sizeof(resourcePath), "%s/%s", dataDir, name);
+    }
+    else
+    {
+#if !defined(APPNAME)
+        return name;
+#else
+        const char* home = getenv("HOME");
+        if (home)
+        {
+            int i;
+            snprintf(resourcePath, sizeof(resourcePath), "%s/.%s/%s", home, APPNAME, name);
+            for (i = strlen(resourcePath) - 1; i >= 0; i--)
+            {
+                if (i == '/')
+                {
+                    resourcePath[i] = 0;
+                    if (!makedirs(resourcePath))
+                    {
+                        return NULL;
+                    }
+                    break;
+                }
+            }
+            snprintf(resourcePath, sizeof(resourcePath), "%s/.%s/%s", home, APPNAME, name);
+        }
+        else
+        {
+            return name;
+        }
+#endif
+    }
+
     f = fopen(resourcePath, "r");
     fprintf(stdout, "SDLFramework::findResource(): %s%s\n", resourcePath, (f == NULL) ? " (not found)" : "");
     if (f)

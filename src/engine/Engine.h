@@ -183,7 +183,10 @@ public:
         virtual unsigned int getTickCount() = 0;
         virtual unsigned int getTicksPerSecond() = 0;
         
-		virtual const char *findResource(const char *name, bool mustExist = true) { return name; }
+	virtual const char *findResource(const char *name, bool mustExist = true, bool writable = false)
+        {
+            return name;
+        }
 
         virtual Surface *loadImage(const char *name, PixelFormat *pf = 0);
         virtual SampleChunk *loadSample(const char *name, SampleFormat *sf = 0);
