@@ -14,13 +14,7 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_RANLIB
-AM_PROG_LIBTOOL
-
-# Checks for libraries.
-AM_PATH_SDL(1.2.0, , exit)
-AC_CHECK_LIB([SDL_image], [IMG_Load])
-AC_CHECK_LIB([z], [compress])
+AC_PROG_LIBTOOL
 
 # Checks for header files.
 AC_HEADER_DIRENT
@@ -39,6 +33,9 @@ AC_FUNC_MEMCMP
 AC_FUNC_REALLOC
 AC_FUNC_STAT
 AC_CHECK_FUNCS([memchr memmove memset])
+AC_CHECK_LIB([SDL_image], [IMG_Load])
+AC_CHECK_LIB([z], [compress])
+AM_PATH_SDL(1.2.0, , exit)
 
 # C++
 AC_LANG_CPLUSPLUS

@@ -1,4 +1,4 @@
-CPPFLAGS = -DVERSION=\"@VERSION@\" @CPPFLAGS@
+AM_CPPFLAGS = -DVERSION=\"@VERSION@\" @CPPFLAGS@
 
 bin_PROGRAMS = nspeed
 nspeed_SOURCES = FixedPointMath.cpp FixedPointMatrix.cpp FixedPointVector.cpp Rasterizer.cpp View.cpp World.cpp Land.cpp Mixer.cpp ModPlayer.cpp Track.cpp Track.h Car.cpp BitmapFont.cpp GameEngine.cpp Environment.cpp Environment.h GameEngine.h Set.h Mesh.cpp Mesh.h TagFile.cpp Object.cpp MeshSet.cpp Texture.cpp Menu.cpp
