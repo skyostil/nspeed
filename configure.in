@@ -43,9 +43,14 @@ AC_LANG_CPLUSPLUS
 AC_CONFIG_FILES([Makefile
                  tools/3ds2h/Makefile
                  tools/3ds2mesh/Makefile
-                 data/Makefile
                  src/Makefile
                  src/engine/Makefile
                  src/framework/Makefile
-                 src/framework/sdl/Makefile])
+                 src/framework/sdl/Makefile
+                 data/cars/1/Makefile data/cars/2/Makefile data/cars/3/Makefile data/cars/4/Makefile
+                 data/cars/Makefile data/fonts/Makefile data/Makefile data/music/Makefile
+                 data/sound/Makefile data/tracks/city/Makefile data/tracks/desert/Makefile
+                 data/tracks/game/Makefile data/tracks/icetrack/Makefile data/tracks/Makefile
+                 data/tracks/speedtrack/Makefile data/tracks/test/Makefile
+                 ])
 AC_OUTPUT
