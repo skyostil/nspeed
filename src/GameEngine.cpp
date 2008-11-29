@@ -1146,7 +1146,7 @@ void GameEngine::renderEnergyBar(Game::Surface *screen, int energy, int x, int y
 
     for(py = y+1; py<=y+h-1; py++)
     {
-        Game::Pixel16 *p = ((Game::Pixel16*)screen->pixels) + (py * screen->width) + x + 1;
+        Game::Pixel16 *p = ((Game::Pixel16*)screen->pixels) + (py * screen->pixelPitch) + x + 1;
         for(px=x+1; px<=x+w-1; px++)
         {
             (*p) = (((*p)>>1) & mask) + ((1<<(screen->format.rsize-1)) << screen->format.rshift);
@@ -1174,19 +1174,23 @@ void GameEngine::renderStatic(Game::Surface *screen)
         (screen->format.gmask & (screen->format.gmask>>1)) +
         (screen->format.bmask & (screen->format.bmask>>1));
     Game::Pixel16 *p = (Game::Pixel16*)screen->pixels;
-    int count = screen->width * screen->height;
     int q = framework->getTickCount();
+    int x, y;
 
-    while(count--)
+    for (y = 0; y < screen->height; y++)
     {
-        (*p) = (((*p)>>1) & mask) +
-               ((q & ((1<<(screen->format.rsize-1))-1)) << screen->format.rshift) +
-               ((q & ((1<<(screen->format.gsize-1))-1)) << screen->format.gshift) +
-               ((q & ((1<<(screen->format.bsize-1))-1)) << screen->format.bshift);
-        q ^= 52135123;
-        q += (q>>1);
-        q += 13421;
-        p++;
+        for (x = 0; x < screen->width; x++)
+        {
+            (*p) = (((*p)>>1) & mask) +
+                   ((q & ((1<<(screen->format.rsize-1))-1)) << screen->format.rshift) +
+                   ((q & ((1<<(screen->format.gsize-1))-1)) << screen->format.gshift) +
+                   ((q & ((1<<(screen->format.bsize-1))-1)) << screen->format.bshift);
+            q ^= 52135123;
+            q += (q>>1);
+            q += 13421;
+            p++;
+        }
+        p += screen->pixelPitch - screen->width;
     }
 }
 
@@ -1197,7 +1201,6 @@ void GameEngine::renderDamage(Game::Surface *screen)
         (screen->format.rmask & (screen->format.rmask>>1)) +
         (screen->format.gmask & (screen->format.gmask>>1)) +
         (screen->format.bmask & (screen->format.bmask>>1));
-    int count = screen->width * screen->height;
     int r, q = framework->getTickCount();
     int x, y;
 
@@ -1222,7 +1225,7 @@ void GameEngine::renderDamage(Game::Surface *screen)
         q += (q>>5);
         q += 13421;
 
-        p+=screen->width;
+        p+=screen->pixelPitch;
     }
 }
 

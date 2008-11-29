@@ -38,7 +38,7 @@ Rasterizer::Rasterizer(Game::Surface *_screen):
         
         for(y=0; y<screen->height; y++)
         {
-                edge[y].offset = &screen->pixels[y*screen->width];
+                edge[y].offset = &screen->pixels[y*screen->pixelPitch];
         }
 }
 

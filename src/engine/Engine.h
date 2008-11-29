@@ -66,7 +66,7 @@ public:
 class Surface
 {
 public:
-        Surface(PixelFormat* _format, Pixel* _pixels, int _width, int _height);
+        Surface(PixelFormat* _format, Pixel* _pixels, int _width, int _height, int _pitch);
         Surface(PixelFormat* _format, int _width, int _height);
         Surface(PixelFormat* _format, Surface* s);      // makes a copy with the given pixel format
         virtual ~Surface();
@@ -84,7 +84,7 @@ public:
 		void					renderTransparentSurface(const Surface *s, int x, int y, Pixel colorMask = (Pixel)-1);
 
         Pixel                   *pixels;
-        int                     width, height, bytes, pitch;
+        int                     width, height, bytes, pitch, pixelPitch;
         bool                    autoDelete;
         PixelFormat             format;
 		

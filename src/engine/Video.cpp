@@ -68,15 +68,16 @@ PixelFormat::PixelFormat(int _bitsPerPixel, int rm, int rs, int gm, int gs, int 
         bsize = BITCOUNT(bmask>>bshift);
 }
 
-Surface::Surface(PixelFormat* _format, Pixel* _pixels, int _width, int _height):
+Surface::Surface(PixelFormat* _format, Pixel* _pixels, int _width, int _height, int _pitch):
         format(*_format),
         pixels(_pixels),
         width(_width),
         height(_height),
+        pitch(_pitch),
+        pixelPitch(_pitch / _format->bytesPerPixel),
         autoDelete(false)
 {
         bytes = width * height * format.bytesPerPixel;
-		pitch = width * format.bytesPerPixel;
 }
 
 Surface::Surface(PixelFormat* _format, int _width, int _height):
@@ -87,7 +88,8 @@ Surface::Surface(PixelFormat* _format, int _width, int _height):
         autoDelete(true)
 {
         bytes = width * height * format.bytesPerPixel;
-		pitch = width * format.bytesPerPixel;
+        pitch = width * format.bytesPerPixel;
+        pixelPitch = width;
         pixels = new Pixel[bytes / sizeof(Pixel)];
         clear();
 }
@@ -101,7 +103,8 @@ Surface::Surface(PixelFormat* _format, Surface* s):
 {
         int x, y;
         bytes = width * height * format.bytesPerPixel;
-		pitch = width * format.bytesPerPixel;
+        pitch = width * format.bytesPerPixel;
+        pixelPitch = width;
         pixels = new Pixel[bytes / sizeof(Pixel)];
         
         for(y=0; y<height; y++)
@@ -124,6 +127,7 @@ Surface::~Surface()
 
 void Surface::clear(Pixel color)
 {
+        int x, y;
         if (!pixels)
             return;
 
@@ -132,28 +136,40 @@ void Surface::clear(Pixel color)
         case 1:
         {
                 Pixel8 *p = (Pixel8*)pixels;
-                int l = bytes;
-                
-                while(l--)
+                for (y = 0; y < height; y++)
+                {
+                    for (x = 0; x < width; x++)
+                    {
                         *p++ = color;
+                    }
+                    p += pixelPitch - width;
+                }
         }
         break;
         case 2:
         {
                 Pixel16 *p = (Pixel16*)pixels;
-                int l = bytes>>1;
-                
-                while(l--)
+                for (y = 0; y < height; y++)
+                {
+                    for (x = 0; x < width; x++)
+                    {
                         *p++ = color;
+                    }
+                    p += pixelPitch - width;
+                }
         }
         break;
         case 4:
         {
                 Pixel32 *p = (Pixel32*)pixels;
-                int l = bytes>>2;
-                
-                while(l--)
+                for (y = 0; y < height; y++)
+                {
+                    for (x = 0; x < width; x++)
+                    {
                         *p++ = color;
+                    }
+                    p += pixelPitch - width;
+                }
         }
         break;
         }
@@ -166,19 +182,19 @@ Pixel Surface::getPixel(int x, int y)
         case 1:
         {
                 Pixel8 *p = (Pixel8*)pixels;
-                return p[x + y*width];
+                return p[x + y*pixelPitch];
         }
         break;
         case 2:
         {
                 Pixel16 *p = (Pixel16*)pixels;
-                return p[x + y*width];
+                return p[x + y*pixelPitch];
         }
         break;
         case 4:
         {
                 Pixel32 *p = (Pixel32*)pixels;
-                return p[x + y*width];
+                return p[x + y*pixelPitch];
         }
         break;
         }
@@ -192,19 +208,19 @@ void Surface::setPixel(int x, int y, Pixel color)
         case 1:
         {
                 Pixel8 *p = (Pixel8*)pixels;
-                p[x + y*width] = color;
+                p[x + y*pixelPitch] = color;
         }
         break;
         case 2:
         {
                 Pixel16 *p = (Pixel16*)pixels;
-                p[x + y*width] = color;
+                p[x + y*pixelPitch] = color;
         }
         break;
         case 4:
         {
                 Pixel32 *p = (Pixel32*)pixels;
-                p[x + y*width] = color;
+                p[x + y*pixelPitch] = color;
         }
         break;
         }
@@ -220,13 +236,13 @@ void Surface::renderTransparentSurfaceTemplate(const Surface *s, int x, int y, P
 	int h = s->height;
 	
 	PixelType *src = ((PixelType*)s->pixels);
-	PixelType *dest = ((PixelType*)pixels) +  y*width + x;
+	PixelType *dest = ((PixelType*)pixels) +  y*pixelPitch + x;
 
 	// clip the rectangle	
 	if (y < 0)
 	{
-		src -= y*s->width;
-		dest -= y*width;
+		src -= y*s->pixelPitch;
+		dest -= y*pixelPitch;
 		h += y;
 		y = 0;
 	}
@@ -262,8 +278,8 @@ void Surface::renderTransparentSurfaceTemplate(const Surface *s, int x, int y, P
 				src++;
 				dest++;
 			}
-			src += s->width - w;
-			dest += width - w;
+			src += s->pixelPitch - w;
+			dest += pixelPitch - w;
 		}
 	}
 }

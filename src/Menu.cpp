@@ -185,7 +185,7 @@ void Menu::renderSelectionRectangle(int x, int y, int w, int h) const
 	int c = (1<<(screen->format.rsize+1))-1;
 	const int r = 1, g = 0, b = 0;
 
-	p+=y * screen->width;
+	p+=y * screen->pixelPitch;
 
 	int maxr = ((1<<screen->format.rsize)-1) << screen->format.rshift;
 	int maxg = ((1<<screen->format.gsize)-1) << screen->format.gshift;
@@ -215,6 +215,7 @@ void Menu::renderSelectionRectangle(int x, int y, int w, int h) const
 
 			*p++ = (r|g|b);
 		}
+                p += screen->pixelPitch - screen->width;
 	}
 }
 
@@ -222,21 +223,25 @@ void Menu::dimScreen(Game::Surface *s, int minY, int maxY) const
 {
 	Game::Surface *screen = env->getScreen();
 	Game::Pixel16 *p = (Game::Pixel16*)screen->pixels;
-	int i = screen->width * (maxY - minY);
+	int x, y = (maxY - minY);
 	Game::Pixel16 mask = 
 		(((1<<screen->format.rsize-1)-1) << screen->format.rshift) |
 		(((1<<screen->format.gsize-1)-1) << screen->format.gshift) |
 		(((1<<screen->format.bsize-1)-1) << screen->format.bshift);
 		
 	if (minY > maxY)
-		return;
+            return;
 
-	p += screen->width * minY;
-		
-	while(i--)
-	{
+	p += screen->pixelPitch * minY;
+
+        while (y--)
+        {
+            for (x = 0; x < screen->width; x++)
+            {
 		*p++ = ((*p) >> 1) & mask;
-	}
+            }
+            p += screen->pixelPitch - screen->width;
+        }
 }
 
 void Menu::animate()

@@ -186,7 +186,7 @@ int SDLFramework::run(int argc, char **argv)
 
                 if (scaleFactor == 1)
                 {
-                    gameScreen = new Game::Surface(&pf, (Game::Pixel*)screen->pixels, screen->w, screen->h);
+                    gameScreen = new Game::Surface(&pf, (Game::Pixel*)screen->pixels, screen->w, screen->h, screen->pitch);
                 }
                 else
                 {
@@ -307,7 +307,7 @@ int SDLFramework::run(int argc, char **argv)
                         screen->format->Gmask, screen->format->Gshift,
                         screen->format->Bmask, screen->format->Bshift
                     );
-                    gameScreen = new Game::Surface(&pf, (Game::Pixel*)screen->pixels, screen->w, screen->h);
+                    gameScreen = new Game::Surface(&pf, (Game::Pixel*)screen->pixels, screen->w, screen->h, screen->pitch);
                     engine->configureVideo(gameScreen);
                 }
 

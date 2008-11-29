@@ -217,7 +217,7 @@ void Land::render(World *world)
 		const int scale = 1;
 		int c = 8 << scale;
 
-		p+=(horizon>>FP) * view->rasterizer->screen->width;
+		p+=(horizon>>FP) * view->rasterizer->screen->pixelPitch;
 
 		if (c > 0)
 		{
@@ -246,6 +246,7 @@ void Land::render(World *world)
 
 					*p++ = (r|g|b);
 				}
+                                p += view->rasterizer->screen->pixelPitch - view->rasterizer->screen->width;
 			}
 		}
 		else
@@ -275,6 +276,7 @@ void Land::render(World *world)
 
 					*p++ = (r|g|b);
 				}
+                                p += view->rasterizer->screen->pixelPitch - view->rasterizer->screen->width;
 			}
 		}
 	}

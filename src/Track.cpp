@@ -169,7 +169,7 @@ bool Track::load(const char *name, int mapScale, bool loadOnlyMetadata)
                     for(y=0; y<texture->height; y++)
                         for(x=0; x<texture->width; x++)
                         {
-                            unsigned char tile = ((unsigned char*)texture->pixels)[y * texture->width + x];
+                            unsigned char tile = ((unsigned char*)texture->pixels)[y * texture->pixelPitch + x];
                             if (tile > 0 && !textureTileList[tile])
                             {
                                 sprintf(fileName, "tracks/%.64s/tile%d.png", name, tile);
@@ -177,7 +177,7 @@ bool Track::load(const char *name, int mapScale, bool loadOnlyMetadata)
                                 {
                                     sprintf(fileName, "tracks/tile%d.png", tile);
                                     if ((textureTileList[tile] = env->loadImage(fileName)) == NULL)
-                                        ((unsigned char*)texture->pixels)[y * texture->width + x] = 0;
+                                        ((unsigned char*)texture->pixels)[y * texture->pixelPitch + x] = 0;
                                 }
                             }
                         }

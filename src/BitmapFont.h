@@ -54,10 +54,10 @@ private:
     void	clear();
 
     //! the first glyph is always space
-    Glyph		*glyph;
-    int		minGlyph, maxGlyph;
+    Glyph	        *glyph;
+    int		        minGlyph, maxGlyph;
     Game::Surface	*texture;
-    bool	autoDelete;
+    bool	        autoDelete;
 };
 
 #endif

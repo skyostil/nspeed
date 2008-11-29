@@ -102,13 +102,13 @@ void BitmapFont::renderGlyph(Game::Surface *screen, Glyph *g, int x, int y, Game
 	int h = g->height;
 	
 	Pixel *src = ((Pixel*)g->pixels);
-	Pixel *dest = ((Pixel*)screen->pixels) +  y*screen->width + x;
+	Pixel *dest = ((Pixel*)screen->pixels) +  y*screen->pixelPitch + x;
 
 	// clip the rectangle	
 	if (y < 0)
 	{
-		src -= y*texture->width;
-		dest -= y*screen->width;
+		src -= y*texture->pixelPitch;
+		dest -= y*screen->pixelPitch;
 		h += y;
 		y = 0;
 	}
@@ -144,8 +144,8 @@ void BitmapFont::renderGlyph(Game::Surface *screen, Glyph *g, int x, int y, Game
 				src++;
 				dest++;
 			}
-			src += texture->width - w;
-			dest += screen->width - w;
+			src += texture->pixelPitch - w;
+			dest += screen->pixelPitch - w;
 		}
 	}
 }
