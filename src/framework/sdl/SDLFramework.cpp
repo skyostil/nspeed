@@ -613,7 +613,7 @@ static bool makedirs(const char* path, int mode = 0700)
 
     for (i = 0; path[i]; i++)
     {
-        if (path[i] == '/')
+        if (path[i] == '/' && i > 1)
         {
             struct stat sb;
 
