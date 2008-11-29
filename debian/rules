@@ -65,6 +65,13 @@ install: build
 	# Add here commands to install the package into debian/nspeed.
 	$(MAKE) DESTDIR=$(CURDIR)/debian/nspeed install
 
+	# Install files for Maemo
+	mkdir -p $(CURDIR)/debian/nspeed/usr/share/icons/hicolor/26x26/hildon
+	mkdir -p $(CURDIR)/debian/nspeed/usr/share/icons/hicolor/40x40/hildon
+	mkdir -p $(CURDIR)/debian/nspeed/usr/share/icons/hicolor/scalable/hildon
+	cp data/nspeed26.png $(CURDIR)/debian/nspeed/usr/share/icons/hicolor/26x26/hildon/nspeed.png
+	cp data/nspeed40.png $(CURDIR)/debian/nspeed/usr/share/icons/hicolor/40x40/hildon/nspeed.png
+	cp data/nspeed64.png $(CURDIR)/debian/nspeed/usr/share/icons/hicolor/scalable/hildon/nspeed.png
 
 # Build architecture-independent files here.
 binary-indep: install

@@ -84,6 +84,10 @@ int SDLFramework::run(int argc, char **argv)
 
     done = false;
 
+#if defined(APPNAME)
+    putenv("SDL_VIDEO_X11_WMCLASS=" APPNAME);
+#endif
+
 #if defined(PREFIX) && defined(APPNAME)
     strncpy(dataDir, PREFIX "/share/games/" APPNAME, sizeof(dataDir));
 #else
@@ -190,6 +194,9 @@ int SDLFramework::run(int argc, char **argv)
                 }
                 engine->configureVideo(gameScreen);
             }
+#if defined(APPNAME)
+            SDL_WM_SetCaption(APPNAME, NULL);
+#endif
         }
     }
 
