@@ -24,9 +24,9 @@
 #include <stdio.h>
  
 Land::Land(Game::Surface *_texture,
-		   Game::Surface *_skyTexture,
+           Game::Surface *_skyTexture,
            int _flags,
-		   int _textureScale,
+           int _textureScale,
            scalar _depth):
 	texture(_texture),
 	textureScale(_textureScale),
