@@ -331,6 +331,27 @@ int SDLFramework::run(int argc, char **argv)
                 gameEvent.joyAxis.value = event.jaxis.value;
                 engine->handleEvent(&gameEvent);
                 break;
+            case SDL_MOUSEMOTION:
+                gameEvent.type = Game::Event::PointerMoveEvent;
+                gameEvent.pointer.x = event.motion.x;
+                gameEvent.pointer.y = event.motion.y;
+                gameEvent.pointer.buttons = event.motion.state;
+                engine->handleEvent(&gameEvent);
+                break;
+            case SDL_MOUSEBUTTONDOWN:
+                gameEvent.type = Game::Event::PointerButtonPressEvent;
+                gameEvent.pointerButton.x = event.button.x;
+                gameEvent.pointerButton.y = event.button.y;
+                gameEvent.pointerButton.button = event.button.button;
+                engine->handleEvent(&gameEvent);
+                break;
+            case SDL_MOUSEBUTTONUP:
+                gameEvent.type = Game::Event::PointerButtonReleaseEvent;
+                gameEvent.pointerButton.x = event.button.x;
+                gameEvent.pointerButton.y = event.button.y;
+                gameEvent.pointerButton.button = event.button.button;
+                engine->handleEvent(&gameEvent);
+                break;
             case SDL_JOYBUTTONDOWN:
             case SDL_JOYBUTTONUP:
                 gameEvent.type = Game::Event::JoystickAxisEvent;

@@ -79,7 +79,8 @@ Menu::Menu(Object *parent, Environment *_env):
 	jiggleAmount(0),
 	jiggleDirection(1),
 	jiggleSpeed(0),
-	topLevelMenu(false)
+	topLevelMenu(false),
+        verticalSpacing(2)
 {
 }
 
@@ -108,7 +109,6 @@ void Menu::render(World *world)
 {
 	Game::Surface *screen = env->getScreen();
 	int i, totalHeight = 0, y, x, w, h;
-	const int verticalSpacing = 2;
 	
 	animate();
 	
@@ -290,66 +290,91 @@ void Menu::atomicStep()
 
 Menu::Action Menu::handleEvent(Game::Event* event)
 {
-	if (swooshDirection)
-		return NoAction;
+    if (swooshDirection)
+        return NoAction;
 
     if (deferredAction != NoAction)
         return NoAction;
 
-	switch(event->type)
-	{
-		case Game::Event::ExitEvent:
-		break;
-		case Game::Event::KeyPressEvent:
-		{
-			switch(event->key.code)
-			{
-			case KEY_UP:
-				selected--;
-				if (selected < 0)
-					selected = items.getCount() - 1;
-				if (selected < 0)
-					selected = 0;
-				deferredAction = GoUp;
-				return deferredAction;
-			break;
-			case KEY_DOWN:
-				selected++;
-				if (selected > items.getCount() - 1)
-					selected = 0;
-				deferredAction = GoDown;
-				return deferredAction;
-			break;
-            case KEY_LEFT:
-				deferredAction = ToggleLeft;
-				return deferredAction;
-                break;
-            case KEY_RIGHT:
-				deferredAction = ToggleRight;
-				return deferredAction;
-                break;
-            case KEY_EXIT:
-			case KEY_BRAKE:
-				if (!topLevelMenu)
-				{
-					swooshDirection = 1;
-					deferredAction = GoBack;
-					return deferredAction;
-				}
-			break;
-			case KEY_SELECT:
-			case KEY_THRUST:
-				swooshDirection = -1;
-				deferredAction = Select;
-				return deferredAction;
-			break;
-			}
-		}
-		break;
-		case Game::Event::KeyReleaseEvent:
-		break;
-	}
-	return NoAction;
+    switch(event->type)
+    {
+    case Game::Event::ExitEvent:
+    break;
+    case Game::Event::KeyPressEvent:
+    {
+        switch(event->key.code)
+        {
+        case KEY_UP:
+            selected--;
+            if (selected < 0)
+                selected = items.getCount() - 1;
+            if (selected < 0)
+                selected = 0;
+            deferredAction = GoUp;
+            return deferredAction;
+        break;
+        case KEY_DOWN:
+            selected++;
+            if (selected > items.getCount() - 1)
+                selected = 0;
+            deferredAction = GoDown;
+            return deferredAction;
+        break;
+        case KEY_LEFT:
+            deferredAction = ToggleLeft;
+            return deferredAction;
+        break;
+        case KEY_RIGHT:
+            deferredAction = ToggleRight;
+            return deferredAction;
+        break;
+        case KEY_EXIT:
+        case KEY_BRAKE:
+            if (!topLevelMenu)
+            {
+                swooshDirection = 1;
+                deferredAction = GoBack;
+                return deferredAction;
+            }
+        break;
+        case KEY_SELECT:
+        case KEY_THRUST:
+            swooshDirection = -1;
+            deferredAction = Select;
+            return deferredAction;
+            break;
+        }
+    }
+    break;
+    case Game::Event::KeyReleaseEvent:
+    break;
+    case Game::Event::PointerMoveEvent:
+        if (event->pointer.y >= minY && event->pointer.y <= maxY)
+        {
+            int i, y = minY;
+            for(i=0; i<items.getCount(); i++)
+            {
+                MenuItem *item = items.getItem(i);
+                int h = getHeight(item);
+                if (event->pointer.y >= y && event->pointer.y < y + h)
+                {
+                    selected = i;
+                    break;
+                }
+                y += h + verticalSpacing;
+            }
+        }
+    break;
+    case Game::Event::PointerButtonPressEvent:
+        if (event->pointer.y >= minY && event->pointer.y <= maxY)
+        {
+            swooshDirection = -1;
+            deferredAction = Select;
+            return deferredAction;
+        }
+    break;
+    }
+    return NoAction;
 }
 
 MenuItem *Menu::getSelection() const

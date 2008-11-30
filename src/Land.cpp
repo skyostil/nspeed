@@ -141,7 +141,7 @@ void Land::render(World *world)
 	{
 		Vector v = view->camera.target - view->camera.origin;
 		scalar angle;
-		scalar skyWidth = FPDiv(FPInt(256),PI);
+		scalar skyWidth = FPDiv(FPInt(512),PI);
 		scalar skyHeight = FPInt(64);
 
 		if (FPAbs(v.z) > FPAbs(v.x))
@@ -154,7 +154,7 @@ void Land::render(World *world)
 //			vOffset = FPInt(64);
 		}
 
-		scalar x = FPMul(angle, -skyWidth) + skyWidth*4;
+		scalar x = FPMul(angle, -skyWidth) + skyWidth*2;
 
 		scalar u0 = x;
 		scalar v0 = skyHeight - (horizon>>1);

@@ -720,6 +720,9 @@ void GameEngine::handleMenuAction(Menu::Action action)
             else if (menu->getSelection() == &menuItemAiCount)
                 env->setAiCount(env->getAiCount() - 1);
             break;
+        default:
+            handleMenuAction(Menu::GoBack);
+            break;
         }
         break;
     case Menu::ToggleRight:
@@ -768,9 +771,11 @@ void GameEngine::handleEvent(Game::Event* event)
     {
     case HelpState:
     case CreditsState:
-        if (event->type == Game::Event::KeyPressEvent && 
-            (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST)
-            )
+        if ((event->type == Game::Event::KeyPressEvent && 
+            (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST)) ||
+            event->type == Game::Event::PointerButtonReleaseEvent)
+            setState(MainMenuState);
+        else if (event->type == Game::Event::PointerButtonReleaseEvent) 
             setState(MainMenuState);
     break;
     case IdleState:
@@ -781,9 +786,9 @@ void GameEngine::handleEvent(Game::Event* event)
         if (!raceLoaded)
             return;
 
-        if (event->type == Game::Event::KeyPressEvent && 
-            (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST)
-            )
+        if ((event->type == Game::Event::KeyPressEvent && 
+            (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST)) ||
+            event->type == Game::Event::PointerButtonReleaseEvent)
             setState(RaceCountDownState);
         break;
     case RaceCountDownState:
@@ -870,6 +875,7 @@ void GameEngine::handleRaceOutroEvent(Game::Event* event)
 void GameEngine::handleRaceEvent(Game::Event* event)
 {
     Car *car = env->carPool.getItem(0);
+    Game::Surface* screen = env->getScreen();
 
     if (!raceLoaded)
         return;
@@ -927,6 +933,23 @@ void GameEngine::handleRaceEvent(Game::Event* event)
                 break;
             }
         }
+    case Game::Event::PointerMoveEvent:
+        if (event->pointer.buttons)
+        {
+            if (event->pointer.x < 2 * screen->width / 5)
+            {
+                car->setSteering(-1);
+            }
+            else if (event->pointer.x > 3 * screen->width / 5)
+            {
+                car->setSteering(1);
+            }
+            else
+            {
+                car->setSteering(0);
+            }
+        }
+        break;
     }
 }
 

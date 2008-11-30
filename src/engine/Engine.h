@@ -118,7 +118,7 @@ public:
         //! \param sample must be in the correct format.
         void    setSample(int n, int channel, Sample sample);
 
-        Sample8*		data;
+        Sample8*        data;
         int             length;
         int             rate;
         int             bytes;
@@ -136,8 +136,8 @@ public:
                 KeyReleaseEvent,
                 KeyEvent,
                 PointerMoveEvent,
-                PointerButtonPressedEvent,
-                PointerButtonReleasedEvent,
+                PointerButtonPressEvent,
+                PointerButtonReleaseEvent,
                 ExitEvent,
                 JoystickButtonEvent,
                 JoystickAxisEvent,
@@ -156,8 +156,13 @@ public:
                 struct
                 {
                         int x, y;
-                        int button;
+                        int buttons;
                 } pointer;
+                struct
+                {
+                        int x, y;
+                        int button;
+                } pointerButton;
                 struct
                 {
                         int which;

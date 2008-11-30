@@ -94,6 +94,7 @@ private:
 	int				jiggleAmount, jiggleSpeed, jiggleDirection;
 	int				minY, maxY, offsetY;
 	int				clipMinY;
+	int				verticalSpacing;
 	bool			swooshDone, topLevelMenu;
 	Action			deferredAction;
 	Environment		*env;
