@@ -81,12 +81,29 @@ void SDLFramework::printUsage()
           dataDir);
 }
 
+static void setWMName(const char *name, bool is_fullscreen)
+{
+    SDL_SysWMinfo info;
+    SDL_VERSION(&info.version);
+    if (SDL_GetWMInfo(&info))
+    {
+        Display *dpy = info.info.x11.display;
+        Window win;
+        
+        if (is_fullscreen)
+            win = info.info.x11.fswindow;
+        else
+            win = info.info.x11.wmwindow;
+        XStoreName(dpy, win, name);
+   }
+}
+
 int SDLFramework::run(int argc, char **argv)
 {
     int i;
     bool useSound = true, useVideo = true, useFullscreen = false;
     int scaleFactor = 1;
-    int xres = 320, yres = 240, rate = 22050, audioSamples = 2048;
+    int xres = 320, yres = 240, rate = 22050, audioSamples = 1024;
     int joynum = 0;
 
 #if defined(HAVE_LIBXSP)
@@ -248,6 +265,7 @@ int SDLFramework::run(int argc, char **argv)
             }
 #if defined(APPNAME)
             SDL_WM_SetCaption(APPNAME, NULL);
+            setWMName(APPNAME, useFullscreen);
 #endif
         }
     }
@@ -311,11 +329,13 @@ int SDLFramework::run(int argc, char **argv)
             case SDL_KEYDOWN:
                 gameEvent.type = Game::Event::KeyPressEvent;
                 gameEvent.key.code = event.key.keysym.sym;
+                gameEvent.key.unicode = event.key.keysym.unicode;
                 engine->handleEvent(&gameEvent);
                 break;
             case SDL_KEYUP:
                 gameEvent.type = Game::Event::KeyReleaseEvent;
                 gameEvent.key.code = event.key.keysym.sym;
+                gameEvent.key.unicode = event.key.keysym.unicode;
                 engine->handleEvent(&gameEvent);
                 break;
             case SDL_QUIT:
@@ -384,6 +404,17 @@ int SDLFramework::run(int argc, char **argv)
                     engine->configureVideo(gameScreen);
                 }
 
+                break;
+            case SDL_ACTIVEEVENT:
+#if defined(HAVE_LIBXSP)
+                if (useXsp)
+                {
+                    SDL_SysWMinfo wminfo;
+                    SDL_VERSION(&wminfo.version);
+                    SDL_GetWMInfo(&wminfo);
+                    XSPSetPixelDoubling(wminfo.info.x11.display, 0, event.active.gain);
+                }
+#endif /* HAVE_LIBXSP */
                 break;
             }
         }
@@ -743,7 +774,7 @@ const char *SDLFramework::findResource(const char *name, bool mustExist, bool wr
             snprintf(resourcePath, sizeof(resourcePath), "%s/.%s/%s", home, APPNAME, name);
             for (i = strlen(resourcePath) - 1; i >= 0; i--)
             {
-                if (i == '/')
+                if (resourcePath[i] == '/')
                 {
                     resourcePath[i] = 0;
                     if (!makedirs(resourcePath))

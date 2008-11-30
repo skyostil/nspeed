@@ -152,6 +152,7 @@ public:
                 struct
                 {
                         int code;
+                        int unicode;
                 } key;
                 struct
                 {

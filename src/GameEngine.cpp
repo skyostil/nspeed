@@ -206,7 +206,7 @@ void GameEngine::renderVideo(Game::Surface* screen)
     case HelpState:
         screen->clear(0);
         y = 48;
-
+#ifdef EPOC
         font->renderText(env->getScreen(), "Steering", 8, y);
         y += font->getHeight() + 2;
 	font->renderText(env->getScreen(), "Left and right arrow", 16, y, textMask);
@@ -226,6 +226,27 @@ void GameEngine::renderVideo(Game::Surface* screen)
         y += font->getHeight() + 2;
         font->renderText(env->getScreen(), "Left soft key", 16, y, textMask);
         y += font->getHeight() + 2;
+#else /* EPOC */
+        font->renderText(env->getScreen(), "Steering", 8, y);
+        y += font->getHeight() + 2;
+	font->renderText(env->getScreen(), "Left and right arrows or touchscreen", 16, y, textMask);
+        y += font->getHeight() + 2;
+
+        font->renderText(env->getScreen(), "Acceleration", 8, y);
+        y += font->getHeight() + 2;
+        font->renderText(env->getScreen(), "A or Shift key", 16, y, textMask);
+        y += font->getHeight() + 2;
+
+        font->renderText(env->getScreen(), "Brake", 8, y);
+        y += font->getHeight() + 2;
+        font->renderText(env->getScreen(), "Z or Ctrl key", 16, y, textMask);
+        y += font->getHeight() + 2;
+
+        font->renderText(env->getScreen(), "Menu", 8, y);
+        y += font->getHeight() + 2;
+        font->renderText(env->getScreen(), "Back key", 16, y, textMask);
+        y += font->getHeight() + 2;
+#endif /* EPOC */
 
         renderTitle(screen, "Help");
         break;
@@ -772,7 +793,7 @@ void GameEngine::handleEvent(Game::Event* event)
     case HelpState:
     case CreditsState:
         if ((event->type == Game::Event::KeyPressEvent && 
-            (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST)) ||
+            (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST || event->key.code == KEY_THRUST2)) ||
             event->type == Game::Event::PointerButtonReleaseEvent)
             setState(MainMenuState);
         else if (event->type == Game::Event::PointerButtonReleaseEvent) 
@@ -787,7 +808,7 @@ void GameEngine::handleEvent(Game::Event* event)
             return;
 
         if ((event->type == Game::Event::KeyPressEvent && 
-            (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST)) ||
+            (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST || event->key.code == KEY_THRUST2)) ||
             event->type == Game::Event::PointerButtonReleaseEvent)
             setState(RaceCountDownState);
         break;
@@ -813,15 +834,14 @@ void GameEngine::handleRaceOutroEvent(Game::Event* event)
             {
             case KEY_SELECT:
             case KEY_THRUST:
+            case KEY_THRUST2:
             case KEY_EXIT:
                 {            
-                    if ((event->key.code >= 'a' && event->key.code <= 'z') ||
-                        (event->key.code >= 'A' && event->key.code <= 'Z') ||
-                        (event->key.code >= '0' && event->key.code <= '9'))
+                    if (event->key.unicode)
                     {
                         if (playerNameIndex < sizeof(env->playerName))
                         {
-                            env->playerName[playerNameIndex] = event->key.code;
+                            env->playerName[playerNameIndex] = (char)event->key.unicode;
                             playerNameIndex++;
                         }
                         break;
@@ -874,10 +894,9 @@ void GameEngine::handleRaceOutroEvent(Game::Event* event)
                 env->playerName[playerNameIndex] = 0;
                 break;
             default:
-                if (playerNameIndex < sizeof(env->playerName))
+                if (playerNameIndex < sizeof(env->playerName) && event->key.unicode)
                 {
-                    env->playerName[playerNameIndex] = event->key.code;
-                    playerNameIndex++;
+                    env->playerName[playerNameIndex++] = event->key.unicode;
                 }
                 break;
             }
@@ -925,10 +944,12 @@ void GameEngine::handleRaceEvent(Game::Event* event)
                 setState(RaceMenuState);
                 break;
             case KEY_THRUST:
+            case KEY_THRUST2:
                 car->setThrust(true);
                 car->setBrake(false);
                 break;
             case KEY_BRAKE:
+            case KEY_BRAKE2:
                 car->setThrust(false);
                 car->setBrake(true);
                 break;
@@ -950,9 +971,11 @@ void GameEngine::handleRaceEvent(Game::Event* event)
             switch(event->key.code)
             {
             case KEY_THRUST:
+            case KEY_THRUST2:
                 car->setThrust(false);
                 break;
             case KEY_BRAKE:
+            case KEY_BRAKE2:
                 car->setBrake(false);
                 break;
             case KEY_LEFT:

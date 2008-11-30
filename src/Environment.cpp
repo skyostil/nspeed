@@ -43,7 +43,7 @@ Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surf
         aiCount(3),
 	damageSound(0),
 	rechargeSound(0),
-        sfxVolume(16), musicVolume(16),
+        sfxVolume(64), musicVolume(64),
         musicChangeScheduled(false),
         stopSfxScheduled(false),
         texturePool(0, true)
