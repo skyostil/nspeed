@@ -41,7 +41,7 @@ public:
         void update(Track *track);
         void setThrust(bool _thrust);
         void setBrake(bool _brake);
-        void setSteering(int _steering);
+        void setSteering(scalar _steering);
         void setAiState(bool enabled);
         void show();
         void hide();
@@ -49,7 +49,7 @@ public:
         void unload();
         Mesh *getMesh() const { return mesh; }
         
-        int getSteering() const { return steering; }
+        scalar getSteering() const { return steering; }
         scalar getSpeed() const { return FPSqrt(speed); }
         int getGateIndex() const { return gateIndex; }
         void setGateIndex(int i) { gateIndex = i; }
@@ -100,7 +100,8 @@ private:
         AccelerationSegment     accProfile[8];
         
         bool    thrust, brake;
-        int             steering, steeringWheelPos, thrustPos, engineCycle;
+        int             steering, thrustPos, engineCycle;
+	scalar			steeringWheelPos;
         
         Mesh                    *mesh;
         Game::Surface   *texture;

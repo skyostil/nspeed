@@ -27,6 +27,7 @@
 #include "Menu.h"
 #include "TagFile.h"
 #include <string.h>
+#include <stdlib.h>
 
 Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surface *_screen):
         Object(parent),
@@ -75,6 +76,11 @@ Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surf
     // clear the player name
     memset(playerName, ' ', sizeof(playerName));
     playerName[0] = 0;
+    const char* defaultName = getenv("USER");
+    if (defaultName)
+    {
+	strncpy(playerName, defaultName, sizeof(playerName));
+    }
 
     // load graphics
     carDot = loadImage("reddot.png");
@@ -134,8 +140,8 @@ Environment::~Environment()
     delete carDot;
     delete enemyCarDot;
 
-	delete damageSound;
-	delete rechargeSound;
+    delete damageSound;
+    delete rechargeSound;
 }
 
 Game::Surface *Environment::loadImage(const char *name)

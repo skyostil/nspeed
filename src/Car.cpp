@@ -235,18 +235,14 @@ void Car::update(Track *track)
         updateTileEffects(track);
     }
 
-    switch(steering)
+    if (steering < 0 || steering > 0)
     {
-    case -1:
-        if (steeringWheelPos > -32) steeringWheelPos--;
-        break;
-    case 0:
-        if (steeringWheelPos > 0) steeringWheelPos--;
-        else if (steeringWheelPos < 0) steeringWheelPos++;
-        break;
-    case 1:
-        if (steeringWheelPos < 32) steeringWheelPos++;
-        break;
+        if (FPAbs(steeringWheelPos) < FPInt(32)) steeringWheelPos += steering;
+    }
+    else if (steering == 0)
+    {
+        if (steeringWheelPos > 0) steeringWheelPos -= FPInt(1);
+        else if (steeringWheelPos < 0) steeringWheelPos += FPInt(1);
     }
 
     if (thrust && thrustPos < 8)
@@ -259,7 +255,7 @@ void Car::update(Track *track)
     //      angleSpeed += (steeringWheelPos) * getAngleAcceleration();
 
     if (FPAbs(velocity.x) > 32 || FPAbs(velocity.z) > 32)
-        angle += (steeringWheelPos>>2) * getAngleAcceleration(speed);
+        angle += (steeringWheelPos>>(FP + 2)) * getAngleAcceleration(speed);
 
     //      printf("Acc: %6d, %6d\n", acceleration.x, acceleration.z);
 
@@ -307,8 +303,8 @@ void Car::update(Track *track)
     Vector rollAxis(FPCos(angle),0,FPSin(angle));
     Matrix translation = Matrix::makeTranslation(origin * (FP_ONE>>CAR_COORDINATE_SCALE) + Vector(0, thrustPos<<(FP-10), 0));
 
-    mesh->transformation = Matrix::makeRotation(verticalAxis, angle + (steeringWheelPos<<(FP-7)));
-    mesh->transformation *= Matrix::makeRotation(rollAxis, -(steeringWheelPos<<(FP-8)));
+    mesh->transformation = Matrix::makeRotation(verticalAxis, angle + (steeringWheelPos>>7));
+    mesh->transformation *= Matrix::makeRotation(rollAxis, -(steeringWheelPos>>8));
     mesh->transformation *= translation;
 
     updateGate();
@@ -503,7 +499,7 @@ void Car::setBrake(bool _brake)
     brake = _brake;
 }
 
-void Car::setSteering(int _steering)
+void Car::setSteering(scalar _steering)
 {
     steering = _steering;
 }
@@ -650,9 +646,9 @@ void Car::updateAi()
                     }
                                             
                     if (((probe[i] - o).cross(steerTarget - o)).y < 0)
-                        setSteering(1);
+                        setSteering(FPDiv(FPInt(1), distance));
                     else
-                        setSteering(-1);
+                        setSteering(-FPDiv(FPInt(1), distance));
                     break;
                 }
             }

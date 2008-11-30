@@ -465,10 +465,10 @@ void GameEngine::setState(State newState)
         delete logo;
         logo = 0;
         break;
-	case CreditsState:
+    case CreditsState:
         delete logo;
         logo = 0;
-		break;
+        break;
     case ChooseCarState:
         break;
     case ChooseTrackState:
@@ -815,6 +815,18 @@ void GameEngine::handleRaceOutroEvent(Game::Event* event)
             case KEY_THRUST:
             case KEY_EXIT:
                 {            
+                    if ((event->key.code >= 'a' && event->key.code <= 'z') ||
+                        (event->key.code >= 'A' && event->key.code <= 'Z') ||
+                        (event->key.code >= '0' && event->key.code <= '9'))
+                    {
+                        if (playerNameIndex < sizeof(env->playerName))
+                        {
+                            env->playerName[playerNameIndex] = event->key.code;
+                            playerNameIndex++;
+                        }
+                        break;
+                    }
+
                     int l = car->getBestLapTime();
                     int r = car->getRaceTime();
                 
@@ -854,6 +866,20 @@ void GameEngine::handleRaceOutroEvent(Game::Event* event)
             case KEY_DOWN:
                 buttonDown = true;
                 break;
+            case 8:
+                if (playerNameIndex > 0)
+                {
+                    playerNameIndex--;
+                }
+                env->playerName[playerNameIndex] = 0;
+                break;
+            default:
+                if (playerNameIndex < sizeof(env->playerName))
+                {
+                    env->playerName[playerNameIndex] = event->key.code;
+                    playerNameIndex++;
+                }
+                break;
             }
         }
         break;
@@ -886,6 +912,12 @@ void GameEngine::handleRaceEvent(Game::Event* event)
         break;
     case Game::Event::KeyPressEvent:
         {
+            if (car->getEnergy() <= 0)
+            {
+                raceSuspendTime = env->getTimeInMs();
+                setState(RaceMenuState);
+            }
+
             switch(event->key.code)
             {
             case KEY_EXIT:
@@ -901,10 +933,10 @@ void GameEngine::handleRaceEvent(Game::Event* event)
                 car->setBrake(true);
                 break;
             case KEY_LEFT:
-                car->setSteering(-1);
+                car->setSteering(FPInt(-1));
                 break;
             case KEY_RIGHT:
-                car->setSteering(1);
+                car->setSteering(FPInt(1));
                 break;
             case KEY_ROTATE:
                 rotateCamera = !rotateCamera;
@@ -924,31 +956,60 @@ void GameEngine::handleRaceEvent(Game::Event* event)
                 car->setBrake(false);
                 break;
             case KEY_LEFT:
-                if (car->getSteering() == -1)
-                    car->setSteering(0);
+                if (car->getSteering() < 0)
+                    car->setSteering(FPInt(0));
                 break;
             case KEY_RIGHT:
-                if (car->getSteering() == 1)
-                    car->setSteering(0);
+                if (car->getSteering() > 0)
+                    car->setSteering(FPInt(0));
                 break;
             }
         }
+        break;
     case Game::Event::PointerMoveEvent:
         if (event->pointer.buttons)
         {
-            if (event->pointer.x < 2 * screen->width / 5)
-            {
-                car->setSteering(-1);
-            }
-            else if (event->pointer.x > 3 * screen->width / 5)
-            {
-                car->setSteering(1);
-            }
-            else
+            const int deadZone = screen->width / 6;
+            const int deadZoneX1 = screen->width / 2 - deadZone / 2;
+            const int deadZoneX2 = screen->width / 2 + deadZone / 2;
+            const int steerZone = screen->width / 4;
+            const int steerZoneX1 = deadZoneX1 - steerZone;
+            const int steerZoneX2 = deadZoneX2 + steerZone;
+
+            if (event->pointer.x > deadZoneX1 &&
+                event->pointer.x < deadZoneX2)
             {
                 car->setSteering(0);
             }
+            else if (event->pointer.x > steerZoneX1 &&
+                     event->pointer.x <= deadZoneX1)
+            {
+                scalar t = FPDiv(FPInt(deadZoneX1 - event->pointer.x), FPInt(deadZoneX1 - steerZoneX1));
+                car->setSteering(-t);
+            }
+            else if (event->pointer.x <= steerZoneX1)
+            {
+                car->setSteering(-FPInt(1));
+            }
+            else if (event->pointer.x >= deadZoneX2 &&
+                     event->pointer.x < steerZoneX2)
+            {
+                scalar t = FPDiv(FPInt(event->pointer.x - deadZoneX2), FPInt(steerZoneX2 - deadZoneX2));
+                car->setSteering(t);
+            }
+            else if (event->pointer.x >= steerZoneX2)
+            {
+                car->setSteering(FPInt(1));
+            }
         }
+        break;
+    case Game::Event::PointerButtonReleaseEvent:
+        if (car->getEnergy() <= 0)
+        {
+            raceSuspendTime = env->getTimeInMs();
+            setState(RaceMenuState);
+        }
+        car->setSteering(0);
         break;
     }
 }
@@ -1010,7 +1071,7 @@ void GameEngine::atomicStep()
         {
             for(i=env->carPool.begin(); i!=env->carPool.end(); i++)
                 (*i)->update(env->track);
-                
+
             if (madeRecord)
             {
                 if (++playerNameCounter > 16)
@@ -1019,7 +1080,7 @@ void GameEngine::atomicStep()
                     
                     playerNameCounter = 0;
                     
-                    if (buttonUp)
+                    if (buttonUp && playerNameIndex < sizeof(env->playerName) - 1)
                     {
                         (*c)++;
                         
@@ -1027,7 +1088,7 @@ void GameEngine::atomicStep()
                             *c = 46;
                     }
                     
-                    if (buttonDown)
+                    if (buttonDown && playerNameIndex < sizeof(env->playerName) - 1)
                     {
                         (*c)--;
                         
@@ -1037,6 +1098,7 @@ void GameEngine::atomicStep()
                 }
             }
         }
+        // no break here
     case RaceCountDownState:
         if (raceCountDown > 0) raceCountDown--;
         break;
@@ -1350,7 +1412,7 @@ void GameEngine::renderOSD(Game::Surface *screen)
 
         if (env->carDot && env->enemyCarDot)
         {
-            for(i=0; i<env->carPool.getCount(); i++)
+            for(i=env->carPool.getCount() - 1; i >= 0; i--)
             {
                 Vector origin = env->carPool.getItem(i)->getOrigin();
                 int scale = 256 / env->track->getMap()->width;
