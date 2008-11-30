@@ -349,6 +349,7 @@ Menu::Action Menu::handleEvent(Game::Event* event)
     case Game::Event::KeyReleaseEvent:
     break;
     case Game::Event::PointerMoveEvent:
+    case Game::Event::PointerButtonReleaseEvent:
         if (event->pointer.y >= minY && event->pointer.y <= maxY)
         {
             int i, y = minY;
@@ -364,9 +365,7 @@ Menu::Action Menu::handleEvent(Game::Event* event)
                 y += h + verticalSpacing;
             }
         }
-    break;
-    case Game::Event::PointerButtonPressEvent:
-        if (event->pointer.y >= minY && event->pointer.y <= maxY)
+        if (event->type == Game::Event::PointerButtonReleaseEvent)
         {
             swooshDirection = -1;
             deferredAction = Select;

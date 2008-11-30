@@ -972,7 +972,7 @@ void GameEngine::handleRaceEvent(Game::Event* event)
             const int deadZone = screen->width / 6;
             const int deadZoneX1 = screen->width / 2 - deadZone / 2;
             const int deadZoneX2 = screen->width / 2 + deadZone / 2;
-            const int steerZone = screen->width / 4;
+            const int steerZone = screen->width / 5;
             const int steerZoneX1 = deadZoneX1 - steerZone;
             const int steerZoneX2 = deadZoneX2 + steerZone;
 
