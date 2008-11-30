@@ -73,6 +73,7 @@ void SDLFramework::printUsage()
            "--xres n                Set horizontal resolution\n"
            "--yres n                Set vertical resolution\n"
            "--rate n                Set sound sampling rate\n"
+           "--samples n             Set sound buffer size\n"
            "--joynum n              Use joystick n\n"
            "--datadir path          Override path to data files [default: %s]\n"
            "-fs, --fullscreen       Use fullscreen mode\n"
@@ -85,7 +86,7 @@ int SDLFramework::run(int argc, char **argv)
     int i;
     bool useSound = true, useVideo = true, useFullscreen = false;
     int scaleFactor = 1;
-    int xres = 320, yres = 240, rate = 22050;
+    int xres = 320, yres = 240, rate = 22050, audioSamples = 2048;
     int joynum = 0;
 
 #if defined(HAVE_LIBXSP)
@@ -138,6 +139,10 @@ int SDLFramework::run(int argc, char **argv)
         else if (!strcmp(argv[i], "--rate"))
         {
             rate = atoi(argv[++i]);
+        }
+        else if (!strcmp(argv[i], "--samples"))
+        {
+            audioSamples = atoi(argv[++i]);
         }
         else if (!strcmp(argv[i], "--yres"))
         {
@@ -260,7 +265,7 @@ int SDLFramework::run(int argc, char **argv)
             audio.freq = rate;
             audio.format = AUDIO_S16;
             audio.channels = 1;
-            audio.samples = 2048;
+            audio.samples = audioSamples;
             audio.callback = audioCallback;
             audio.userdata = this;
 
