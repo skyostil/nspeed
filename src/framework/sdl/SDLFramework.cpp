@@ -193,6 +193,7 @@ int SDLFramework::run(int argc, char **argv)
                 {
                     printf("SDLFramework: Using XSP pixel doubling\n");
                     useXsp = true;
+                    useFullscreen = true;
                     XSPSetPixelDoubling(wminfo.info.x11.display, 0, 1);
                 }
             }
