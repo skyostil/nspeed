@@ -30,6 +30,12 @@
 #include <unistd.h>
 #include <limits.h>
 
+#if defined(HAVE_LIBXSP)
+#include <X11/Xlib.h>
+#include <X11/extensions/Xsp.h>
+#include <SDL/SDL_syswm.h>
+#endif /* HAVE_LIBXSP */
+
 //extern "C"
 //{
 int main(int argc, char **argv)
@@ -82,7 +88,9 @@ int SDLFramework::run(int argc, char **argv)
     int xres = 320, yres = 240, rate = 22050;
     int joynum = 0;
 
-    done = false;
+#if defined(HAVE_LIBXSP)
+    bool useXsp = false;
+#endif
 
 #if defined(APPNAME)
     putenv("SDL_VIDEO_X11_WMCLASS=" APPNAME);
@@ -93,6 +101,7 @@ int SDLFramework::run(int argc, char **argv)
 #else
     strncpy(dataDir, "../data", sizeof(dataDir));
 #endif
+    done = false;
 
     for(i=1; i<argc; i++)
     {
@@ -163,6 +172,37 @@ int SDLFramework::run(int argc, char **argv)
         }
         else
         {
+            SDL_ShowCursor(0);
+#if defined(HAVE_LIBXSP)
+            if (scaleFactor == 2)
+            {
+                int foo;
+                SDL_SysWMinfo wminfo;
+                SDL_VERSION(&wminfo.version);
+                SDL_GetWMInfo(&wminfo);
+                if (!XSPQueryExtension(wminfo.info.x11.display, &foo, &foo, &foo, &foo))
+                {
+                    printf("SDLFramework: XSP pixel doubling not supported by X server\n");
+                }
+                else
+                {
+                    printf("SDLFramework: Using XSP pixel doubling\n");
+                    useXsp = true;
+                    XSPSetPixelDoubling(wminfo.info.x11.display, 0, 1);
+                }
+            }
+            else if (scaleFactor > 1)
+            {
+                printf("SDLFramework: Not using XSP pixel doubling (unsupported scale factor)\n");
+            }
+#else
+            if (scaleFactor > 1)
+            {
+                printf("SDLFramework: Not using XSP pixel doubling (support not compiled in)\n");
+            }
+#endif /* HAVE_LIBXSP */
+
+            // Make sure the full resolution is divisible by the pixel scale
             xres -= xres % scaleFactor;
             yres -= yres % scaleFactor;
 
@@ -188,6 +228,12 @@ int SDLFramework::run(int argc, char **argv)
                 {
                     gameScreen = new Game::Surface(&pf, (Game::Pixel*)screen->pixels, screen->w, screen->h, screen->pitch);
                 }
+#if defined(HAVE_LIBXSP)
+                else if (useXsp)
+                {
+                    gameScreen = new Game::Surface(&pf, (Game::Pixel*)screen->pixels, screen->w / scaleFactor, screen->h / scaleFactor, screen->pitch);
+                }
+#endif /* HAVE_LIBXSP */
                 else
                 {
                     gameScreen = new Game::Surface(&pf, screen->w / scaleFactor, screen->h / scaleFactor);
@@ -319,11 +365,22 @@ int SDLFramework::run(int argc, char **argv)
         {
             engine->renderVideo(gameScreen);
 
+#if defined(HAVE_LIBXSP)
+            if (useXsp)
+            {
+                SDL_UpdateRect(screen, 0, 0, gameScreen->width, gameScreen->height);
+            }
+            else
+#endif /* HAVE_LIBXSP */
             if (scaleFactor > 1)
             {
                 upscale(screen, gameScreen, scaleFactor);
+                SDL_Flip(screen);
             }
-            SDL_Flip(screen);
+            else
+            {
+                SDL_Flip(screen);
+            }
         }
     }
     return 0;

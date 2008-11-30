@@ -35,6 +35,7 @@ AC_FUNC_STAT
 AC_CHECK_FUNCS([memchr memmove memset])
 AC_CHECK_LIB([SDL_image], [IMG_Load])
 AC_CHECK_LIB([z], [compress])
+AC_CHECK_LIB([Xsp], [XSPSetPixelDoubling])
 AM_PATH_SDL(1.2.0, , exit)
 
 # C++

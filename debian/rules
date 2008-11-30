@@ -31,7 +31,7 @@ endif
 ifneq "$(wildcard /usr/share/misc/config.guess)" ""
 	cp -f /usr/share/misc/config.guess config.guess
 endif
-	./configure $(CROSS) --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info --enable-xsp CFLAGS="-O2 -fno-rtti -fno-exceptions -ffast-math $(CFLAGS)" LDFLAGS="-Wl,-z,defs"
+	./configure $(CROSS) --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info CFLAGS="-O2 -fno-rtti -fno-exceptions -ffast-math $(CFLAGS)" LDFLAGS="-Wl,-z,defs"
 
 
 build: build-stamp
