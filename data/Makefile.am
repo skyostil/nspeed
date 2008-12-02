@@ -9,4 +9,4 @@ icondata_DATA = nspeed.png
 desktopdatadir = $(datadir)/applications
 desktopdata_DATA = nspeed.desktop
 
-EXTRA_DIST = $(pkgdata_DATA) $(icondata_DATA) $(desktopdata_DATA)
+EXTRA_DIST = $(pkgdata_DATA) $(icondata_DATA) $(desktopdata_DATA) nspeed26.png nspeed40.png nspeed64.png

@@ -9,4 +9,4 @@ nspeed_SOURCES = FixedPointMath.cpp FixedPointMatrix.cpp FixedPointVector.cpp Ra
 nspeed_LDFLAGS = $(all_libraries) $(SDL_RPATH)
 nspeed_CXXFLAGS = $(SDL_CFLAGS)
 nspeed_LDADD = $(top_builddir)/src/framework/sdl/libsdlframework.a $(top_builddir)/src/engine/libengine.a $(SDL_LIBS) -lSDL_image
-noinst_HEADERS = World.h FixedPointMath.h FixedPointMatrix.h FixedPointVector.h Rasterizer.h Land.h Mixer.h ModPlayer.h Car.h BitmapFont.h TagFile.h Object.h MeshSet.h Renderable.h Texture.h Menu.h
+noinst_HEADERS = World.h FixedPointMath.h FixedPointMatrix.h FixedPointVector.h Rasterizer.h Land.h Mixer.h ModPlayer.h Car.h BitmapFont.h TagFile.h Object.h MeshSet.h Renderable.h Texture.h Menu.h Config.h View.h

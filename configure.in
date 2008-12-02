@@ -36,14 +36,13 @@ AC_CHECK_FUNCS([memchr memmove memset])
 AC_CHECK_LIB([SDL_image], [IMG_Load])
 AC_CHECK_LIB([z], [compress])
 AC_CHECK_LIB([Xsp], [XSPSetPixelDoubling])
+AC_CHECK_LIB([X11], [XStoreName])
 AM_PATH_SDL(1.2.0, , exit)
 
 # C++
 AC_LANG_CPLUSPLUS
 
 AC_CONFIG_FILES([Makefile
-                 tools/3ds2h/Makefile
-                 tools/3ds2mesh/Makefile
                  src/Makefile
                  src/engine/Makefile
                  src/framework/Makefile

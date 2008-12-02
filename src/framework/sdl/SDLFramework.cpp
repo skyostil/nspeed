@@ -29,11 +29,11 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <limits.h>
+#include <SDL/SDL_syswm.h>
 
 #if defined(HAVE_LIBXSP)
 #include <X11/Xlib.h>
 #include <X11/extensions/Xsp.h>
-#include <SDL/SDL_syswm.h>
 #endif /* HAVE_LIBXSP */
 
 //extern "C"
@@ -111,7 +111,9 @@ int SDLFramework::run(int argc, char **argv)
 #endif
 
 #if defined(APPNAME)
-    putenv("SDL_VIDEO_X11_WMCLASS=" APPNAME);
+    static char wmClass[128];
+    snprintf(wmClass, sizeof(wmClass), "SDL_VIDEO_X11_WMCLASS=%s", APPNAME);
+    putenv(wmClass);
 #endif
 
 #if defined(PREFIX) && defined(APPNAME)
