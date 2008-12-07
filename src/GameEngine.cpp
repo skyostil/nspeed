@@ -234,12 +234,12 @@ void GameEngine::renderVideo(Game::Surface* screen)
 
         font->renderText(env->getScreen(), "Acceleration", 8, y);
         y += font->getHeight() + 2;
-        font->renderText(env->getScreen(), "A, Shift key or Zoom Out key", 16, y, textMask);
+        font->renderText(env->getScreen(), "A, Shift key or Zoom In key", 16, y, textMask);
         y += font->getHeight() + 2;
 
         font->renderText(env->getScreen(), "Brake", 8, y);
         y += font->getHeight() + 2;
-        font->renderText(env->getScreen(), "Z, Ctrl key or Zoom In key", 16, y, textMask);
+        font->renderText(env->getScreen(), "Z, Ctrl key or Zoom Out key", 16, y, textMask);
         y += font->getHeight() + 2;
 
         font->renderText(env->getScreen(), "Menu", 8, y);
@@ -846,7 +846,6 @@ void GameEngine::handleRaceOutroEvent(Game::Event* event)
             {
             case KEY_SELECT:
             case KEY_THRUST:
-            case KEY_THRUST2:
             case KEY_EXIT:
                 {            
                     if (event->key.unicode >= 32)
@@ -999,10 +998,10 @@ void GameEngine::handleRaceEvent(Game::Event* event)
     case Game::Event::PointerMoveEvent:
         if (event->pointer.buttons)
         {
-            const int deadZone = screen->width / 6;
+            const int deadZone = screen->width / 8;
             const int deadZoneX1 = screen->width / 2 - deadZone / 2;
             const int deadZoneX2 = screen->width / 2 + deadZone / 2;
-            const int steerZone = screen->width / 5;
+            const int steerZone = screen->width / 6;
             const int steerZoneX1 = deadZoneX1 - steerZone;
             const int steerZoneX2 = deadZoneX2 + steerZone;
 
