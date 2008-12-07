@@ -197,6 +197,7 @@ int SDLFramework::run(int argc, char **argv)
         else
         {
             SDL_ShowCursor(0);
+            SDL_EnableUNICODE(SDL_ENABLE);
 #if defined(HAVE_LIBXSP)
             if (scaleFactor == 2)
             {

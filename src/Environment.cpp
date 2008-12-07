@@ -79,7 +79,7 @@ Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surf
     const char* defaultName = getenv("USER");
     if (defaultName)
     {
-	strncpy(playerName, defaultName, sizeof(playerName));
+	strncpy(playerName, defaultName, sizeof(playerName) - 1);
     }
 
     // load graphics

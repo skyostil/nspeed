@@ -109,7 +109,7 @@ public:
     Set<Game::Surface*>     texturePool;
     Set<Car*>               carPool;
     
-    char                    playerName[8];
+    char                    playerName[12];
     
     int                     getTimeInMs() const;
 

@@ -811,6 +811,7 @@ void GameEngine::handleEvent(Game::Event* event)
             (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST || event->key.code == KEY_THRUST2)) ||
             event->type == Game::Event::PointerButtonReleaseEvent)
             setState(RaceCountDownState);
+            /*setState(RaceOutroState);*/ /* for testing name entry */
         break;
     case RaceCountDownState:
     case RaceState:
@@ -837,16 +838,15 @@ void GameEngine::handleRaceOutroEvent(Game::Event* event)
             case KEY_THRUST2:
             case KEY_EXIT:
                 {            
-                    if (event->key.unicode)
+                    if (event->key.unicode >= 32)
                     {
                         if (playerNameIndex < sizeof(env->playerName))
                         {
                             env->playerName[playerNameIndex] = (char)event->key.unicode;
                             playerNameIndex++;
+                            break;
                         }
-                        break;
                     }
-
                     int l = car->getBestLapTime();
                     int r = car->getRaceTime();
                 
@@ -891,7 +891,7 @@ void GameEngine::handleRaceOutroEvent(Game::Event* event)
                 {
                     playerNameIndex--;
                 }
-                env->playerName[playerNameIndex] = 0;
+                env->playerName[playerNameIndex] = ' ';
                 break;
             default:
                 if (playerNameIndex < sizeof(env->playerName) && event->key.unicode)
