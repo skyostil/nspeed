@@ -234,12 +234,12 @@ void GameEngine::renderVideo(Game::Surface* screen)
 
         font->renderText(env->getScreen(), "Acceleration", 8, y);
         y += font->getHeight() + 2;
-        font->renderText(env->getScreen(), "A or Shift key", 16, y, textMask);
+        font->renderText(env->getScreen(), "A, Shift key or Zoom Out key", 16, y, textMask);
         y += font->getHeight() + 2;
 
         font->renderText(env->getScreen(), "Brake", 8, y);
         y += font->getHeight() + 2;
-        font->renderText(env->getScreen(), "Z or Ctrl key", 16, y, textMask);
+        font->renderText(env->getScreen(), "Z, Ctrl key or Zoom In key", 16, y, textMask);
         y += font->getHeight() + 2;
 
         font->renderText(env->getScreen(), "Menu", 8, y);
@@ -786,6 +786,17 @@ void GameEngine::copySelectedMenuItem(Menu *menu, char *out, unsigned int outSiz
 
 void GameEngine::handleEvent(Game::Event* event)
 {
+    // Multi key remapping
+    if (event->type == Game::Event::KeyPressEvent || event->type == Game::Event::KeyReleaseEvent)
+    {
+        if (event->key.code == KEY_THRUST2 ||
+            event->key.code == KEY_THRUST3)
+            event->key.code =  KEY_THRUST;
+        if (event->key.code == KEY_BRAKE2 ||
+            event->key.code == KEY_BRAKE3)
+            event->key.code =  KEY_BRAKE;
+    }
+
     env->getMenu()->handleEvent(event);
 
     switch(state)
@@ -793,7 +804,7 @@ void GameEngine::handleEvent(Game::Event* event)
     case HelpState:
     case CreditsState:
         if ((event->type == Game::Event::KeyPressEvent && 
-            (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST || event->key.code == KEY_THRUST2)) ||
+            (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST)) ||
             event->type == Game::Event::PointerButtonReleaseEvent)
             setState(MainMenuState);
         else if (event->type == Game::Event::PointerButtonReleaseEvent) 
@@ -808,7 +819,7 @@ void GameEngine::handleEvent(Game::Event* event)
             return;
 
         if ((event->type == Game::Event::KeyPressEvent && 
-            (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST || event->key.code == KEY_THRUST2)) ||
+            (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST)) ||
             event->type == Game::Event::PointerButtonReleaseEvent)
             setState(RaceCountDownState);
             /*setState(RaceOutroState);*/ /* for testing name entry */
@@ -944,12 +955,10 @@ void GameEngine::handleRaceEvent(Game::Event* event)
                 setState(RaceMenuState);
                 break;
             case KEY_THRUST:
-            case KEY_THRUST2:
                 car->setThrust(true);
                 car->setBrake(false);
                 break;
             case KEY_BRAKE:
-            case KEY_BRAKE2:
                 car->setThrust(false);
                 car->setBrake(true);
                 break;
@@ -971,11 +980,9 @@ void GameEngine::handleRaceEvent(Game::Event* event)
             switch(event->key.code)
             {
             case KEY_THRUST:
-            case KEY_THRUST2:
                 car->setThrust(false);
                 break;
             case KEY_BRAKE:
-            case KEY_BRAKE2:
                 car->setBrake(false);
                 break;
             case KEY_LEFT:

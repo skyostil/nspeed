@@ -8,5 +8,6 @@ Exec=/usr/games/nspeed --xres 800 --yres 480 --scale 2 -fs --samples 1024
 Icon=nspeed
 X-Window-Icon=nspeed
 X-Osso-Type=application/x-executable
+X-Osso-Service=org.unrealvoodoo.nspeed
 StartupWMClass=nspeed
 Terminal=false

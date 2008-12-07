@@ -48,6 +48,8 @@
 #define KEY_BRAKE       'z'
 #define KEY_THRUST2     SDLK_LSHIFT     /* both shift keys are identical on N810 */
 #define KEY_BRAKE2      SDLK_RCTRL
+#define KEY_THRUST3     SDLK_F7
+#define KEY_BRAKE3      SDLK_F8
 #define KEY_DOWN        SDLK_DOWN
 #define KEY_EXIT        SDLK_ESCAPE
 #define KEY_ROTATE      'r'

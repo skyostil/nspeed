@@ -1,3 +1,4 @@
 #!/bin/sh
 gtk-update-icon-cache -f /usr/share/icons/hicolor
 which maemo-select-menu-location > /dev/null && maemo-select-menu-location nspeed.desktop
+exit 0

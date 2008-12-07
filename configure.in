@@ -6,6 +6,7 @@ AC_INIT(nspeed, 1.1, sami.kyostila@gmail.com)
 AM_INIT_AUTOMAKE(nspeed, 1.1)
 AC_CONFIG_SRCDIR([src/AutoConfig.h.in])
 AC_CONFIG_HEADER([src/AutoConfig.h])
+PKG_PROG_PKG_CONFIG
 
 # Checks for programs.
 AC_PROG_CXX
@@ -15,6 +16,11 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
+
+# Checks for packages
+PKG_CHECK_MODULES(MAEMO, glib-2.0 dbus-1)
+AC_SUBST(MAEMO_CFLAGS)
+AC_SUBST(MAEMO_LIBS)
 
 # Checks for header files.
 AC_HEADER_DIRENT
@@ -37,6 +43,7 @@ AC_CHECK_LIB([SDL_image], [IMG_Load])
 AC_CHECK_LIB([z], [compress])
 AC_CHECK_LIB([Xsp], [XSPSetPixelDoubling])
 AC_CHECK_LIB([X11], [XStoreName])
+AC_CHECK_LIB([osso], [osso_initialize])
 AM_PATH_SDL(1.2.0, , exit)
 
 # C++

@@ -69,9 +69,11 @@ install: build
 	mkdir -p $(CURDIR)/debian/nspeed/usr/share/icons/hicolor/26x26/hildon
 	mkdir -p $(CURDIR)/debian/nspeed/usr/share/icons/hicolor/40x40/hildon
 	mkdir -p $(CURDIR)/debian/nspeed/usr/share/icons/hicolor/scalable/hildon
+	mkdir -p $(CURDIR)/debian/nspeed/usr/share/dbus-1/services/
 	cp data/nspeed26.png $(CURDIR)/debian/nspeed/usr/share/icons/hicolor/26x26/hildon/nspeed.png
 	cp data/nspeed40.png $(CURDIR)/debian/nspeed/usr/share/icons/hicolor/40x40/hildon/nspeed.png
 	cp data/nspeed64.png $(CURDIR)/debian/nspeed/usr/share/icons/hicolor/scalable/hildon/nspeed.png
+	cp data/org.unrealvoodoo.nspeed.service $(CURDIR)/debian/nspeed/usr/share/dbus-1/services/
 
 # Build architecture-independent files here.
 binary-indep: install

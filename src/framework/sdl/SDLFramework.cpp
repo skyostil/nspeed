@@ -36,6 +36,10 @@
 #include <X11/extensions/Xsp.h>
 #endif /* HAVE_LIBXSP */
 
+#if defined(HAVE_LIBOSSO)
+#include <libosso.h>
+#endif
+
 //extern "C"
 //{
 int main(int argc, char **argv)
@@ -45,6 +49,26 @@ int main(int argc, char **argv)
     return fw.run(argc, argv);
 }
 //}
+
+#if defined(HAVE_LIBOSSO)
+static osso_context_t *ossoContext;
+
+static void maemoExit(void)
+{
+    if (ossoContext)
+    {
+        osso_deinitialize(ossoContext);
+        ossoContext = NULL;
+    }
+}
+
+static void maemoInit(void)
+{
+    putenv("SDL_VIDEO_X11_WMCLASS=" APPNAME);
+    ossoContext = osso_initialize("org.unrealvoodoo.nspeed", "1.1", TRUE, NULL);
+    atexit(maemoExit);
+}
+#endif /* HAVE_LIBOSSO */
 
 SDLFramework::SDLFramework():
         screen(0),
@@ -110,11 +134,9 @@ int SDLFramework::run(int argc, char **argv)
     bool useXsp = false;
 #endif
 
-#if defined(APPNAME)
-    static char wmClass[128];
-    snprintf(wmClass, sizeof(wmClass), "SDL_VIDEO_X11_WMCLASS=%s", APPNAME);
-    putenv(wmClass);
-#endif
+#if defined(HAVE_LIBOSSO)
+    maemoInit();
+#endif /* HAVE_LIBOSSO */
 
 #if defined(PREFIX) && defined(APPNAME)
     strncpy(dataDir, PREFIX "/share/games/" APPNAME, sizeof(dataDir));

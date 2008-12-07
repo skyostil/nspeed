@@ -1,5 +1,6 @@
 # Configure installation prefix and application name
-AM_CPPFLAGS = -DPREFIX=\"$(prefix)\" -DAPPNAME=\"@PACKAGE@\" @CPPFLAGS@
+AM_CPPFLAGS = -DPREFIX=\"$(prefix)\" -DAPPNAME=\"@PACKAGE@\" @MAEMO_CFLAGS@ @CPPFLAGS@
+AM_LDFLAGS = @MAEMO_LIBS@ @LDFLAGS@
 
 INCLUDES = -I$(top_srcdir)/src $(all_includes)
 METASOURCES = AUTO

@@ -330,7 +330,6 @@ Menu::Action Menu::handleEvent(Game::Event* event)
         break;
         case KEY_EXIT:
         case KEY_BRAKE:
-        case KEY_BRAKE2:
             if (!topLevelMenu)
             {
                 swooshDirection = 1;
@@ -340,7 +339,6 @@ Menu::Action Menu::handleEvent(Game::Event* event)
         break;
         case KEY_SELECT:
         case KEY_THRUST:
-        case KEY_THRUST2:
             swooshDirection = -1;
             deferredAction = Select;
             return deferredAction;

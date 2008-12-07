@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.unrealvoodoo.nspeed
+Exec=/usr/games/nspeed --xres 800 --yres 480 --scale 2 -fs --samples 1024
