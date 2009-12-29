@@ -1,3 +1,12 @@
+nspeed (1.2-1) unstable; urgency=low
+
+  * Improved touch screen controls
+  * Fixed key map for the N900
+  * Updated build dependencies for Fremantle
+  * Cleaned up configure.in
+
+ -- Sami Kyöstilä <sami.kyostila@gmail.com>  Wed, 26 Nov 2008 00:02:47 +0200
+
 nspeed (1.1-1) unstable; urgency=low
 
   * Initial release

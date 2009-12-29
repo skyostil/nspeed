@@ -827,3 +827,8 @@ const char *SDLFramework::findResource(const char *name, bool mustExist, bool wr
     return resourcePath;
 }
 
+void SDLFramework::showTaskSwitcher()
+{
+    // Pretty lazy, huh?
+    system("dbus-send --type=signal --session /com/nokia/hildon_desktop com.nokia.hildon_desktop.exit_app_view");
+}

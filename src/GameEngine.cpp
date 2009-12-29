@@ -303,7 +303,7 @@ void GameEngine::renderVideo(Game::Surface* screen)
                         }
                         else
                             pixel = screen->format.makePixel(r,g,b);
-                        screen->setPixel(x, d, pixel);
+                        screen->setPixel(x, d + screen->height / 4, pixel);
                     }
                 }
 
@@ -822,7 +822,7 @@ void GameEngine::handleEvent(Game::Event* event)
             (event->key.code == KEY_SELECT || event->key.code == KEY_THRUST)) ||
             event->type == Game::Event::PointerButtonReleaseEvent)
             setState(RaceCountDownState);
-            /*setState(RaceOutroState);*/ /* for testing name entry */
+            //setState(RaceOutroState); /* for testing name entry */
         break;
     case RaceCountDownState:
     case RaceState:
@@ -847,7 +847,7 @@ void GameEngine::handleRaceOutroEvent(Game::Event* event)
             case KEY_SELECT:
             case KEY_THRUST:
             case KEY_EXIT:
-                {            
+                {
                     if (event->key.unicode >= 32)
                     {
                         if (playerNameIndex < sizeof(env->playerName))
@@ -1033,12 +1033,28 @@ void GameEngine::handleRaceEvent(Game::Event* event)
         }
         break;
     case Game::Event::PointerButtonReleaseEvent:
-        if (car->getEnergy() <= 0)
+        if (event->pointer.y <= BUTTON_HEIGHT &&
+            event->pointer.x >= env->getScreen()->width - BUTTON_WIDTH)
         {
             raceSuspendTime = env->getTimeInMs();
             setState(RaceMenuState);
         }
-        car->setSteering(0);
+        else if (event->pointer.y <= BUTTON_HEIGHT &&
+                 event->pointer.x <= BUTTON_WIDTH)
+        {
+            raceSuspendTime = env->getTimeInMs();
+            setState(RaceMenuState);
+            framework->showTaskSwitcher();
+        }
+        else
+        {
+            if (car->getEnergy() <= 0)
+            {
+                raceSuspendTime = env->getTimeInMs();
+                setState(RaceMenuState);
+            }
+            car->setSteering(0);
+        }
         break;
     }
 }
@@ -1214,7 +1230,11 @@ void GameEngine::preventWarping()
 
 void GameEngine::renderTitle(Game::Surface *s, const char *title)
 {
-    env->bigFont->renderText(s, title, 4, 2);
+    if (state == HelpState)
+    {
+        env->getScreen()->renderTransparentSurface(env->taskSwitcherButton, 0, 4);
+    }
+    env->bigFont->renderText(s, title, 4 + BUTTON_WIDTH, 2);
 }
 
 void GameEngine::renderRotatingQuad(View *view, Game::Surface *texture, const scalar depth)
@@ -1251,7 +1271,7 @@ void GameEngine::renderEnergyBar(Game::Surface *screen, int energy, int x, int y
         (screen->format.bmask & (screen->format.bmask>>1));
     Game::Pixel16 border = screen->format.makePixel(0,0,0);
 
-    const int scale = 1;
+    const int scale = 0;
     int c = 31;
     const int r = 1, g = 0, b = 0;
     int w = energy>>scale;
@@ -1457,6 +1477,14 @@ void GameEngine::renderOSD(Game::Surface *screen)
         }
     }
 
+    // render touch screen controls
+    if (env->menuButton && env->taskSwitcherButton)
+    {
+        env->getScreen()->renderTransparentSurface(env->taskSwitcherButton, 0, 4);
+        x = env->getScreen()->width - env->menuButton->width;
+        env->getScreen()->renderTransparentSurface(env->menuButton, x, 4);
+    }
+
     x = 4;
     y = env->getScreen()->height - font->getHeight() - 2;
     scalar speed = car->getSpeed();
@@ -1476,14 +1504,14 @@ void GameEngine::renderOSD(Game::Surface *screen)
     // render times
     i = car->getRaceTime();
     formatTime(text, i);
-    font->renderText(env->getScreen(), text, 4, 4);
+    font->renderText(env->getScreen(), text, 4 + 40, 4);
 
     i = car->getLapTime();
     formatTime(text, i);
-    font->renderText(env->getScreen(), text, 4, 4 + font->getHeight());
+    font->renderText(env->getScreen(), text, 4 + 40, 4 + font->getHeight());
 
     // render energy
-    renderEnergyBar(screen, car->getEnergy(), screen->width - 54, 4, 8);
+    renderEnergyBar(screen, car->getEnergy(), screen->width - 100 - 40, 9, 8);
 }
 
 void GameEngine::renderTextEntryDialog(Game::Surface *screen, const char *text, unsigned int len, unsigned int selectedIndex)

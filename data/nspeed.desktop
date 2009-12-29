@@ -2,7 +2,7 @@
 Encoding=UTF-8
 Version=1.0
 Type=Application
-Name=NSpeed
+Name=N-Speed
 Comment=Futuristic 3D racing game
 Exec=/usr/games/nspeed --xres 800 --yres 480 --scale 2 -fs --samples 1024
 Icon=nspeed

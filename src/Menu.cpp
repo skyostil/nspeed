@@ -26,7 +26,7 @@
 #include <stdio.h>
 
 MenuItem::MenuItem(const char *_text):
-	text(0)
+	text(0), pos(0)
 {
 	setText(_text);
 }
@@ -61,6 +61,16 @@ const char *MenuItem::getText() const
 	return text;
 }
 
+int MenuItem::getPosition() const
+{
+    return pos;
+}
+
+void MenuItem::setPosition(int p)
+{
+    pos = p;
+}
+
 Menu::Menu(Object *parent, Environment *_env):
 	Object(parent),
 	env(_env),
@@ -73,6 +83,7 @@ Menu::Menu(Object *parent, Environment *_env):
 	swooshAmount(0),
 	deferredAction(NoAction),
 	clipMinY(0),
+	clipMaxY(_env->getScreen()->height - 1 - _env->font->getHeight()),
 	minY(0),
 	maxY(0),
 	offsetY(0),
@@ -94,6 +105,7 @@ void Menu::clear()
 	swooshAmount = 0;
 	selected = 0;
 	clipMinY = 0;
+	clipMaxY = env->getScreen()->height - 1 - env->font->getHeight();
 	offsetY = 0;
 	topLevelMenu = false;
 	items.clear();
@@ -111,23 +123,30 @@ void Menu::render(World *world)
 	int i, totalHeight = 0, y, x, w, h;
 	
 	animate();
+
+        if (!topLevelMenu)
+        {
+            x = env->getScreen()->width - env->backButton->width;
+            env->getScreen()->renderTransparentSurface(env->backButton, x, 4);
+        }
+        env->getScreen()->renderTransparentSurface(env->taskSwitcherButton, 0, 4);
 	
 	for(i=0; i<items.getCount(); i++)
 		totalHeight += getHeight(items.getItem(i)) + verticalSpacing;
 		
-	y = (screen->height - clipMinY) / 2 - totalHeight / 2;
+	y = (clipMaxY - clipMinY) / 2 - totalHeight / 2;
 	minY = y - 4 + offsetY;
 	maxY = minY + totalHeight + 8;
 	
 	if (minY < clipMinY) minY = clipMinY;
-	if (maxY > screen->height - 1) maxY = screen->height - 1;
+	if (maxY > clipMaxY) maxY = clipMaxY;
 
 	dimScreen(screen, minY, maxY);
 	
 	if (selectionBarY + offsetY < clipMinY)
 		offsetY = clipMinY - selectionBarY;
-	if (selectionBarY + offsetY + selectionBarHeight > screen->height - 1)
-		offsetY = (screen->height - 1) - selectionBarY - selectionBarHeight;
+	if (selectionBarY + offsetY + selectionBarHeight > clipMaxY)
+		offsetY = clipMaxY - selectionBarY - selectionBarHeight;
 		
 	renderSelectionRectangle(0, selectionBarY + offsetY, screen->width, selectionBarHeight);
 	
@@ -146,6 +165,7 @@ void Menu::render(World *world)
 			x += (jiggleAmount>>4) - 8;
 		}
 		
+                item->setPosition(y + offsetY);
 		renderItem(item, x, y + offsetY, w, h, i == selected);
 		y += h + verticalSpacing;
 	}
@@ -163,11 +183,16 @@ unsigned int Menu::getHeight(MenuItem *item) const
 
 void Menu::renderItem(MenuItem *item, int x, int y, int w, int h, bool selected) const
 {
-	if (selected)
-	{
-	}
+        if ((y < clipMinY && y + h >= clipMinY) ||
+            (y + h > clipMaxY && y <= clipMaxY))
+        {
+            env->font->renderText(env->getScreen(), "...", x, y);
+        }
 	
 	if (y < clipMinY)
+		return;
+
+	if (y + h > clipMaxY)
 		return;
 	
 	env->font->renderText(env->getScreen(), item->getText(), x, y);
@@ -350,12 +375,39 @@ Menu::Action Menu::handleEvent(Game::Event* event)
     break;
     case Game::Event::PointerMoveEvent:
     case Game::Event::PointerButtonReleaseEvent:
+        if (!topLevelMenu &&
+            event->type == Game::Event::PointerButtonReleaseEvent &&
+            event->pointer.y <= BUTTON_HEIGHT &&
+            event->pointer.x >= env->getScreen()->width - BUTTON_WIDTH)
+        {
+            swooshDirection = 1;
+            deferredAction = GoBack;
+            return deferredAction;
+        }
+        else if (event->type == Game::Event::PointerButtonReleaseEvent &&
+                 event->pointer.y <= BUTTON_HEIGHT &&
+                 event->pointer.x <= BUTTON_WIDTH)
+        {
+            env->getFramework()->showTaskSwitcher();
+        }
+        else if (event->pointer.y < clipMinY)
+        {
+            selected--;
+            if (selected < 0) selected = 0;
+        }
+        else if (event->pointer.y > clipMaxY)
+        {
+            selected++;
+            if (selected > items.getCount() - 1) selected = items.getCount() - 1;
+        }
+
         if (event->pointer.y >= minY && event->pointer.y <= maxY)
         {
-            int i, y = minY;
+            int i;
             for(i=0; i<items.getCount(); i++)
             {
                 MenuItem *item = items.getItem(i);
+                int y = item->getPosition();
                 int h = getHeight(item);
                 if (event->pointer.y >= y && event->pointer.y < y + h)
                 {
@@ -364,12 +416,12 @@ Menu::Action Menu::handleEvent(Game::Event* event)
                 }
                 y += h + verticalSpacing;
             }
-        }
-        if (event->type == Game::Event::PointerButtonReleaseEvent)
-        {
-            swooshDirection = -1;
-            deferredAction = Select;
-            return deferredAction;
+            if (event->type == Game::Event::PointerButtonReleaseEvent)
+            {
+                swooshDirection = -1;
+                deferredAction = Select;
+                return deferredAction;
+            }
         }
     break;
     }

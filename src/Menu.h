@@ -38,8 +38,11 @@ public:
 	void clear();
 	void setText(const char *_text);
 	const char *getText() const;
+	int getPosition() const;
+	void setPosition(int p);
 	
 private:
+        int pos;
 	char *text;
 };
 
@@ -93,7 +96,7 @@ private:
 	int				swooshDirection, swooshAmount;
 	int				jiggleAmount, jiggleSpeed, jiggleDirection;
 	int				minY, maxY, offsetY;
-	int				clipMinY;
+	int				clipMinY, clipMaxY;
 	int				verticalSpacing;
 	bool			swooshDone, topLevelMenu;
 	Action			deferredAction;

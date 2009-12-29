@@ -4,23 +4,11 @@
    */
 #undef HAVE_DIRENT_H
 
-/* Define to 1 if you have the <dlfcn.h> header file. */
-#undef HAVE_DLFCN_H
-
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define to 1 if you have the `osso' library (-losso). */
-#undef HAVE_LIBOSSO
-
 /* Define to 1 if you have the `SDL_image' library (-lSDL_image). */
 #undef HAVE_LIBSDL_IMAGE
-
-/* Define to 1 if you have the `X11' library (-lX11). */
-#undef HAVE_LIBX11
-
-/* Define to 1 if you have the `Xsp' library (-lXsp). */
-#undef HAVE_LIBXSP
 
 /* Define to 1 if you have the `z' library (-lz). */
 #undef HAVE_LIBZ

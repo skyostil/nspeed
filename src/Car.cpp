@@ -332,7 +332,7 @@ void Car::updateTileEffects(Track *track)
     {
 		if (carNumber == 0)
 		{
-			if (env->getSfxChannel() && env->rechargeSound)
+			if (env->getSfxChannel() && env->rechargeSound && (env->getTimeInMs() % 500) < 100)
 			{
 				env->getSfxChannel()->playSample(env->rechargeSound, 11025);
 			}

@@ -85,6 +85,9 @@ Environment::Environment(Object *parent, Game::Framework *_framework, Game::Surf
     // load graphics
     carDot = loadImage("reddot.png");
     enemyCarDot = loadImage("bluedot.png");
+    menuButton = loadImage("menu.png");
+    backButton = loadImage("back.png");
+    taskSwitcherButton = loadImage("taskswitcher.png");
 
     scheduledMusicName[0] = 0;
 
@@ -139,6 +142,9 @@ Environment::~Environment()
 
     delete carDot;
     delete enemyCarDot;
+    delete menuButton;
+    delete taskSwitcherButton;
+    delete backButton;
 
     delete damageSound;
     delete rechargeSound;

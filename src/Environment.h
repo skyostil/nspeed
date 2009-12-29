@@ -48,13 +48,22 @@
 #define KEY_BRAKE       'z'
 #define KEY_THRUST2     SDLK_LSHIFT     /* both shift keys are identical on N810 */
 #define KEY_BRAKE2      SDLK_RCTRL
+#if (MAEMO_VERSION <= 4)
 #define KEY_THRUST3     SDLK_F7
 #define KEY_BRAKE3      SDLK_F8
+#define KEY_SELECT      SDLK_RETURN
+#else
+#define KEY_SELECT      SDLK_KP_ENTER
+#define KEY_THRUST3     KEY_THRUST2
+#define KEY_BRAKE3      KEY_BRAKE2
+#endif
 #define KEY_DOWN        SDLK_DOWN
 #define KEY_EXIT        SDLK_ESCAPE
 #define KEY_ROTATE      'r'
-#define KEY_SELECT      SDLK_RETURN
 #endif
+
+#define BUTTON_WIDTH    35
+#define BUTTON_HEIGHT   18
 
 class Track;
 class BitmapFont;
@@ -102,6 +111,7 @@ public:
     Track                   *track;
     BitmapFont              *font, *bigFont;
     Game::Surface           *carDot, *enemyCarDot;
+    Game::Surface           *menuButton, *taskSwitcherButton, *backButton;
 	Game::SampleChunk		*damageSound, *rechargeSound;
 
     Mixer                   *mixer;

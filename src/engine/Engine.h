@@ -188,6 +188,9 @@ public:
         virtual void exit() = 0;
         virtual unsigned int getTickCount() = 0;
         virtual unsigned int getTicksPerSecond() = 0;
+        virtual void showTaskSwitcher()
+        {
+        }
         
 	virtual const char *findResource(const char *name, bool mustExist = true, bool writable = false)
         {

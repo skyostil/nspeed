@@ -58,6 +58,7 @@ public:
 #endif
 
     const char *findResource(const char *name, bool mustExist = false, bool writable = false);
+    void showTaskSwitcher();
 
 protected:
     void printUsage();
