@@ -10,12 +10,11 @@
  >> 1. Installation
 -------------------------------------------------------------------
 
-  The following developemnt libraries should be installed prior 
+  The following development libraries should be installed prior 
   to building N-Speed:
 
-    - libsdl-dev
-    - libsdl-image-dev
-    - lib3ds-dev
+    - libsdl1.2-dev
+    - libsdl-image1.2-dev
 
   To build and install the game, run the following commands:
 
