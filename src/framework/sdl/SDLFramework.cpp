@@ -801,7 +801,7 @@ const char *SDLFramework::findResource(const char *name, bool mustExist, bool wr
             {
                 if (resourcePath[i] == '/')
                 {
-                    resourcePath[i] = 0;
+                    resourcePath[i + 1] = 0;
                     if (!makedirs(resourcePath))
                     {
                         return NULL;
