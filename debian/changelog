@@ -3,6 +3,8 @@ nspeed (1.2-2) unstable; urgency=low
   * Added bug tracker link to debian/control
   * Changed application icon size to 48x48
   * Fixed high score saving
+  * Backported some mixer improvements
+  * Added optification
 
  -- Sami Kyöstilä <sami.kyostila@gmail.com>  Wed, 30 Dec 2009 18:08:11 +0200
 
