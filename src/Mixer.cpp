@@ -91,6 +91,8 @@ Mixer::Mixer(int _outputFreq, int _channelCount):
         ticker(0)
 {
         int ch;
+        tickerCounter = 0;
+        tickerInterval = 0x7fffffff;
 
         channel = new Channel[channelCount];
         for(ch=0; ch<channelCount; ch++)
@@ -119,7 +121,10 @@ void Mixer::render(Game::SampleChunk *buffer)
 
                         for(ch=0; ch<channelCount; ch++)
                         {
-                                a+=channel[ch].play();
+	                        if (channel[ch].sample)
+		                    {
+	                                a+=channel[ch].play();
+							}
                         }
 
 //                      *data++ = a / (channelCount*2);

@@ -237,10 +237,16 @@ bool ModPlayer::load(const char *file)
                 SampleHeader header;
                 fread(&header, sizeof(SampleHeader), 1, f);
                 
+#ifndef BIG_ENDIAN
                 // fix endianess
                 header.length = bigEndian16(header.length) * 2;
                 header.loopStart = bigEndian16(header.loopStart) * 2;
                 header.loopLength = bigEndian16(header.loopLength) * 2;
+#else
+                header.length *= 2;
+                header.loopStart *= 2;
+                header.loopLength *= 2;
+#endif
                 
                 if (header.loopLength <= 2)
                         header.loopLength = 0;
@@ -530,7 +536,9 @@ void ModPlayer::play()
         playing = true;
         
         if (sample && note && channel && order && songLength)
-                mixer->installTicker(this, 2 * 125 / 5);
+        {
+            mixer->installTicker(this, 2 * 125 / 5);
+        }
 }
 
 void ModPlayer::tick()
