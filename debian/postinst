@@ -1,4 +1,16 @@
 #!/bin/sh
+
+# Make sure we are properly optified
+if test -d /opt/maemo/usr/share/games/nspeed/; then
+    if test \! -L /usr/share/games/nspeed; then
+        rm -rf /usr/share/games/nspeed
+        ln -s /opt/maemo/usr/share/games/nspeed /usr/share/games/nspeed
+    fi
+fi
+
+# Update icon cache
 gtk-update-icon-cache -f /usr/share/icons/hicolor
+
+# Select menu location for Maemo 4
 which maemo-select-menu-location > /dev/null && maemo-select-menu-location nspeed.desktop
 exit 0
