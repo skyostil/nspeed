@@ -1,3 +1,11 @@
+nspeed (1.2-2) unstable; urgency=low
+
+  * Added bug tracker link to debian/control
+  * Changed application icon size to 48x48
+  * Fixed high score saving
+
+ -- Sami Kyöstilä <sami.kyostila@gmail.com>  Wed, 30 Dec 2009 18:08:11 +0200
+
 nspeed (1.2-1) unstable; urgency=low
 
   * Improved touch screen controls
@@ -5,7 +13,7 @@ nspeed (1.2-1) unstable; urgency=low
   * Updated build dependencies for Fremantle
   * Cleaned up configure.in
 
- -- Sami Kyöstilä <sami.kyostila@gmail.com>  Wed, 26 Nov 2008 00:02:47 +0200
+ -- Sami Kyöstilä <sami.kyostila@gmail.com>  Wed, 30 Dec 2009 14:49:23 +0200
 
 nspeed (1.1-1) unstable; urgency=low
 
