@@ -49,6 +49,7 @@ public:
         void unload();
         Mesh *getMesh() const { return mesh; }
         
+        bool getBrake() const;
         scalar getSteering() const { return steering; }
         scalar getSpeed() const { return FPSqrt(speed); }
         int getGateIndex() const { return gateIndex; }

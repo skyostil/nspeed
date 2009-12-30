@@ -968,8 +968,11 @@ void GameEngine::handleRaceEvent(Game::Event* event)
                 car->setSteering(FPInt(1));
                 break;
             case KEY_ROTATE:
-                rotateCamera = !rotateCamera;
-                car->setAiState(rotateCamera);
+                if (car->getBrake())
+                {
+                    rotateCamera = !rotateCamera;
+                    car->setAiState(rotateCamera);
+                }
                 break;
             }
         }

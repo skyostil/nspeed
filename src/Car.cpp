@@ -499,6 +499,11 @@ void Car::setBrake(bool _brake)
     brake = _brake;
 }
 
+bool Car::getBrake() const
+{
+    return brake;
+}
+
 void Car::setSteering(scalar _steering)
 {
     steering = _steering;
@@ -767,4 +772,3 @@ void Car::hide()
 {
     world->getEnvironment()->meshPool.remove(mesh);
 }
-
